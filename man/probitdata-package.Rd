@@ -4,9 +4,9 @@
 \name{probitdata-package}
 \alias{probitdata}
 \alias{probitdata-package}
-\title{probitdata: What the Package Does (Title Case)}
+\title{probitdata: Simulate Choice Data from Probit Model}
 \description{
-More about what it does (maybe more than one line) Use four spaces when indenting paragraphs within the Description.
+Choice data simulation from a (ranked, ordered, multinomial) probit model.
 }
 \seealso{
 Useful links:

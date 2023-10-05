@@ -61,7 +61,7 @@
 #' Only relevant in the ordered probit model case (see details).
 #'
 #' @return
-#' An \code{\link{probit_parameter}} object.
+#' A \code{\link{probit_parameter}} object.
 #'
 #' It contains the elements:
 #' \describe{
@@ -190,60 +190,19 @@ probit_parameter <- function(
     C = 1, s = NA, alpha = NA, b = NA, Omega = NA, Sigma = NA,
     Sigma_diff = NA, diff_alt = 1, beta = NA, z = NA, d = NA
 ) {
-  if (!is_positive_integer(C)) {
-    probit_stop(
-      "Input 'C' must be a positive `integer`."
-    )
-  }
-  if (!(identical(s, NA) || is.numeric(s))) {
-    probit_stop(
-      "Input 's' must be `numeric`."
-    )
-  }
-  if (!(identical(alpha, NA) || is.numeric(alpha))) {
-    probit_stop(
-      "Input 'alpha' must be `numeric`."
-    )
-  }
-  if (!(identical(b, NA) || is.numeric(b))) {
-    probit_stop(
-      "Input 'b' must be `numeric`."
-    )
-  }
-  if (!(identical(Omega, NA) || is.numeric(Omega))) {
-    probit_stop(
-      "Input 'Omega' must be `numeric`."
-    )
-  }
-  if (!(identical(Sigma, NA) || is.numeric(Sigma))) {
-    probit_stop(
-      "Input 'Sigma' must be `numeric`."
-    )
-  }
-  if (!(identical(Sigma_diff, NA) || is.numeric(Sigma_diff))) {
-    probit_stop(
-      "Input 'Sigma_diff' must be `numeric`."
-    )
-  }
-  if (!is_positive_integer(diff_alt)) {
-    probit_stop(
-      "Input 'diff_alt' must be a positive `integer`."
-    )
-  }
-  if (!(identical(beta, NA) || is.numeric(beta))) {
-    probit_stop(
-      "Input 'beta' must be `numeric`."
-    )
-  }
-  if (!(identical(z, NA) || is.numeric(z))) {
-    probit_stop(
-      "Input 'z' must be `numeric`."
-    )
-  }
-  if (!(identical(d, NA) || is.numeric(d))) {
-    probit_stop(
-      "Input 'd' must be `numeric`."
-    )
+  checkmate::assert_count(C, positive = TRUE)
+  checkmate::assert_count(diff_alt, positive = TRUE)
+  parameters <- list(
+    "s" = s, "alpha" = alpha, "b" = b, "Omega" = Omega, "Sigma" = Sigma,
+    "Sigma_diff" = Sigma_diff, "beta" = beta, "z" = z, "d" = d
+  )
+  parameter_names <- names(parameters)
+  for (i in seq_along(parameters)) {
+    if (!is.na(parameters[[i]])) {
+      checkmate::assert_numeric(
+        s, any.missing = FALSE, .var.name = parameter_names[i]
+      )
+    }
   }
   structure(
     list(
@@ -265,21 +224,24 @@ probit_parameter <- function(
 
 #' @rdname probit_parameter
 #' @param x
-#' An \code{\link{probit_parameter}} object.
+#' A \code{\link{probit_parameter}} object.
 
 is.probit_parameter <- function(x) {
   inherits(x, "probit_parameter")
 }
 
 #' @rdname probit_parameter
+#'
 #' @inheritParams probit_formula
 #' @inheritParams simulate_choices
+#'
 #' @param seed
 #' An \code{integer}, passed to \code{set.seed()} to make the randomness
 #' reproducible.
 #' By default, \code{seed = NULL}, i.e., no seed is set.
 #' @inheritSection probit_formula Model formula
 #' @inheritSection probit_formula Random effects
+#'
 #' @examples
 #' (x <- probit_parameter(C = 2))
 #' formula <- choice ~ A | B
@@ -287,48 +249,25 @@ is.probit_parameter <- function(x) {
 #' J <- 3
 #' N <- 100
 #' (x <- simulate_probit_parameter(x, formula = formula, re = re, J = J, N = N))
+#'
 #' @export
 
 simulate_probit_parameter <- function(
     x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N,
     seed = NULL
 ) {
-  if (!is.probit_parameter(x)) {
-    probit_stop(
-      "Input 'x' is not of class `probit_parameter`.",
-      "Use `probit_parameter()` to create such an object."
-    )
-  }
+  checkmate::assert_class(x, "probit_parameter")
   if (missing(formula)) {
-    probit_stop(
-      "Please specify the input 'formula'.",
-      "See the documentation for details."
-    )
+    stop("Please specify the model 'formula'.")
   }
   if (missing(J)) {
-    probit_stop(
-      "Please specify input 'J'.",
-      "It should be the number of choice alternatives."
-    )
+    stop("Please specify the number 'J' of choice alternatives.")
   }
-  if (!is_positive_integer(J)) {
-    probit_stop(
-      "Input 'J' must be a positive `integer`.",
-      "It should be the number of choice alternatives."
-    )
-  }
+  checkmate::assert_int(J, lower = 2)
   if (missing(N)) {
-    probit_stop(
-      "Please specify input 'N'.",
-      "It should be the number of deciders."
-    )
+    stop("Please specify the number of deciders 'N'.")
   }
-  if (!is_positive_integer(N)) {
-    probit_stop(
-      "Input 'N' must be a positive `integer`.",
-      "It should be the number of deciders."
-    )
-  }
+  checkmate::assert_int(N, lower = 1)
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
   if (!is.null(seed)) {
@@ -337,9 +276,7 @@ simulate_probit_parameter <- function(
   if (identical(x$s, NA) && x$C > 1) {
     s_prior <- probit_prior_s(C = x$C)
     x$s <- sort(
-      rdirichlet(
-        concentration = s_prior$s_prior_concentration
-      ),
+      rdirichlet(concentration = s_prior$s_prior_concentration),
       decreasing = TRUE
     )
   }
@@ -452,17 +389,9 @@ simulate_probit_parameter <- function(
 validate_probit_parameter <- function(
     x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N
 ) {
-  if (!is.probit_parameter(x)) {
-    probit_stop(
-      "Input 'x' is not of class `probit_parameter`.",
-      "Use `probit_parameter()` to create such an object."
-    )
-  }
+  checkmate::assert_class(x, "probit_parameter")
   if (missing(formula)) {
-    probit_stop(
-      "Please specify the input 'formula'.",
-      "See the documentation for details."
-    )
+    stop("Please specify the input 'formula'.")
   }
   if (missing(J)) {
     probit_stop(
@@ -736,39 +665,19 @@ validate_probit_parameter <- function(
   } else {
     x$beta <- NA
   }
+
   ### check z
-  if (!is.vector(x$z) || length(x$z) != N || !is.numeric(x$z) ||
-      !all(x$z %in% 1:x$C)) {
-    probit_stop(
-      glue::glue(
-        "'z' is expected to be an `integer` `vector` with values {paste(seq.int(x$C), collapse = ", ")}."
-      ),
-      "Instead, it is (collapsed):",
-      glue::glue_collapse(
-        glue::glue("{x$z}"),
-        sep = " ",
-        width = getOption("width") - 3
-      )
-    )
-  }
+  checkmate::assert_integerish(
+    x$z, any.missing = FALSE, len = N, lower = 1, upper = x$C
+  )
+
   ### check d
   if (ordered) {
-    if (!is.vector(x$d) || length(x$d) != J-2 || !is.numeric(x$d)) {
-      probit_stop(
-        glue::glue(
-          "'d' is expected to be a `numeric` `vector` of length {J-2}."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$d}"),
-          sep = " ",
-          width = getOption("width") - 3
-        )
-      )
-    }
+    checkmate::assert_numeric(x$d, len = J - 2)
   } else {
     x$d <- NA
   }
+
   return(x)
 }
 
