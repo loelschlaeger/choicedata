@@ -5,9 +5,9 @@
 \title{Simulate choice data}
 \usage{
 simulate_choices(
-  RprobitB_covariates = simulate_RprobitB_covariates(formula, N, J, T = 1, alternatives =
+  probit_covariates = simulate_probit_covariates(formula, N, J, T = 1, alternatives =
     LETTERS[1:J], re = NULL, ordered = FALSE),
-  true_parameter = RprobitB_parameter(),
+  true_parameter = probit_parameter(),
   ranked = FALSE,
   seed = NULL,
   column_choice = "choice",
@@ -16,29 +16,29 @@ simulate_choices(
 )
 }
 \arguments{
-\item{RprobitB_covariates}{An \code{\link{RprobitB_covariates}} object, which contains the covariate
+\item{probit_covariates}{An \code{\link{probit_covariates}} object, which contains the covariate
 matrices used for the choice data simulation.}
 
-\item{true_parameter}{An \code{\link{RprobitB_parameter}} object, which contains the model
+\item{true_parameter}{An \code{\link{probit_parameter}} object, which contains the model
 parameters used for the choice data simulation.
-By default, \code{RprobitB_parameter = RprobitB_parameter()}, i.e. default
+By default, \code{probit_parameter = probit_parameter()}, i.e. default
 parameters are used.}
 
 \item{ranked}{TODO}
 }
 \value{
-An \code{\link{RprobitB_data}} object.
+An \code{\link{probit_data}} object.
 }
 \description{
 This function simulates choice data from a probit model. It helps to create
-an \code{\link{RprobitB_data}} object.
+an \code{\link{probit_data}} object.
 }
 \examples{
 ### simulate data from a binary probit model with two latent classes
 data <- simulate_choices(
   formula = choice ~ cost | income | time, N = 10, J = 2, T = 1:10,
   alternatives = c("car", "bus"), re = c("cost", "time"),
-  true_parameter = RprobitB_parameter(C = 2)
+  true_parameter = probit_parameter(C = 2)
 )
 
 ### simulate data from an ordered probit model

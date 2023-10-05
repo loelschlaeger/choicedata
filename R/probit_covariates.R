@@ -2,17 +2,17 @@
 #'
 #' @description
 #' These functions create and validate an object of class
-#' \code{\link{RprobitB_covariates}}, which contains the covariate matrices,
+#' \code{\link{probit_covariates}}, which contains the covariate matrices,
 #' see the details.
 #'
-#' \code{\link{sample_RprobitB_covariates}} samples covariates.
+#' \code{\link{sample_probit_covariates}} samples covariates.
 #'
-#' @param RprobitB_data
-#' An \code{\link{RprobitB_data}} object.
-#' @param RprobitB_formula
-#' An \code{\link{RprobitB_formula}} object.
-#' @param RprobitB_alternatives
-#' An \code{\link{RprobitB_alternatives}} object.
+#' @param probit_data
+#' An \code{\link{probit_data}} object.
+#' @param probit_formula
+#' An \code{\link{probit_formula}} object.
+#' @param probit_alternatives
+#' An \code{\link{probit_alternatives}} object.
 #'
 #' @details
 #' # Covariate matrices
@@ -28,7 +28,7 @@
 #' \code{formula <- choice ~ cost | age | time}, which includes two
 #' alternative-specific covariates, \code{cost} and \code{time}, and one
 #' alternative-constant covariate, \code{age}, see
-#' \code{\link{RprobitB_formula}}. For \code{cost} and \code{time}, we could
+#' \code{\link{probit_formula}}. For \code{cost} and \code{time}, we could
 #' specify a \code{function} that returns a \code{numeric} \code{vector} of
 #' length \code{J}, where entry \code{j} corresponds to the covariate for
 #' alternative \code{alternatives[j]}. For \code{age}, we could specify a
@@ -37,9 +37,9 @@
 #' \code{t}, so that the \code{function} call returns the covariates for
 #' decider \code{n} at choice occastion \code{t}.
 #'
-#' An example call to \code{sample_RprobitB_covariates()} looks as follows:
+#' An example call to \code{sample_probit_covariates()} looks as follows:
 #' \preformatted{
-#' sample_RprobitB_covariates(
+#' sample_probit_covariates(
 #'   formula = choice ~ cost | age | time, N = 3, J = 3, T = 1:3,
 #'   cost = function(n, t) {
 #'     runif(J, 1:3, 2:4)
@@ -58,7 +58,7 @@
 #'    specified as the \code{sampler} argument.
 #'
 #' @return
-#' An \code{\link{RprobitB_covariates}} object. It is a \code{list} of
+#' An \code{\link{probit_covariates}} object. It is a \code{list} of
 #' \code{list} of \code{matrix} elements.
 #'
 #' More precise: Let the return value be \code{out}, then
@@ -71,31 +71,31 @@
 #'
 #' @keywords object
 
-RprobitB_covariates <- function(
-    RprobitB_data, RprobitB_formula, RprobitB_alternatives
+probit_covariates <- function(
+    probit_data, probit_formula, probit_alternatives
 ) {
 
-  ### transform 'RprobitB_data' to 'RprobitB_covariates'
+  ### transform 'probit_data' to 'probit_covariates'
   # TODO
 
-  ### validate 'RprobitB_covariates'
+  ### validate 'probit_covariates'
   # TODO
-  # validate_RprobitB_covariates()
+  # validate_probit_covariates()
 }
 
-#' @rdname RprobitB_covariates
+#' @rdname probit_covariates
 #' @param x
-#' An \code{\link{RprobitB_covariates}} object.
+#' An \code{\link{probit_covariates}} object.
 
-is.RprobitB_covariates <- function(x) {
-  inherits(x, "RprobitB_covariates")
+is.probit_covariates <- function(x) {
+  inherits(x, "probit_covariates")
 }
 
-#' @rdname RprobitB_covariates
-#' @inheritParams RprobitB_formula
+#' @rdname probit_covariates
+#' @inheritParams probit_formula
 #' @inheritParams expand_T
-#' @inheritParams RprobitB_alternatives
-#' @inheritParams RprobitB_data
+#' @inheritParams probit_alternatives
+#' @inheritParams probit_data
 #' @param sampler
 #' A \code{function} that returns a single \code{numeric}, a random number.
 #' It must have two arguments, \code{n} and \code{t}, so that the call
@@ -115,7 +115,7 @@ is.RprobitB_covariates <- function(x) {
 #' @export
 #' @importFrom stats rnorm
 
-sample_RprobitB_covariates <- function(
+sample_probit_covariates <- function(
     formula, N, J, T = 1, alternatives = LETTERS[1:J], base = alternatives[1],
     re = NULL, ordered = FALSE, seed = NULL,
     sampler = function(n, t) rnorm(n = 1, mean = 0, sd = 9), ...
@@ -123,15 +123,15 @@ sample_RprobitB_covariates <- function(
 
   ### input checks
   T <- expand_T(N = N, T = T)
-  RprobitB_formula <- RprobitB_formula(
+  probit_formula <- probit_formula(
     formula = formula, re = re, ordered = ordered
   )
-  RprobitB_alternatives <- RprobitB_alternatives(
+  probit_alternatives <- probit_alternatives(
     J = J, alternatives = alternatives, base = base, ordered = ordered
   )
   effects <- overview_effects(
-    RprobitB_formula = RprobitB_formula,
-    RprobitB_alternatives = RprobitB_alternatives
+    probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives
   )
 
   ### check sampler functions
@@ -139,7 +139,7 @@ sample_RprobitB_covariates <- function(
 
     ### check if 'name' corresponds to 'sampler' or a covariate
     if (!name %in% c(na.omit(unique(effects$covariate)), "sampler")) {
-      RprobitB_stop(
+      probit_stop(
         glue::glue("Bad input '{name}'."),
         "I suspect you want to define a custom sampler.",
         glue::glue("But there is no covariate '{name}'.")
@@ -148,7 +148,7 @@ sample_RprobitB_covariates <- function(
 
     ### check if sampler is a function
     if (!is.function(FUN)) {
-      RprobitB_stop(
+      probit_stop(
         glue::glue("Sampler for '{name}' is not a function.")
       )
     }
@@ -156,7 +156,7 @@ sample_RprobitB_covariates <- function(
     ### check if sampler has arguments 'n' and 't'
     args <- names(formals(FUN))
     if (!(length(args) == 2 && all(args == c("n", "t")))) {
-      RprobitB_stop(
+      probit_stop(
         glue::glue("The custom sampler for '{name}' is misspecified."),
         glue::glue("It should have the two arguments 'n' and 't'."),
         "Please see the documentation."
@@ -168,7 +168,7 @@ sample_RprobitB_covariates <- function(
     t_try <- sample.int(T[n_try], size = 1)
     sampler_try <- try(FUN(n = n_try, t = t_try), silent = TRUE)
     if (!is.vector(sampler_try) || !is.numeric(sampler_try)) {
-      RprobitB_stop(
+      probit_stop(
         glue::glue("I tried to call `{name}(n = {n_try}, t = {t_try})`."),
         "The return value was not the expected `numeric` `vector`.",
         "Please check."
@@ -176,9 +176,9 @@ sample_RprobitB_covariates <- function(
     }
 
     ### check length of sampler output
-    expected_length <- ifelse(name %in% c(RprobitB_formula$vars[[2]], "sampler"), 1, J)
+    expected_length <- ifelse(name %in% c(probit_formula$vars[[2]], "sampler"), 1, J)
     if (length(sampler_try) != expected_length) {
-      RprobitB_stop(
+      probit_stop(
         glue::glue("I tried to call `{name}(n = {n_try}, t = {t_try})`."),
         glue::glue("The return value was not of length {expected_length}."),
         "Please check."
@@ -188,7 +188,7 @@ sample_RprobitB_covariates <- function(
   }
   custom_sampler <- list(...)
   if (length(custom_sampler) != sum(names(custom_sampler) != "", na.rm=TRUE)) {
-    RprobitB_stop(
+    probit_stop(
       "I found unnamed input(s).",
       "I suspect you want to define a custom sampler.",
       "Please make sure it is named according to a covariate."
@@ -210,7 +210,7 @@ sample_RprobitB_covariates <- function(
         nrow = J,
         ncol = nrow(effects)
       )
-      rownames(X_nt) <- RprobitB_alternatives$alternatives
+      rownames(X_nt) <- probit_alternatives$alternatives
       colnames(X_nt) <- effects$name
 
       ### check for custom covariates
@@ -230,7 +230,7 @@ sample_RprobitB_covariates <- function(
 
       ### check for alternative-specific effects
       for (e in 1:nrow(effects)) {
-        j <- which(RprobitB_alternatives$alternatives == effects[e, "alternative"])
+        j <- which(probit_alternatives$alternatives == effects[e, "alternative"])
         if (effects[e, "as_effect"]) {
           X_nt[-j, e] <- 0
         }
@@ -244,44 +244,44 @@ sample_RprobitB_covariates <- function(
     })
   })
 
-  ### validate 'RprobitB_covariates'
-  validate_RprobitB_covariates(
+  ### validate 'probit_covariates'
+  validate_probit_covariates(
     x = x, formula = formula, N = N, J = J, T = T, alternatives = alternatives,
     base = base, re = re, ordered = ordered
   )
 }
 
-#' @rdname RprobitB_covariates
+#' @rdname probit_covariates
 
-validate_RprobitB_covariates <- function(
+validate_probit_covariates <- function(
     x = list(), formula, N, J, T = 1, alternatives = LETTERS[1:J],
     base = alternatives[1], re = NULL, ordered = FALSE
 ) {
 
   ### input checks
   if (!is.list(x)) {
-    RprobitB_stop(
+    probit_stop(
       "Input 'x' is not a `list`."
     )
   }
 
   ### construct objects
-  RprobitB_formula <- RprobitB_formula(
+  probit_formula <- probit_formula(
     formula = formula, re = re, ordered = ordered
   )
-  RprobitB_alternatives <- RprobitB_alternatives(
+  probit_alternatives <- probit_alternatives(
     J = J, alternatives = alternatives, base = base, ordered = ordered
   )
   effects <- overview_effects(
-    RprobitB_formula = RprobitB_formula,
-    RprobitB_alternatives = RprobitB_alternatives
+    probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives
   )
 
-  ### validate 'RprobitB_covariates'
+  ### validate 'probit_covariates'
   # TODO
 
-  ### return validated 'RprobitB_covariates' object
-  structure(x, class = c("RprobitB_covariates", "list"))
+  ### return validated 'probit_covariates' object
+  structure(x, class = c("probit_covariates", "list"))
 }
 
 #' Expand \code{T}
@@ -311,19 +311,19 @@ validate_RprobitB_covariates <- function(
 
 expand_T <- function(N, T = 1) {
   if (missing(N)) {
-    RprobitB_stop(
+    probit_stop(
       "Please specify the input 'N'.",
       "It should be a positive `integer`, the number of deciders."
     )
   }
   if (!is_positive_integer(N)) {
-    RprobitB_stop(
+    probit_stop(
       "Input 'N' is misspecified.",
       "It should be a positive `integer`, the number of deciders."
     )
   }
   if (!(is.numeric(T) && is.vector(T))) {
-    RprobitB_stop(
+    probit_stop(
       "Input 'T' is misspecified.",
       "It should be a `numeric` (`vector`)."
     )
@@ -332,13 +332,13 @@ expand_T <- function(N, T = 1) {
     T <- rep(T, N)
   }
   if (length(T) != N) {
-    RprobitB_stop(
+    probit_stop(
       "Input 'T' is misspecified.",
       glue::glue("It should be a `vector` of length 'N = {N}'.")
     )
   }
   if (!all(sapply(T, is_positive_integer))) {
-    RprobitB_stop(
+    probit_stop(
       "Input 'T' is misspecified.",
       "It should be a `vector` of `integer` only."
     )
