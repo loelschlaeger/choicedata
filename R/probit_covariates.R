@@ -2,7 +2,7 @@
 #'
 #' @description
 #' These functions create and validate an object of class
-#' \code{\link{probit_covariates}}, which contains the covariate matrices,
+#' \code{\link{probit_covariates}}, which contains the model covariate matrices,
 #' see the details.
 #'
 #' \code{\link{sample_probit_covariates}} samples covariates.
@@ -14,8 +14,7 @@
 #' @param probit_alternatives
 #' An \code{\link{probit_alternatives}} object.
 #'
-#' @details
-#' # Covariate matrices
+#' @section Covariate matrices:
 #' A covariate matrix contains the choice covariates of a decider at some choice
 #' occasion. It is of dimension \code{J} x \code{P}, where \code{J} is the
 #' number of alternatives and \code{P} the number of effects.
@@ -104,7 +103,7 @@ is.probit_covariates <- function(x) {
 #' By default, \code{sampler = function(n, t) rnorm(n = 1, mean = 0, sd = 9)}.
 #' @param ...
 #' Optionally custom sampling \code{function}s for specific covariates.,
-#' see the details for an example.
+#' see below for an example.
 #' Each \code{function} must
 #' 1. be named according to a covariate,
 #' 2. have two arguments, \code{n} and \code{t} (see the documentation for
@@ -259,11 +258,7 @@ validate_probit_covariates <- function(
 ) {
 
   ### input checks
-  if (!is.list(x)) {
-    probit_stop(
-      "Input 'x' is not a `list`."
-    )
-  }
+  checkmate::assert_list(x)
 
   ### construct objects
   probit_formula <- probit_formula(
@@ -300,59 +295,18 @@ validate_probit_covariates <- function(
 #'
 #' @return
 #' An \code{integer} \code{vector} of length \code{N}.
-#'
-#' @examples
-#' \dontrun{
-#' expand_T(N = 10, T = 2)
-#' expand_T(N = 10, T = 1:10)
-#' }
-#'
-#' @keywords internal
 
 expand_T <- function(N, T = 1) {
   if (missing(N)) {
-    probit_stop(
-      "Please specify the input 'N'.",
-      "It should be a positive `integer`, the number of deciders."
-    )
+    stop("Please specify the number 'N' of deciders.")
   }
-  if (!is_positive_integer(N)) {
-    probit_stop(
-      "Input 'N' is misspecified.",
-      "It should be a positive `integer`, the number of deciders."
-    )
-  }
-  if (!(is.numeric(T) && is.vector(T))) {
-    probit_stop(
-      "Input 'T' is misspecified.",
-      "It should be a `numeric` (`vector`)."
-    )
-  }
+  checkmate::assert_int(N, lower = 1)
+  checkmate::assert_numeric(T)
   if (length(T) == 1) {
     T <- rep(T, N)
   }
-  if (length(T) != N) {
-    probit_stop(
-      "Input 'T' is misspecified.",
-      glue::glue("It should be a `vector` of length 'N = {N}'.")
-    )
-  }
-  if (!all(sapply(T, is_positive_integer))) {
-    probit_stop(
-      "Input 'T' is misspecified.",
-      "It should be a `vector` of `integer` only."
-    )
-  }
+  checkmate::assert_integerish(T, lower = 1, len = N, any.missing = FALSE)
   as.integer(T)
-}
-
-
-as.list.probit_covariates <- function() {
-
-}
-
-as.data.frame.probit_covariates <- function() {
-
 }
 
 

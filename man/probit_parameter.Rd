@@ -58,21 +58,26 @@ validate_probit_parameter(
 decision makers.
 By default, \code{C = 1}.}
 
-\item{s}{A \code{numeric} of length \code{C}, the vector of class weights.
-For identifiability, the vector must be decreasing.}
+\item{s}{A \code{numeric} vector of length \code{C}, the vector of class weights.
+For identifiability, the vector elements must be decreasing.}
 
-\item{alpha}{A \code{matrix} of dimension \code{P_f} x \code{C}, the matrix of fixed
+\item{alpha}{A \code{numeric} vector of length \code{P_f}, the vector of fixed effect
 coefficients.
-The coefficients for class \code{c} are stored in column \code{c}.}
-
-\item{b}{A \code{matrix} of dimension \code{P_r} x \code{C}, the matrix of class
-means.
-The mean vector for class \code{c} is stored in column \code{c}.}
-
-\item{Omega}{A \code{matrix} of dimension \code{P_r^2} x \code{C}, the matrix of class
-covariance matrices.
-The covariance matrix for class \code{c} is stored as a vector in column
+If \code{C > 1}, a \code{matrix} of dimension \code{P_f} x \code{C},
+where column \code{c} contains the fixed effect coefficients for class
 \code{c}.}
+
+\item{b}{A \code{numeric} vector of length \code{P_r}, the vector of mean random
+effects.
+If \code{C > 1}, a \code{matrix} of dimension \code{P_r} x \code{C},
+where column \code{c} contains the mean random effects for class
+\code{c}.}
+
+\item{Omega}{A \code{matrix} of dimension \code{P_r} x \code{P_r}, the covariance matrix
+of random effects.
+If \code{C > 1}, a \code{matrix} of dimension \code{P_r^2} x \code{C},
+where column \code{c} contains the covariance matrix of random effects for
+class \code{c} in vector form.}
 
 \item{Sigma}{A \code{matrix} of dimension \code{J} x \code{J}, the error term covariance
 matrix.
@@ -96,15 +101,16 @@ By default, \code{diff_alt = 1}.}
 decider-specific coefficient vectors.
 The coefficient vector for decider \code{n} is stored in column \code{n}.}
 
-\item{z}{A \code{numeric} of length \code{N}, the vector of the allocation variables.
+\item{z}{A \code{numeric} vector of length \code{N}, the vector of the allocation
+variables.
 Entry \code{n} of \code{z} is an integer from \code{1} to \code{C} and
 denotes the allocated class for decider \code{n}.}
 
-\item{d}{A \code{numeric} of length \code{J-2}, the vector of logarithmic increases of
-the utility thresholds.
+\item{d}{A \code{numeric} of length \code{J - 2}, the vector of logarithmic increases
+of the utility thresholds.
 Only relevant in the ordered probit model case (see details).}
 
-\item{x}{An \code{\link{probit_parameter}} object.}
+\item{x}{A \code{\link{probit_parameter}} object.}
 
 \item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the model to be
 fitted, see details.}
@@ -116,8 +122,8 @@ By default, \code{re = NULL}, i.e., no random effects.}
 \item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 
-\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the randomness
-reproducible.
+\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the simulation of
+missing probit parameters reproducible.
 By default, \code{seed = NULL}, i.e., no seed is set.}
 
 \item{...}{A \code{character} (vector), the names of model parameters to be printed.
@@ -141,7 +147,7 @@ dimension of \code{x}.
 By default, \code{details = !simplify}.}
 }
 \value{
-An \code{\link{probit_parameter}} object.
+A \code{\link{probit_parameter}} object.
 
 It contains the elements:
 \describe{
@@ -159,24 +165,28 @@ It contains the elements:
 }
 }
 \description{
-These functions create and validate an object of class
+These functions construct and validate an object of class
 \code{\link{probit_parameter}}, which contains the parameters of a probit
 model, see details.
 
-\code{simulate_probit_parameters()} simulates (missing) probit model
-parameters from their default prior distributions, see
-\code{\link{probit_prior}}.
+\code{simulate_probit_parameters()} draws (missing) probit model
+parameters at random, see details.
 }
-\details{
-# Setting probit model parameters
-1. Use \code{probit_parameter()} to construct an
-   \code{\link{probit_parameter}} object. You can specify any model
-   parameter (see below).
-2. Next, call \code{simulate_probit_parameter()} with the
-   \code{\link{probit_parameter}} object created in step 1. This will add
-   unspecified parameters and validate all specified parameters.
+\section{Setting probit model parameters}{
 
-# The probit model
+
+1. Use \code{probit_parameter()} to construct a
+   \code{\link{probit_parameter}} object, where any model parameter can be
+   specified (see below).
+
+2. Next, call \code{validate_probit_parameter()} with the
+   \code{\link{probit_parameter}} object created in step 1. This will add
+   unspecified parameters (see below for details) and validate all specified
+   parameters.
+}
+
+\section{The probit model}{
+
 Assume that we know the choices of \eqn{N} deciders choosing between
 \eqn{J \geq 2} alternatives at each of \eqn{T} choice occasions.
 Specific to each decider, alternative and choice occasion, we observe \eqn{P}
@@ -226,8 +236,10 @@ variables \eqn{z=(z_n)_n}, allocating each decision maker \eqn{n} to class
 \eqn{c} with probability \eqn{s_c}, i.e.,
 \deqn{\text{Prob}(z_n=c)=s_c \land \beta_n \mid z,b,\Omega \sim
 \phi_{P_r}(\cdot \mid b_{z_n},\Omega_{z_n}).}
+}
 
-# Ordered probit model
+\section{Ordered probit model}{
+
 When the set of choice alternatives is ordered, the probit model has only a
 single utility
 \deqn{U_{nt} = X_{nt}' \tilde{\beta}_n + \epsilon_{nt},}
@@ -245,8 +257,10 @@ Monotonicity of the thresholds \eqn{(\gamma_j)_{j=1,\dots,J-1}} is ensured
 by estimating logarithmic increments \eqn{d_j} with
 \eqn{\gamma_j = \sum_{i\leq j} \exp{(d_i)}}, \eqn{j=1,\dots,J-1}.
 For level normalization, we fix \eqn{\gamma_1 = 0}.
+}
 
-# Level and scale normalization
+\section{Level and scale normalization}{
+
 The probit model is invariant towards the level and scale of utility, hence
 a transformation is required for identifiability.
 
@@ -271,12 +285,21 @@ For level normalization in the ordered probit model, we fix
 For scale normalization, we fix the top left element of \code{Sigma_diff} to
 \eqn{1} (or \code{Sigma = 1} in the ordered probit case).
 }
+
+\section{Drawing missing probit model parameters}{
+
+
+Unspecified probit model parameters are drawn independently from their
+conjugate prior distribution, see \code{\link[RprobitB]{RprobitB_prior}}
+for details.
+}
+
 \examples{
 (x <- probit_parameter(C = 2))
 formula <- choice ~ A | B
 re <- "A"
 J <- 3
 N <- 100
-(x <- simulate_probit_parameter(x, formula = formula, re = re, J = J, N = N))
+(x <- validate_probit_parameter(x, formula = formula, re = re, J = J, N = N))
+
 }
-\keyword{object}

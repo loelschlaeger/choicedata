@@ -81,7 +81,7 @@ choice occasion \code{t}.
 By default, \code{sampler = function(n, t) rnorm(n = 1, mean = 0, sd = 9)}.}
 
 \item{...}{Optionally custom sampling \code{function}s for specific covariates.,
-see the details for an example.
+see below for an example.
 Each \code{function} must
 1. be named according to a covariate,
 2. have two arguments, \code{n} and \code{t} (see the documentation for
@@ -104,13 +104,13 @@ More precise: Let the return value be \code{out}, then
 }
 \description{
 These functions create and validate an object of class
-\code{\link{probit_covariates}}, which contains the covariate matrices,
+\code{\link{probit_covariates}}, which contains the model covariate matrices,
 see the details.
 
 \code{\link{sample_probit_covariates}} samples covariates.
 }
-\details{
-# Covariate matrices
+\section{Covariate matrices}{
+
 A covariate matrix contains the choice covariates of a decider at some choice
 occasion. It is of dimension \code{J} x \code{P}, where \code{J} is the
 number of alternatives and \code{P} the number of effects.
@@ -152,4 +152,5 @@ Note that
 3. and that \code{time} will be sampled according to the \code{function}
    specified as the \code{sampler} argument.
 }
+
 \keyword{object}

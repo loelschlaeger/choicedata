@@ -1,4 +1,4 @@
-#' Define choice alternatives
+#' Define probit choice alternatives
 #'
 #' @description
 #' This function constructs an object of class
@@ -34,8 +34,7 @@
 #'   \item{\code{ordered}}{Are the choice alternatives ordered?}
 #' }
 #'
-#' @details
-#' # Base alternative
+#' @section Base alternative:
 #' The full collection of coefficients for covariates that are constant across
 #' alternatives (including alternative specific constants) is not identified.
 #' To achieve identifiability, the coefficient of one alternative \code{base}

@@ -1,34 +1,38 @@
 #' Define probit model parameters
 #'
 #' @description
-#' These functions create and validate an object of class
+#' These functions construct and validate an object of class
 #' \code{\link{probit_parameter}}, which contains the parameters of a probit
 #' model, see details.
 #'
-#' \code{simulate_probit_parameters()} simulates (missing) probit model
-#' parameters from their default prior distributions, see
-#' \code{\link{probit_prior}}.
+#' \code{simulate_probit_parameters()} draws (missing) probit model
+#' parameters at random, see details.
 #'
 #' @param C
 #' An \code{integer}, the number (greater or equal 1) of latent classes of
 #' decision makers.
 #' By default, \code{C = 1}.
 #' @param s
-#' A \code{numeric} of length \code{C}, the vector of class weights.
-#' For identifiability, the vector must be decreasing.
+#' A \code{numeric} vector of length \code{C}, the vector of class weights.
+#' For identifiability, the vector elements must be decreasing.
 #' @param alpha
-#' A \code{matrix} of dimension \code{P_f} x \code{C}, the matrix of fixed
+#' A \code{numeric} vector of length \code{P_f}, the vector of fixed effect
 #' coefficients.
-#' The coefficients for class \code{c} are stored in column \code{c}.
-#' @param b
-#' A \code{matrix} of dimension \code{P_r} x \code{C}, the matrix of class
-#' means.
-#' The mean vector for class \code{c} is stored in column \code{c}.
-#' @param Omega
-#' A \code{matrix} of dimension \code{P_r^2} x \code{C}, the matrix of class
-#' covariance matrices.
-#' The covariance matrix for class \code{c} is stored as a vector in column
+#' If \code{C > 1}, a \code{matrix} of dimension \code{P_f} x \code{C},
+#' where column \code{c} contains the fixed effect coefficients for class
 #' \code{c}.
+#' @param b
+#' A \code{numeric} vector of length \code{P_r}, the vector of mean random
+#' effects.
+#' If \code{C > 1}, a \code{matrix} of dimension \code{P_r} x \code{C},
+#' where column \code{c} contains the mean random effects for class
+#' \code{c}.
+#' @param Omega
+#' A \code{matrix} of dimension \code{P_r} x \code{P_r}, the covariance matrix
+#' of random effects.
+#' If \code{C > 1}, a \code{matrix} of dimension \code{P_r^2} x \code{C},
+#' where column \code{c} contains the covariance matrix of random effects for
+#' class \code{c} in vector form.
 #' @param Sigma
 #' A \code{matrix} of dimension \code{J} x \code{J}, the error term covariance
 #' matrix.
@@ -52,12 +56,13 @@
 #' decider-specific coefficient vectors.
 #' The coefficient vector for decider \code{n} is stored in column \code{n}.
 #' @param z
-#' A \code{numeric} of length \code{N}, the vector of the allocation variables.
+#' A \code{numeric} vector of length \code{N}, the vector of the allocation
+#' variables.
 #' Entry \code{n} of \code{z} is an integer from \code{1} to \code{C} and
 #' denotes the allocated class for decider \code{n}.
 #' @param d
-#' A \code{numeric} of length \code{J-2}, the vector of logarithmic increases of
-#' the utility thresholds.
+#' A \code{numeric} of length \code{J - 2}, the vector of logarithmic increases
+#' of the utility thresholds.
 #' Only relevant in the ordered probit model case (see details).
 #'
 #' @return
@@ -78,16 +83,18 @@
 #'   \item{\code{d}}{The logarithmic increases of the utility thresholds.}
 #' }
 #'
-#' @details
-#' # Setting probit model parameters
-#' 1. Use \code{probit_parameter()} to construct an
-#'    \code{\link{probit_parameter}} object. You can specify any model
-#'    parameter (see below).
-#' 2. Next, call \code{simulate_probit_parameter()} with the
-#'    \code{\link{probit_parameter}} object created in step 1. This will add
-#'    unspecified parameters and validate all specified parameters.
+#' @section Setting probit model parameters:
 #'
-#' # The probit model
+#' 1. Use \code{probit_parameter()} to construct a
+#'    \code{\link{probit_parameter}} object, where any model parameter can be
+#'    specified (see below).
+#'
+#' 2. Next, call \code{validate_probit_parameter()} with the
+#'    \code{\link{probit_parameter}} object created in step 1. This will add
+#'    unspecified parameters (see below for details) and validate all specified
+#'    parameters.
+#'
+#' @section The probit model:
 #' Assume that we know the choices of \eqn{N} deciders choosing between
 #' \eqn{J \geq 2} alternatives at each of \eqn{T} choice occasions.
 #' Specific to each decider, alternative and choice occasion, we observe \eqn{P}
@@ -138,7 +145,7 @@
 #' \deqn{\text{Prob}(z_n=c)=s_c \land \beta_n \mid z,b,\Omega \sim
 #' \phi_{P_r}(\cdot \mid b_{z_n},\Omega_{z_n}).}
 #'
-#' # Ordered probit model
+#' @section Ordered probit model:
 #' When the set of choice alternatives is ordered, the probit model has only a
 #' single utility
 #' \deqn{U_{nt} = X_{nt}' \tilde{\beta}_n + \epsilon_{nt},}
@@ -157,7 +164,7 @@
 #' \eqn{\gamma_j = \sum_{i\leq j} \exp{(d_i)}}, \eqn{j=1,\dots,J-1}.
 #' For level normalization, we fix \eqn{\gamma_1 = 0}.
 #'
-#' # Level and scale normalization
+#' @section Level and scale normalization:
 #' The probit model is invariant towards the level and scale of utility, hence
 #' a transformation is required for identifiability.
 #'
@@ -181,10 +188,6 @@
 #'
 #' For scale normalization, we fix the top left element of \code{Sigma_diff} to
 #' \eqn{1} (or \code{Sigma = 1} in the ordered probit case).
-#'
-#' @export
-#'
-#' @keywords object
 
 probit_parameter <- function(
     C = 1, s = NA, alpha = NA, b = NA, Omega = NA, Sigma = NA,
@@ -200,7 +203,7 @@ probit_parameter <- function(
   for (i in seq_along(parameters)) {
     if (!is.na(parameters[[i]])) {
       checkmate::assert_numeric(
-        s, any.missing = FALSE, .var.name = parameter_names[i]
+        parameters[[i]], any.missing = FALSE, .var.name = parameter_names[i]
       )
     }
   }
@@ -231,31 +234,25 @@ is.probit_parameter <- function(x) {
 }
 
 #' @rdname probit_parameter
-#'
 #' @inheritParams probit_formula
-#' @inheritParams simulate_choices
-#'
+#' @inheritParams probit_data
 #' @param seed
-#' An \code{integer}, passed to \code{set.seed()} to make the randomness
-#' reproducible.
+#' An \code{integer}, passed to \code{set.seed()} to make the simulation of
+#' missing probit parameters reproducible.
 #' By default, \code{seed = NULL}, i.e., no seed is set.
-#' @inheritSection probit_formula Model formula
-#' @inheritSection probit_formula Random effects
 #'
-#' @examples
-#' (x <- probit_parameter(C = 2))
-#' formula <- choice ~ A | B
-#' re <- "A"
-#' J <- 3
-#' N <- 100
-#' (x <- simulate_probit_parameter(x, formula = formula, re = re, J = J, N = N))
+#' @section Drawing missing probit model parameters:
 #'
-#' @export
+#' Unspecified probit model parameters are drawn independently from their
+#' conjugate prior distribution, see \code{\link[RprobitB]{RprobitB_prior}}
+#' for details.
 
 simulate_probit_parameter <- function(
     x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N,
     seed = NULL
 ) {
+
+  ### input checks
   checkmate::assert_class(x, "probit_parameter")
   if (missing(formula)) {
     stop("Please specify the model 'formula'.")
@@ -268,15 +265,22 @@ simulate_probit_parameter <- function(
     stop("Please specify the number of deciders 'N'.")
   }
   checkmate::assert_int(N, lower = 1)
+
+  ### simulate missing parameters
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
+  prior <- RprobitB::RprobitB_prior(
+    formula = formula, re = re, J = J, C = C, ordered = ordered
+  )
   if (!is.null(seed)) {
     set.seed(seed)
   }
   if (identical(x$s, NA) && x$C > 1) {
     s_prior <- probit_prior_s(C = x$C)
     x$s <- sort(
-      rdirichlet(concentration = s_prior$s_prior_concentration),
+      RprobitB::rdirichlet(
+        concentration = s_prior$s_prior_concentration
+      ),
       decreasing = TRUE
     )
   }
@@ -286,7 +290,7 @@ simulate_probit_parameter <- function(
       cbind,
       replicate(
         x$C,
-        rmvnorm(
+        RprobitB::rmvnorm(
           mean = alpha_prior$alpha_prior_mean,
           Sigma = alpha_prior$alpha_prior_Sigma
         ),
@@ -300,7 +304,7 @@ simulate_probit_parameter <- function(
       cbind,
       replicate(
         x$C,
-        rmvnorm(
+        RprobitB::rmvnorm(
           mean = b_prior$b_prior_mean,
           Sigma = b_prior$b_prior_Sigma
         ),
@@ -315,7 +319,7 @@ simulate_probit_parameter <- function(
       lapply(
         replicate(
           x$C,
-          rwishart(
+          RprobitB::rwishart(
             df = Omega_prior$Omega_prior_df,
             scale = Omega_prior$Omega_prior_scale,
             inv = TRUE
@@ -330,7 +334,7 @@ simulate_probit_parameter <- function(
     x$Sigma_diff <- NA
     if (identical(x$Sigma, NA)) {
       Sigma_prior <- probit_prior_Sigma(ordered = TRUE, J = J)
-      x$Sigma <- rwishart(
+      x$Sigma <- RprobitB::rwishart(
         df = Sigma_prior$Sigma_prior_df,
         scale = Sigma_prior$Sigma_prior_scale,
         inv = TRUE
@@ -340,7 +344,7 @@ simulate_probit_parameter <- function(
     if (identical(x$Sigma, NA)) {
       if (identical(x$Sigma_diff, NA)) {
         Sigma_diff_prior <- probit_prior_Sigma_diff(ordered = FALSE, J = J)
-        x$Sigma_diff <- rwishart(
+        x$Sigma_diff <- RprobitB::rwishart(
           df = Sigma_diff_prior$Sigma_diff_prior_df,
           scale = Sigma_diff_prior$Sigma_diff_prior_scale,
           inv = TRUE
@@ -362,7 +366,7 @@ simulate_probit_parameter <- function(
     x$beta <- do.call(
       cbind,
       lapply(x$z, function(c) {
-        rmvnorm(
+        RprobitB::rmvnorm(
           mean = x$b[,c],
           Sigma = matrix(x$Omega[,c], nrow = P_r, ncol = P_r)
         )
@@ -371,24 +375,37 @@ simulate_probit_parameter <- function(
   }
   if (ordered) {
     d_prior <- probit_prior_d(ordered = TRUE, J = J)
-    x$d <- rmvnorm(
+    x$d <- RprobitB::rmvnorm(
       mean = d_prior$d_prior_mean,
       Sigma = d_prior$d_prior_Sigma
     )
   } else {
     x$d <- NA
   }
-  validate_probit_parameter(
-    x = x, formula = formula, re = re, ordered = ordered, J = J, N = N
-  )
+  return(x)
 }
 
 #' @rdname probit_parameter
-#' @importFrom glue glue glue_collapse
+#'
+#' @inheritParams simulate_probit_parameter
+#' @inheritParams probit_formula
+#' @inheritParams probit_data
+#'
+#' @examples
+#' (x <- probit_parameter(C = 2))
+#' formula <- choice ~ A | B
+#' re <- "A"
+#' J <- 3
+#' N <- 100
+#' (x <- validate_probit_parameter(x, formula = formula, re = re, J = J, N = N))
+#'
+#' @export
 
 validate_probit_parameter <- function(
     x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N
 ) {
+
+  ### input checks
   checkmate::assert_class(x, "probit_parameter")
   if (missing(formula)) {
     stop("Please specify the input 'formula'.")
@@ -417,6 +434,11 @@ validate_probit_parameter <- function(
       "It should be the number of deciders."
     )
   }
+
+  ### add missing parameters
+  x <- simulate_probit_parameter()
+
+  ### validate parameters
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
   ### check C

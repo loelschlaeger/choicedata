@@ -28,8 +28,7 @@
 #'   \item{\code{re_ln}}{The covariates with log-normal mixing distribution.}
 #' }
 #'
-#' @details
-#' # Model formula
+#' @section Model formula:
 #' The structure of \code{formula} should be
 #' \code{choice ~ A | B | C}, where
 #' \itemize{
@@ -60,7 +59,7 @@
 #' \code{choice ~ A + B + C}.
 #' ASCs cannot be estimated in the ordered case.
 #'
-#' # Random effects
+#' @section Random effects:
 #' Covariates can have random effects, i.e., their coefficients can follow a
 #' random distribution. Per default, the distribution is normal. The log-normal
 #' distribution (e.g., for sign-restriction) can be specified via appending
@@ -120,10 +119,11 @@ probit_formula <- function(formula, re = NULL, ordered = FALSE) {
     re_double <- intersect(re_n, re_ln)[1]
     stop("'re' cannot include both '", re_double, "' and '", re_double, "+'.")
   }
-  for (re in c(re_n, re_ln)) {
-    if (!re %in% c(unlist(var_types), if(ASC) "ASC")) {
+  for (re_val in c(re_n, re_ln)) {
+    if (!re_val %in% c(unlist(var_types), if(ASC) "ASC")) {
       stop(
-        "'re' contains '", re, "', but it's not on the right side of 'formula'."
+        "'re' contains '", re_val,
+        "', but it's not on the right side of 'formula'."
       )
     }
   }

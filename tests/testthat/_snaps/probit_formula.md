@@ -11,5 +11,5 @@
       probit_formula(formula = choice ~ A + B, re = c("A+", "B"), ordered = TRUE)
     Output
       Model formula: choice ~ A + B
-      Random effects: A
+      Random effects: A+ B
 

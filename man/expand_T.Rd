@@ -21,11 +21,3 @@ An \code{integer} \code{vector} of length \code{N}.
 This function expands the number of choice occasions \code{T} to a
 \code{vector} of length \code{N}.
 }
-\examples{
-\dontrun{
-expand_T(N = 10, T = 2)
-expand_T(N = 10, T = 1:10)
-}
-
-}
-\keyword{internal}

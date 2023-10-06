@@ -1,8 +1,24 @@
+#' Define probit data
+#'
+#' @description
+#' These functions construct and validate an object of class
+#' \code{\link{probit_data}}, which defines the probit model data.
+#'
+#' @param data
+#' TBA
+
+probit_data <- function(
+  data, column_choice = "choice", column_decider = "id",
+  column_occasion = "idc", ranked = FALSE, ordered = FALSE
+  ) {
+
+}
+
 #' Simulate choice data
 #'
 #' @description
 #' This function simulates choice data from a probit model. It helps to create
-#' an \code{\link{probit_data}} object.
+#' a \code{\link{probit_data}} object.
 #'
 #' @param probit_covariates
 #' An \code{\link{probit_covariates}} object, which contains the covariate
@@ -23,21 +39,21 @@
 #'
 #' @examples
 #' ### simulate data from a binary probit model with two latent classes
-#' data <- simulate_choices(
+#' data <- simulate_probit_data(
 #'   formula = choice ~ cost | income | time, N = 10, J = 2, T = 1:10,
 #'   alternatives = c("car", "bus"), re = c("cost", "time"),
 #'   true_parameter = probit_parameter(C = 2)
 #' )
 #'
 #' ### simulate data from an ordered probit model
-#' data <- simulate_choices(
+#' data <- simulate_probit_data(
 #'   formula = opinion ~ age + gender, N = 50, J = 5,
 #'   alternatives = c("very bad", "bad", "indifferent", "good", "very good"),
 #'   ordered = TRUE
 #' )
 #'
 #' ### simulate data from a ranked probit model
-#' data <- simulate_choices(
+#' data <- simulate_probit_data(
 #'   formula = product ~ price, N = 10, J = 3, T = 1:10, ranked = TRUE
 #' )
 #'
@@ -50,10 +66,9 @@
 #'   \item TODO
 #' }
 
-simulate_choices <- function(
+simulate_probit_data <- function(
     probit_covariates = simulate_probit_covariates(
-      formula, N, J, T = 1, alternatives = LETTERS[1:J], re = NULL,
-      ordered = FALSE
+      formula, N, J, T = 1, alternatives = LETTERS[1:J], re = NULL
     ), true_parameter = probit_parameter(), ranked = FALSE, seed = NULL,
     column_choice = "choice", column_decider = "id", column_occasion = "idc"
 ) {
@@ -124,6 +139,10 @@ simulate_choices <- function(
   )
 
 
+
+}
+
+read_probit_data <- function() {
 
 }
 

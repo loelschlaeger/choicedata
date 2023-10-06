@@ -4,7 +4,7 @@
 \alias{probit_alternatives}
 \alias{is.probit_alternatives}
 \alias{print.probit_alternatives}
-\title{Define choice alternatives}
+\title{Define probit choice alternatives}
 \usage{
 probit_alternatives(
   J = 2,
@@ -55,8 +55,8 @@ It contains the elements:
 This function constructs an object of class
 \code{\link{probit_alternatives}}, which defines the choice alternatives.
 }
-\details{
-# Base alternative
+\section{Base alternative}{
+
 The full collection of coefficients for covariates that are constant across
 alternatives (including alternative specific constants) is not identified.
 To achieve identifiability, the coefficient of one alternative \code{base}
@@ -66,3 +66,4 @@ The other coefficients then have to be interpreted with respect to
 The base alternative is marked with a \code{*} when printing a
 \code{\link{probit_alternatives}} object.
 }
+
