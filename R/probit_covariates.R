@@ -95,29 +95,11 @@ is.probit_covariates <- function(x) {
 #' @inheritParams expand_T
 #' @inheritParams probit_alternatives
 #' @inheritParams probit_data
-#' @param sampler
-#' A \code{function} that returns a single \code{numeric}, a random number.
-#' It must have two arguments, \code{n} and \code{t}, so that the call
-#' \code{sampler(n, t)} returns the covariate value for decider \code{n} at
-#' choice occasion \code{t}.
-#' By default, \code{sampler = function(n, t) rnorm(n = 1, mean = 0, sd = 9)}.
-#' @param ...
-#' Optionally custom sampling \code{function}s for specific covariates.,
-#' see below for an example.
-#' Each \code{function} must
-#' 1. be named according to a covariate,
-#' 2. have two arguments, \code{n} and \code{t} (see the documentation for
-#'    argument \code{sampler}),
-#' 3. return either a single \code{numeric}, if the covariate is not
-#'    alternative-specific, or a \code{numeric} \code{vector} of length
-#'    \code{J}, if the covariate is alternative-specific.
 #' @export
-#' @importFrom stats rnorm
 
 sample_probit_covariates <- function(
-    formula, N, J, T = 1, alternatives = LETTERS[1:J], base = alternatives[1],
-    re = NULL, ordered = FALSE, seed = NULL,
-    sampler = function(n, t) rnorm(n = 1, mean = 0, sd = 9), ...
+  formula, N, J, T = 1, alternatives = LETTERS[1:J], base = alternatives[1],
+  re = NULL, ordered = FALSE, seed = NULL
 ) {
 
   ### input checks
@@ -126,75 +108,12 @@ sample_probit_covariates <- function(
     formula = formula, re = re, ordered = ordered
   )
   probit_alternatives <- probit_alternatives(
-    J = J, alternatives = alternatives, base = base, ordered = ordered
+    J = J, labels = alternatives, base = base, ordered = ordered
   )
   effects <- overview_effects(
     probit_formula = probit_formula,
     probit_alternatives = probit_alternatives
   )
-
-  ### check sampler functions
-  check_sampler <- function(FUN, name) {
-
-    ### check if 'name' corresponds to 'sampler' or a covariate
-    if (!name %in% c(na.omit(unique(effects$covariate)), "sampler")) {
-      probit_stop(
-        glue::glue("Bad input '{name}'."),
-        "I suspect you want to define a custom sampler.",
-        glue::glue("But there is no covariate '{name}'.")
-      )
-    }
-
-    ### check if sampler is a function
-    if (!is.function(FUN)) {
-      probit_stop(
-        glue::glue("Sampler for '{name}' is not a function.")
-      )
-    }
-
-    ### check if sampler has arguments 'n' and 't'
-    args <- names(formals(FUN))
-    if (!(length(args) == 2 && all(args == c("n", "t")))) {
-      probit_stop(
-        glue::glue("The custom sampler for '{name}' is misspecified."),
-        glue::glue("It should have the two arguments 'n' and 't'."),
-        "Please see the documentation."
-      )
-    }
-
-    ### check if sampler returns a `numeric`
-    n_try <- sample.int(N, size = 1)
-    t_try <- sample.int(T[n_try], size = 1)
-    sampler_try <- try(FUN(n = n_try, t = t_try), silent = TRUE)
-    if (!is.vector(sampler_try) || !is.numeric(sampler_try)) {
-      probit_stop(
-        glue::glue("I tried to call `{name}(n = {n_try}, t = {t_try})`."),
-        "The return value was not the expected `numeric` `vector`.",
-        "Please check."
-      )
-    }
-
-    ### check length of sampler output
-    expected_length <- ifelse(name %in% c(probit_formula$vars[[2]], "sampler"), 1, J)
-    if (length(sampler_try) != expected_length) {
-      probit_stop(
-        glue::glue("I tried to call `{name}(n = {n_try}, t = {t_try})`."),
-        glue::glue("The return value was not of length {expected_length}."),
-        "Please check."
-      )
-    }
-
-  }
-  custom_sampler <- list(...)
-  if (length(custom_sampler) != sum(names(custom_sampler) != "", na.rm=TRUE)) {
-    probit_stop(
-      "I found unnamed input(s).",
-      "I suspect you want to define a custom sampler.",
-      "Please make sure it is named according to a covariate."
-    )
-  }
-  mapply(check_sampler, c(list(sampler), custom_sampler),
-         c("sampler", names(custom_sampler)))
 
   ### draw covariate values
   if (!is.null(seed)) {
@@ -309,6 +228,31 @@ expand_T <- function(N, T = 1) {
   as.integer(T)
 }
 
+
+
+
+set.seed(5)
+
+N <- 100
+P <- 3
+mu <- numeric(P)
+sd <- rep(1, P)
+cor <- diag(P)
+levels <- rep(Inf, P)
+
+
+cov <- sweep(sweep(cor, 1, diag(sd), "*"), 2, diag(sd), "*")
+
+df <- as.data.frame(mvrnorm(n = N, mu = mu, Sigma = cov))
+
+brks <- quantile(df$V3, seq(0, 1, length.out = 10))
+ints <- findInterval(df$V3, brks, all.inside = T)
+df$V3 <- (brks[ints] + brks[ints + 1]) / 2
+
+
+head(df)
+
+cor(df)
 
 
 
