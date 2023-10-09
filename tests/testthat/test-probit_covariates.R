@@ -37,26 +37,36 @@ test_that("probit_covariates example in details works", {
   expect_s3_class(x, "probit_covariates")
 })
 
+test_that("covariate names can be generated", {
+  expect_equal(
+    covariate_names(
+      probit_formula(formula = choice ~ cost | age | time),
+      probit_alternatives(J = 2)
+    ),
+    c("cost_A", "cost_B", "age", "time_A", "time_B")
+  )
+})
+
 test_that("T can be expanded", {
   expect_error(
     expand_T(),
-    "Please specify the input 'N'."
+    "Please specify the number 'N' of deciders."
   )
   expect_error(
     expand_T(N = 3.5),
-    "It should be a positive `integer`, the number of deciders."
+    "Assertion on 'N' failed: Must be of type 'single integerish value', not 'double'."
   )
   expect_error(
     expand_T(N = 10, T = "one"),
-    "Input 'T' is misspecified."
+    "Assertion on 'T' failed: Must be of type 'numeric', not 'character'."
   )
   expect_error(
     expand_T(N = 10, T = 1:9),
-    "It should be a `vector` of length 'N = 10'."
+    "Assertion on 'T' failed: Must have length 10, but has length 9."
   )
   expect_error(
     expand_T(N = 10, T = 1.5),
-    "It should be a `vector` of `integer` only."
+    "Assertion on 'T' failed: Must be of type 'integerish', but element 1 is not close to an integer."
   )
   expect_equal(
     expand_T(N = 10, T = 1),

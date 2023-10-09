@@ -5,9 +5,13 @@
 \alias{is.probit_covariates}
 \alias{sample_probit_covariates}
 \alias{validate_probit_covariates}
+\alias{as.list.probit_covariates}
+\alias{as.data.frame.probit_covariates}
+\alias{covariate_names}
+\alias{covariate_number}
 \title{Define choice covariates}
 \usage{
-probit_covariates(probit_data, probit_formula, probit_alternatives)
+probit_covariates(probit_data = NULL, probit_formula, probit_alternatives)
 
 is.probit_covariates(x)
 
@@ -15,14 +19,17 @@ sample_probit_covariates(
   formula,
   N,
   J,
-  T = 1,
+  Tp = 1,
   alternatives = LETTERS[1:J],
   base = alternatives[1],
   re = NULL,
   ordered = FALSE,
   seed = NULL,
-  sampler = function(n, t) rnorm(n = 1, mean = 0, sd = 9),
-  ...
+  covariate_levels = Inf,
+  occasion_constant = character(),
+  covariate_mean = 0,
+  covariate_sd = 1,
+  covariate_correlation = 0
 )
 
 validate_probit_covariates(
@@ -30,12 +37,20 @@ validate_probit_covariates(
   formula,
   N,
   J,
-  T = 1,
+  Tp = 1,
   alternatives = LETTERS[1:J],
   base = alternatives[1],
   re = NULL,
   ordered = FALSE
 )
+
+\method{as.list}{probit_covariates}()
+
+\method{as.data.frame}{probit_covariates}()
+
+covariate_names(probit_formula, probit_alternatives, delimiter = "_")
+
+covariate_number(probit_formula, probit_alternatives)
 }
 \arguments{
 \item{probit_data}{An \code{\link{probit_data}} object.}
@@ -46,8 +61,8 @@ validate_probit_covariates(
 
 \item{x}{An \code{\link{probit_covariates}} object.}
 
-\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the model to be
-fitted, see details.}
+\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the probit model,
+see details.}
 
 \item{N}{A positive \code{integer}, the number of deciders.}
 
@@ -55,17 +70,21 @@ fitted, see details.}
 Must be at least \code{2}.
 If \code{ordered = TRUE}, must be at least \code{3}.}
 
-\item{T}{A positive \code{integer}, the number of choice occasions per decider.
+\item{Tp}{A positive \code{integer}, the number of choice occasions per decider.
 Can also be a \code{vector} of length \code{N} for a variable number of
 choice occasions per decider.
-By default, \code{T = 1}.}
+By default, \code{Tp = 1}.}
+
+\item{alternatives}{A \code{character} vector, labels for the choice alternatives.
+Its length must be \code{J}.
+By default, \code{alternatives = LETTERS[1:J]}.}
 
 \item{base}{A \code{character}, the name of the base alternative for covariates that are
 not alternative specific, see details.
-\code{base} must be contained in \code{labels}.
+\code{base} must be contained in \code{alternatives}.
 Ignored if the model has no alternative specific covariates (e.g., in the
 ordered probit case).
-By default, \code{base} is the first element of \code{labels}.}
+By default, \code{base} is the first element of \code{alternatives}.}
 
 \item{re}{A \code{character}, the vector of names of covariates in \code{formula} that
 should have a random effect, see details.
@@ -74,83 +93,98 @@ By default, \code{re = NULL}, i.e., no random effects.}
 \item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 
-\item{sampler}{A \code{function} that returns a single \code{numeric}, a random number.
-It must have two arguments, \code{n} and \code{t}, so that the call
-\code{sampler(n, t)} returns the covariate value for decider \code{n} at
-choice occasion \code{t}.
-By default, \code{sampler = function(n, t) rnorm(n = 1, mean = 0, sd = 9)}.}
+\item{covariate_levels}{Defines the number of levels for the covariates. Two formats are allowed:
+\itemize{
+\item Can be a single, positive \code{numeric} which defines the number of levels
+for all covariates. By default, \code{covariate_levels = Inf}.
+\item Can be a named \code{numeric} \code{vector} for specific mean values for
+specific covariates. Names must correspond to the output of
+\code{\link{covariate_names}}. Means for missing covariates are set to
+\code{0}.
+}}
 
-\item{...}{Optionally custom sampling \code{function}s for specific covariates.,
-see below for an example.
-Each \code{function} must
-1. be named according to a covariate,
-2. have two arguments, \code{n} and \code{t} (see the documentation for
-   argument \code{sampler}),
-3. return either a single \code{numeric}, if the covariate is not
-   alternative-specific, or a \code{numeric} \code{vector} of length
-   \code{J}, if the covariate is alternative-specific.}
+\item{occasion_constant}{A \code{character} \code{vector} of covariate names
+(see \code{\link{covariate_names}})
+that are supposed to be constant across choice occasions.}
+
+\item{covariate_mean}{Defines the mean for the covariates. Two formats are allowed:
+\itemize{
+\item Can be a single \code{numeric} which defines a mean for all covariates.
+By default, \code{covariate_mean = 0}.
+\item Can be a named \code{numeric} \code{vector} for specific mean values for
+specific covariates. Names must correspond to the output of
+\code{\link{covariate_names}}. Means for missing covariates are set to
+\code{0}.
+}}
+
+\item{covariate_sd}{Defines the standard deviation for the covariates. Two formats are allowed:
+\itemize{
+\item Can be a single, positive \code{numeric} which defines a standard deviation
+for all covariates. By default, \code{covariate_sd = 0}.
+\item Can be a named \code{numeric} \code{vector} for specific standard
+deviations for specific covariates. Names must correspond to the output of
+\code{\link{covariate_names}}. Standard deviations for missing covariates
+are set to \code{1}.
+}}
+
+\item{covariate_correlation}{Defines the correlation across covariates. Two formats are allowed:
+\itemize{
+\item Can be a single \code{numeric} between \code{-1} and \code{1} which defines
+the correlation across all covariates.
+By default, \code{covariate_correlation = 0}.
+\item Can be a correlation \code{matrix} of dimension \code{n}, where \code{n}
+must equal the output of \code{\link{covariate_number}}. The
+\code{(i,j)}-th element defines the correlation between covariate \code{i}
+and covariate \code{j} in the output of \code{\link{covariate_names}}.
+}}
 }
 \value{
 An \code{\link{probit_covariates}} object. It is a \code{list} of
-\code{list} of \code{matrix} elements.
+\code{list}s of \code{matrix} elements.
 
 More precise: Let the return value be \code{out}, then
-- \code{out} contains the covariate matrices of all deciders at all choice
-  occasions,
-- \code{out[[n]]} is a \code{list} of the covariate matrices of decider
-  \code{n} at all of her choice occasions,
-- \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at
-  her \code{t}-th choice occasion.
+\itemize{
+\item \code{out} contains the covariate matrices of all deciders at all choice
+occasions,
+\item \code{out[[n]]} is a \code{list} of the covariate matrices of decider
+\code{n} at all of their choice occasions,
+\item \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at
+their \code{t}-th choice occasion.
+}
 }
 \description{
 These functions create and validate an object of class
-\code{\link{probit_covariates}}, which contains the model covariate matrices,
+\code{\link{probit_covariates}}, which contains the model covariate,
 see the details.
 
 \code{\link{sample_probit_covariates}} samples covariates.
+
+\code{\link{as.list.probit_covariates}} and
+\code{\link{as.data.frame.probit_covariates}} transform the covariates in
+\code{list} or \code{data.frame} form, respectively.
+
+\code{\link{covariate_names}} and \code{\link{covariate_numbers}} provide the
+names and number of covariates for a given model specification.
 }
 \section{Covariate matrices}{
 
 A covariate matrix contains the choice covariates of a decider at some choice
 occasion. It is of dimension \code{J} x \code{P}, where \code{J} is the
-number of alternatives and \code{P} the number of effects.
+number of alternatives and \code{P} the number of effects. See
+\code{\link{compute_P}} to compute the number \code{P}.
 
-By default, covariates are sampled according to the \code{function} specified
-as the \code{sampler} argument. However, it is possible to define custom
-sampling \code{function}s for each covariate.
-
-For example, consider the model formula
-\code{formula <- choice ~ cost | age | time}, which includes two
-alternative-specific covariates, \code{cost} and \code{time}, and one
-alternative-constant covariate, \code{age}, see
-\code{\link{probit_formula}}. For \code{cost} and \code{time}, we could
-specify a \code{function} that returns a \code{numeric} \code{vector} of
-length \code{J}, where entry \code{j} corresponds to the covariate for
-alternative \code{alternatives[j]}. For \code{age}, we could specify a
-\code{function} that returns a single \code{numeric}, the decider's age.
-Each of these \code{function}s must have two arguments, \code{n} and
-\code{t}, so that the \code{function} call returns the covariates for
-decider \code{n} at choice occastion \code{t}.
-
-An example call to \code{sample_probit_covariates()} looks as follows:
-\preformatted{
-sample_probit_covariates(
-  formula = choice ~ cost | age | time, N = 3, J = 3, T = 1:3,
-  cost = function(n, t) {
-    runif(J, 1:3, 2:4)
-  },
-  age = function(n, t) {
-    set.seed(t)
-    sample(30:80, 1)
-  }
-)
+By default, covariates are sampled from independent normal distributions, but
+customization is possible:
+\itemize{
+\item the levels per covariate can be defined via \code{covariate_levels},
+\item covariates with constant value over occasions can be defined via
+\code{occasion_constant},
+\item the means for each covariate can be defined via \code{covariate_mean},
+\item the standard deviation for each covariate can be defined via
+\code{covariate_sd},
+\item the correlation between covariates can be defined via
+\code{covariate_correlation}.
 }
-Note that
-1. the cost covariate is drawn from distinct uniform distributions,
-2. we use \code{set.seed(t)} in the sampler for \code{age} (so that the value
-   does not vary over choice occasions),
-3. and that \code{time} will be sampled according to the \code{function}
-   specified as the \code{sampler} argument.
 }
 
 \keyword{object}

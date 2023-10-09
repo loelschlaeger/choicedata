@@ -112,8 +112,8 @@ Only relevant in the ordered probit model case (see details).}
 
 \item{x}{A \code{\link{probit_parameter}} object.}
 
-\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the model to be
-fitted, see details.}
+\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the probit model,
+see details.}
 
 \item{re}{A \code{character}, the vector of names of covariates in \code{formula} that
 should have a random effect, see details.
@@ -151,17 +151,17 @@ A \code{\link{probit_parameter}} object.
 
 It contains the elements:
 \describe{
-  \item{\code{C}}{The number of latent classes.}
-  \item{\code{s}}{The class weights.}
-  \item{\code{alpha}}{The fixed coefficients.}
-  \item{\code{b}}{The class means.}
-  \item{\code{Omega}}{The class covariances.}
-  \item{\code{Sigma}}{The error term covariance matrix.}
-  \item{\code{Sigma_diff}}{The differenced error term covariance matrix.}
-  \item{\code{diff_alt}}{The reference alternative for utility differencing.}
-  \item{\code{beta}}{The decider-specific coefficient vectors.}
-  \item{\code{z}}{The class allocation variables.}
-  \item{\code{d}}{The logarithmic increases of the utility thresholds.}
+\item{\code{C}}{The number of latent classes.}
+\item{\code{s}}{The class weights.}
+\item{\code{alpha}}{The fixed coefficients.}
+\item{\code{b}}{The class means.}
+\item{\code{Omega}}{The class covariances.}
+\item{\code{Sigma}}{The error term covariance matrix.}
+\item{\code{Sigma_diff}}{The differenced error term covariance matrix.}
+\item{\code{diff_alt}}{The reference alternative for utility differencing.}
+\item{\code{beta}}{The decider-specific coefficient vectors.}
+\item{\code{z}}{The class allocation variables.}
+\item{\code{d}}{The logarithmic increases of the utility thresholds.}
 }
 }
 \description{
@@ -174,15 +174,15 @@ parameters at random, see details.
 }
 \section{Setting probit model parameters}{
 
-
-1. Use \code{probit_parameter()} to construct a
-   \code{\link{probit_parameter}} object, where any model parameter can be
-   specified (see below).
-
-2. Next, call \code{validate_probit_parameter()} with the
-   \code{\link{probit_parameter}} object created in step 1. This will add
-   unspecified parameters (see below for details) and validate all specified
-   parameters.
+\enumerate{
+\item Use \code{probit_parameter()} to construct a
+\code{\link{probit_parameter}} object, where any model parameter can be
+specified (see below).
+\item Next, call \code{validate_probit_parameter()} with the
+\code{\link{probit_parameter}} object created in step 1. This will add
+unspecified parameters (see below for details) and validate all specified
+parameters.
+}
 }
 
 \section{The probit model}{

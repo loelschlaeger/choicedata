@@ -5,8 +5,8 @@
 #' which defines the formula for a probit model.
 #'
 #' @param formula
-#' A \code{\link[stats]{formula}}, a symbolic description of the model to be
-#' fitted, see details.
+#' A \code{\link[stats]{formula}}, a symbolic description of the probit model,
+#' see details.
 #' @param re
 #' A \code{character}, the vector of names of covariates in \code{formula} that
 #' should have a random effect, see details.

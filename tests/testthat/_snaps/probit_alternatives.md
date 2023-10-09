@@ -1,7 +1,7 @@
 # probit_alternatives can be printed
 
     Code
-      probit_alternatives(J = 3, labels = c("la", "le", "lu"))
+      probit_alternatives(J = 3, alternatives = c("la", "le", "lu"))
     Output
       Alternatives: la* le lu
 

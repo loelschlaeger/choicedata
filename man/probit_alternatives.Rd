@@ -8,8 +8,8 @@
 \usage{
 probit_alternatives(
   J = 2,
-  labels = LETTERS[1:J],
-  base = labels[1],
+  alternatives = LETTERS[1:J],
+  base = alternatives[1],
   ordered = FALSE
 )
 
@@ -22,16 +22,16 @@ is.probit_alternatives(x)
 Must be at least \code{2}.
 If \code{ordered = TRUE}, must be at least \code{3}.}
 
-\item{labels}{A \code{character} vector, labels for the choice alternatives.
+\item{alternatives}{A \code{character} vector, labels for the choice alternatives.
 Its length must be \code{J}.
-By default, \code{labels = LETTERS[1:J]}.}
+By default, \code{alternatives = LETTERS[1:J]}.}
 
 \item{base}{A \code{character}, the name of the base alternative for covariates that are
 not alternative specific, see details.
-\code{base} must be contained in \code{labels}.
+\code{base} must be contained in \code{alternatives}.
 Ignored if the model has no alternative specific covariates (e.g., in the
 ordered probit case).
-By default, \code{base} is the first element of \code{labels}.}
+By default, \code{base} is the first element of \code{alternatives}.}
 
 \item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
@@ -45,10 +45,10 @@ A \code{\link{probit_alternatives}} object.
 
 It contains the elements:
 \describe{
-  \item{\code{J}}{The number of choice alternatives.}
-  \item{\code{labels}}{The labels for the choice alternatives.}
-  \item{\code{base}}{The name of the base alternative.}
-  \item{\code{ordered}}{Are the choice alternatives ordered?}
+\item{\code{J}}{The number of choice alternatives.}
+\item{\code{alternatives}}{The labels for the choice alternatives.}
+\item{\code{base}}{The name of the base alternative.}
+\item{\code{ordered}}{Are the choice alternatives ordered?}
 }
 }
 \description{

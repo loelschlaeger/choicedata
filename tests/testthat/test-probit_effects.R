@@ -34,7 +34,7 @@ test_that("effect overview can be created", {
       ),
       probit_alternatives = probit_alternatives(
         J = 3,
-        labels = c("C", "B", "A"),
+        alternatives = c("C", "B", "A"),
         base = "B"
       )
     ),
@@ -60,7 +60,7 @@ test_that("effect overview can be created", {
       ),
       probit_alternatives = probit_alternatives(
         J = 2,
-        labels = c("A", "B")
+        alternatives = c("A", "B")
       ),
       delimiter = "*"
     ),

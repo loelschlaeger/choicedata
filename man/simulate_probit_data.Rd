@@ -38,13 +38,13 @@ a \code{\link{probit_data}} object.
 The structure of \code{formula} should be
 \code{choice ~ A | B | C}, where
 \itemize{
-  \item \code{choice} is the name of the dependent variable (the choices),
-  \item \code{A} are names of \strong{alternative specific covariates} with
-  \strong{a coefficient that is constant across alternatives},
-  \item \code{B} are names of \strong{covariates that are constant across
-  alternatives},
-  \item and \code{C} are names of \strong{alternative specific covariates}
-  with \strong{alternative specific coefficients}.
+\item \code{choice} is the name of the dependent variable (the choices),
+\item \code{A} are names of \strong{alternative specific covariates} with
+\strong{a coefficient that is constant across alternatives},
+\item \code{B} are names of \strong{covariates that are constant across
+alternatives},
+\item and \code{C} are names of \strong{alternative specific covariates}
+with \strong{alternative specific coefficients}.
 }
 
 Multiple covariates of one type are separated by a \code{+} sign, i.e.,
@@ -99,6 +99,6 @@ data <- simulate_probit_data(
 }
 \seealso{
 \itemize{
-  \item TODO
+\item TODO
 }
 }

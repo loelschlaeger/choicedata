@@ -18,17 +18,19 @@ By default, \code{delimiter = "_"}.}
 \value{
 A \code{\link{probit_effects}} object, which is a \code{data.frame}, where
 each row is an effect, and columns are
-1. \code{"name"}, the effect name (composed of covariate and alternative
-   name),
-2. \code{"covariate"}, the covariate name,
-3. \code{"alternative"}, the alternative name (only if the effect is
-   alternative-specific, i.e., varies across alternatives),
-4. \code{"as_covariate"}, indicator whether the covariate is
-   alternative-specific,
-5. \code{"as_effect"}, indicator whether the effect is alternative-specific,
-6. \code{"random"}, indicator whether the effect is a random effect,
-7. and \code{"log_normal"}, indicator whether the random effect is
-   log-normal.
+\enumerate{
+\item \code{"name"}, the effect name (composed of covariate and alternative
+name),
+\item \code{"covariate"}, the covariate name,
+\item \code{"alternative"}, the alternative name (only if the effect is
+alternative-specific, i.e., varies across alternatives),
+\item \code{"as_covariate"}, indicator whether the covariate is
+alternative-specific,
+\item \code{"as_effect"}, indicator whether the effect is alternative-specific,
+\item \code{"random"}, indicator whether the effect is a random effect,
+\item and \code{"log_normal"}, indicator whether the random effect is
+log-normal.
+}
 
 The effects are ordered as follows: Fixed effects come before random effects,
 and log-normal random effects are last random effects. Otherwise, the order
@@ -43,13 +45,13 @@ This function constructs an object of class
 The structure of \code{formula} should be
 \code{choice ~ A | B | C}, where
 \itemize{
-  \item \code{choice} is the name of the dependent variable (the choices),
-  \item \code{A} are names of \strong{alternative specific covariates} with
-  \strong{a coefficient that is constant across alternatives},
-  \item \code{B} are names of \strong{covariates that are constant across
-  alternatives},
-  \item and \code{C} are names of \strong{alternative specific covariates}
-  with \strong{alternative specific coefficients}.
+\item \code{choice} is the name of the dependent variable (the choices),
+\item \code{A} are names of \strong{alternative specific covariates} with
+\strong{a coefficient that is constant across alternatives},
+\item \code{B} are names of \strong{covariates that are constant across
+alternatives},
+\item and \code{C} are names of \strong{alternative specific covariates}
+with \strong{alternative specific coefficients}.
 }
 
 Multiple covariates of one type are separated by a \code{+} sign, i.e.,

@@ -13,8 +13,8 @@ is.probit_formula(x)
 \method{print}{probit_formula}(x, ...)
 }
 \arguments{
-\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the model to be
-fitted, see details.}
+\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the probit model,
+see details.}
 
 \item{re}{A \code{character}, the vector of names of covariates in \code{formula} that
 should have a random effect, see details.
@@ -32,14 +32,14 @@ A \code{\link{probit_formula}} object.
 
 It contains the elements:
 \describe{
-  \item{\code{formula}}{The model formula.}
-  \item{\code{re}}{The names of covariates with random effects.}
-  \item{\code{ordered}}{Are the choice alternatives ordered?}
-  \item{\code{choice}}{The name of the dependent variable.}
-  \item{\code{var_types}}{The three different types of covariates.}
-  \item{\code{ASC}}{Does the model have alternative specific constants?}
-  \item{\code{re_n}}{The covariates with normal mixing distribution.}
-  \item{\code{re_ln}}{The covariates with log-normal mixing distribution.}
+\item{\code{formula}}{The model formula.}
+\item{\code{re}}{The names of covariates with random effects.}
+\item{\code{ordered}}{Are the choice alternatives ordered?}
+\item{\code{choice}}{The name of the dependent variable.}
+\item{\code{var_types}}{The three different types of covariates.}
+\item{\code{ASC}}{Does the model have alternative specific constants?}
+\item{\code{re_n}}{The covariates with normal mixing distribution.}
+\item{\code{re_ln}}{The covariates with log-normal mixing distribution.}
 }
 }
 \description{
@@ -51,13 +51,13 @@ which defines the formula for a probit model.
 The structure of \code{formula} should be
 \code{choice ~ A | B | C}, where
 \itemize{
-  \item \code{choice} is the name of the dependent variable (the choices),
-  \item \code{A} are names of \strong{alternative specific covariates} with
-  \strong{a coefficient that is constant across alternatives},
-  \item \code{B} are names of \strong{covariates that are constant across
-  alternatives},
-  \item and \code{C} are names of \strong{alternative specific covariates}
-  with \strong{alternative specific coefficients}.
+\item \code{choice} is the name of the dependent variable (the choices),
+\item \code{A} are names of \strong{alternative specific covariates} with
+\strong{a coefficient that is constant across alternatives},
+\item \code{B} are names of \strong{covariates that are constant across
+alternatives},
+\item and \code{C} are names of \strong{alternative specific covariates}
+with \strong{alternative specific coefficients}.
 }
 
 Multiple covariates of one type are separated by a \code{+} sign, i.e.,

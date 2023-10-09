@@ -64,7 +64,7 @@ probit_effects <- function(
 
   ### build probit effects
   J <- probit_alternatives$J
-  labels <- probit_alternatives$labels
+  alt <- probit_alternatives$alternatives
   base <- probit_alternatives$base
   ordered <- probit_alternatives$ordered
   var_types <- probit_formula$var_types
@@ -87,12 +87,12 @@ probit_effects <- function(
       )
     }
     for (var in c(var_types[[2]], if (probit_formula$ASC) "ASC")) {
-      for (j in (1:J)[-which(labels == base)]) {
+      for (j in (1:J)[-which(alt == base)]) {
         overview <- rbind(
           overview,
-          c(paste0(var, delimiter, labels[j]),
+          c(paste0(var, delimiter, alt[j]),
             if (var == "ASC") NA_character_ else var,
-            labels[j], FALSE, TRUE, var %in% re, var %in% re_ln)
+            alt[j], FALSE, TRUE, var %in% re, var %in% re_ln)
         )
       }
     }
@@ -100,7 +100,7 @@ probit_effects <- function(
       for (j in 1:J) {
         overview <- rbind(
           overview,
-          c(paste0(var, delimiter, labels[j]), var, labels[j],
+          c(paste0(var, delimiter, alt[j]), var, alt[j],
             TRUE, TRUE, var %in% re, var %in% re_ln)
         )
       }
