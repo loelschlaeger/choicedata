@@ -117,37 +117,76 @@ is.probit_covariates <- function(x) {
 #' @export
 
 sample_probit_covariates <- function(
-  formula, N, J, Tp = 1, alternatives = LETTERS[1:J], base = alternatives[1],
-  re = NULL, ordered = FALSE, seed = NULL,
+  probit_formula, N, Tp = 1, probit_alternatives, seed = NULL,
   covariate_levels = Inf, occasion_constant = character(),
-  covariate_mean = 0, covariate_sd = 1, covariate_correlation = 0
+  covariate_mean = 0, covariate_sd = 1, covariate_correlation = 0,
+  delimiter = "_"
 ) {
 
   ### input checks
   Tp <- expand_Tp(N = N, Tp = Tp)
-  probit_formula <- probit_formula(
-    formula = formula, re = re, ordered = ordered
-  )
-  probit_alternatives <- probit_alternatives(
-    J = J, alternatives = alternatives, base = base, ordered = ordered
-  )
-  effects <- overview_effects(
+  effects <- probit_effects(
     probit_formula = probit_formula,
     probit_alternatives = probit_alternatives
   )
-  covariate_numer <- covariate_number(probit_formula, probit_alternatives)
-  if (length(covariate_levels) == 1) {
-    checkmate::assert_int(covariate_levels, lower = 1)
-    covariate_levels <- structure(
 
-    )
-  }
-  checkmate::assert_integerish(
-    covariate_levels, lower = 1, any.missing = FALSE, names = ...
+  ### checks for covariate specifications
+  covariate_names <- covariate_names(
+    probit_formula, probit_alternatives, delimiter = delimiter
   )
-
+  covariate_number <- covariate_number(probit_formula, probit_alternatives)
+  checkmate::assert_numeric(
+    covariate_levels, finite = FALSE, lower = 1, any.missing = FALSE
+  )
+  covariate_levels <- round(covariate_levels, digits = 0)
+  if (checkmate::test_named(covariate_levels, type = "strict")) {
+    checkmate::assert_subset(names(covariate_levels), covariate_names)
+    covariate_levels_input <- covariate_levels
+    covariate_levels <- rep(Inf, length.out = covariate_number)
+    names(covariate_levels) <- covariate_names
+    covariate_levels[names(covariate_levels_input)] <- covariate_levels_input
+  } else {
+    checkmate::assert_number(covariate_levels, lower = 1, finite = FALSE)
+    covariate_levels <- rep(covariate_levels, length.out = covariate_number)
+    names(covariate_levels) <- covariate_names
+  }
+  checkmate::assert_subset(
+    occasion_constant, covariate_names, empty.ok = TRUE
+  )
+  checkmate::assert_numeric(covariate_mean, finite = TRUE, any.missing = FALSE)
+  if (checkmate::test_named(covariate_mean, type = "strict")) {
+    checkmate::assert_subset(names(covariate_mean), covariate_names)
+    covariate_mean_input <- covariate_mean
+    covariate_mean <- rep(0, length.out = covariate_number)
+    names(covariate_mean) <- covariate_names
+    covariate_mean[names(covariate_mean_input)] <- covariate_mean_input
+  } else {
+    checkmate::assert_number(covariate_mean, finite = TRUE)
+    covariate_mean <- rep(covariate_mean, length.out = covariate_number)
+    names(covariate_mean) <- covariate_names
+  }
+  checkmate::assert_numeric(
+    covariate_sd, finite = TRUE, lower = 0, any.missing = FALSE
+  )
+  if (checkmate::test_named(covariate_sd, type = "strict")) {
+    checkmate::assert_subset(names(covariate_sd), covariate_names)
+    covariate_sd_input <- covariate_sd
+    covariate_sd <- rep(1, length.out = covariate_number)
+    names(covariate_sd) <- covariate_names
+    covariate_sd[names(covariate_sd_input)] <- covariate_sd_input
+  } else {
+    checkmate::assert_number(covariate_sd, lower = 0, finite = TRUE)
+    covariate_sd <- rep(covariate_sd, length.out = covariate_number)
+    names(covariate_sd) <- covariate_names
+  }
+  if (checkmate::test_number(covariate_correlation, lower = -1, upper = 1)) {
+    covariate_correlation_input <- covariate_correlation
+    covariate_correlation <- diag(covariate_number)
+    covariate_correlation[row(covariate_correlation) != col(covariate_correlation)] <- covariate_correlation_input
+  }
+  oeli::assert_correlation_matrix(covariate_correlation, dim = covariate_number)
   covariate_Sigma <- diag(covariate_sd) %*% covariate_correlation %*% diag(covariate_sd)
-
+  oeli::assert_covariance_matrix(covariate_Sigma, dim = covariate_number)
 
   ### draw covariate values
   if (!is.null(seed)) {
@@ -156,46 +195,58 @@ sample_probit_covariates <- function(
   covariates <- as.data.frame(
     MASS::mvrnorm(n = sum(Tp), mu = covariate_mean, Sigma = covariate_Sigma)
   )
+  id <- rep(1:N, times = Tp)
+  idc <- unlist(sapply(Tp, seq.int, simplify = FALSE))
+  covariates <- cbind("id" = id, "idc" = idc, covariates)
+  for (cov in covariate_names) {
 
-  ### set covariate levels
+    ### set covariate levels
+    if (covariate_levels[cov] < sum(Tp)) {
+      brks <- stats::quantile(
+        covariates[[cov]], seq(0, 1, length.out = covariate_levels[cov] + 1)
+      )
+      ints <- findInterval(covariates[[cov]], brks, all.inside = TRUE)
+      covariates[cov] <- (brks[ints] + brks[ints + 1]) / 2
+    }
 
-  ### set occasion constant covariates
+    ### set occasion constant covariates
+    if (cov %in% occasion_constant) {
+      covariates[cov] <- covariates[1, cov]
+    }
+  }
 
   ### validate data.frame format
+  validate_probit_covariates(
+    covariates = covariates, N = N, Tp = Tp, probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives
+  )
 
   ### transform to list format
-
-  ### validate 'probit_covariates'
-  validate_probit_covariates(
-    x = x, formula = formula, N = N, J = J, Tp = Tp, alternatives = alternatives,
-    base = base, re = re, ordered = ordered
-  )
+  covariates <- as.list(probit_covariates)
 }
 
 #' @rdname probit_covariates
 
 validate_probit_covariates <- function(
-    x = list(), formula, N, J, Tp = 1, alternatives = LETTERS[1:J],
-    base = alternatives[1], re = NULL, ordered = FALSE
+    covariates, N, Tp = 1, probit_formula, probit_alternatives
 ) {
 
   ### input checks
   checkmate::assert_list(x)
-
-  ### construct objects
-  probit_formula <- probit_formula(
-    formula = formula, re = re, ordered = ordered
-  )
-  probit_alternatives <- probit_alternatives(
-    J = J, alternatives = alternatives, base = base, ordered = ordered
-  )
   effects <- overview_effects(
     probit_formula = probit_formula,
     probit_alternatives = probit_alternatives
   )
 
   ### validate 'probit_covariates'
-  # TODO
+  if (checkmate::test_list(covariates)) {
+    # TODO
+  } else if (checkmate::test_data_frame(covariates)) {
+    # TODO
+  } else {
+    # TODO
+    stop()
+  }
 
   ### return validated 'probit_covariates' object
   structure(x, class = c("probit_covariates", "list"))
@@ -252,7 +303,7 @@ as.list.probit_covariates <- function() {
 #' @exportS3Method
 
 as.data.frame.probit_covariates <- function() {
-
+  # TODO
 }
 
 #' @rdname probit_covariates

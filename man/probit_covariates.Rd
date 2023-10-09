@@ -16,32 +16,25 @@ probit_covariates(probit_data = NULL, probit_formula, probit_alternatives)
 is.probit_covariates(x)
 
 sample_probit_covariates(
-  formula,
+  probit_formula,
   N,
-  J,
   Tp = 1,
-  alternatives = LETTERS[1:J],
-  base = alternatives[1],
-  re = NULL,
-  ordered = FALSE,
+  probit_alternatives,
   seed = NULL,
   covariate_levels = Inf,
   occasion_constant = character(),
   covariate_mean = 0,
   covariate_sd = 1,
-  covariate_correlation = 0
+  covariate_correlation = 0,
+  delimiter = "_"
 )
 
 validate_probit_covariates(
-  x = list(),
-  formula,
+  covariates,
   N,
-  J,
   Tp = 1,
-  alternatives = LETTERS[1:J],
-  base = alternatives[1],
-  re = NULL,
-  ordered = FALSE
+  probit_formula,
+  probit_alternatives
 )
 
 \method{as.list}{probit_covariates}()
@@ -61,37 +54,12 @@ covariate_number(probit_formula, probit_alternatives)
 
 \item{x}{An \code{\link{probit_covariates}} object.}
 
-\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the probit model,
-see details.}
-
 \item{N}{A positive \code{integer}, the number of deciders.}
-
-\item{J}{An \code{integer}, the number of choice alternatives.
-Must be at least \code{2}.
-If \code{ordered = TRUE}, must be at least \code{3}.}
 
 \item{Tp}{A positive \code{integer}, the number of choice occasions per decider.
 Can also be a \code{vector} of length \code{N} for a variable number of
 choice occasions per decider.
 By default, \code{Tp = 1}.}
-
-\item{alternatives}{A \code{character} vector, labels for the choice alternatives.
-Its length must be \code{J}.
-By default, \code{alternatives = LETTERS[1:J]}.}
-
-\item{base}{A \code{character}, the name of the base alternative for covariates that are
-not alternative specific, see details.
-\code{base} must be contained in \code{alternatives}.
-Ignored if the model has no alternative specific covariates (e.g., in the
-ordered probit case).
-By default, \code{base} is the first element of \code{alternatives}.}
-
-\item{re}{A \code{character}, the vector of names of covariates in \code{formula} that
-should have a random effect, see details.
-By default, \code{re = NULL}, i.e., no random effects.}
-
-\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
-\code{FALSE} (default) else.}
 
 \item{covariate_levels}{Defines the number of levels for the covariates. Two formats are allowed:
 \itemize{
