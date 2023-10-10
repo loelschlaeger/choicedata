@@ -49,7 +49,7 @@ test_that("effect overview can be created", {
         log_normal = c(TRUE, TRUE, TRUE)
       ),
       row.names = c(NA, -3L),
-      class = "data.frame"
+      class = c("probit_effects", "data.frame")
     )
   )
   expect_equal(
@@ -75,7 +75,7 @@ test_that("effect overview can be created", {
         log_normal = c(FALSE, FALSE, FALSE, FALSE)
       ),
       row.names = c(NA, -4L),
-      class = "data.frame"
+      class = c("probit_effects", "data.frame")
     )
   )
   expect_equal(
@@ -99,7 +99,7 @@ test_that("effect overview can be created", {
         log_normal = c(FALSE, FALSE, TRUE)
       ),
       row.names = c(NA, -3L),
-      class = "data.frame"
+      class = c("probit_effects", "data.frame")
     )
   )
 })

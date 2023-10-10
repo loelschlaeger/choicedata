@@ -29,7 +29,7 @@ An \code{integer}, the number of model effects.
 \description{
 These functions compute the number of fixed and random model effects.
 
-\code{coompute_P()} computes the total number \code{P} of model effects.
+\code{compute_P()} computes the total number \code{P} of model effects.
 \code{compute_P_f()} computes the number \code{P_f} of fixed model effects.
 \code{compute_P_r()} computes the number \code{P_r} of random model effects.
 }

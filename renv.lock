@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.3.0",
+    "Version": "4.2.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -11,7 +11,7 @@
   "Packages": {
     "DT": {
       "Package": "DT",
-      "Version": "0.30",
+      "Version": "0.29",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -24,7 +24,7 @@
         "magrittr",
         "promises"
       ],
-      "Hash": "dffb4d94a00be1b4a4507e53ab95bd90"
+      "Hash": "02f42b77a951a5ea7c891ef5c187d774"
     },
     "MASS": {
       "Package": "MASS",
@@ -380,7 +380,7 @@
     },
     "credentials": {
       "Package": "credentials",
-      "Version": "1.3.2",
+      "Version": "2.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -390,7 +390,7 @@
         "openssl",
         "sys"
       ],
-      "Hash": "93762d0a34d78e6a025efdbfb5c6bb41"
+      "Hash": "c7844b32098dcbd1c59cbd8dddb4ecc6"
     },
     "crosstalk": {
       "Package": "crosstalk",
@@ -516,7 +516,7 @@
     },
     "downlit": {
       "Package": "downlit",
-      "Version": "0.4.2",
+      "Version": "0.4.3",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -532,7 +532,7 @@
         "withr",
         "yaml"
       ],
-      "Hash": "79bf3f66590752ffbba20f8d2da94c7c"
+      "Hash": "14fa1f248b60ed67e1f5418391a17b14"
     },
     "dplyr": {
       "Package": "dplyr",
@@ -654,7 +654,7 @@
     },
     "gert": {
       "Package": "gert",
-      "Version": "1.9.2",
+      "Version": "2.0.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -665,7 +665,7 @@
         "sys",
         "zip"
       ],
-      "Hash": "9122b3958e749badb5c939f498038b57"
+      "Hash": "bbbd21a253d473f4671d7dcbd6d8971f"
     },
     "ggplot2": {
       "Package": "ggplot2",
@@ -1147,20 +1147,20 @@
     },
     "oeli": {
       "Package": "oeli",
-      "Version": "0.0.0.9000",
+      "Version": "0.0.0.9001",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "oeli",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "74bea67ac428eb65e58d178e22fe42a69bf56206",
+      "RemoteSha": "2eebf177ebf47363c673a812bba1222d228c248f",
       "Requirements": [
         "checkmate",
         "cli",
         "stats"
       ],
-      "Hash": "62cba86437e2ec3d6b41c8c16accef4f"
+      "Hash": "bf30bb9fbc354c8f908a64477f782330"
     },
     "openssl": {
       "Package": "openssl",
@@ -1191,7 +1191,7 @@
     },
     "pkgbuild": {
       "Package": "pkgbuild",
-      "Version": "1.4.0",
+      "Version": "1.4.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1203,10 +1203,9 @@
         "desc",
         "prettyunits",
         "processx",
-        "rprojroot",
-        "withr"
+        "rprojroot"
       ],
-      "Hash": "d6c3008d79653a0f267703288230105e"
+      "Hash": "beb25b32a957a22a5c301a9e441190b3"
     },
     "pkgconfig": {
       "Package": "pkgconfig",
@@ -1483,7 +1482,7 @@
     },
     "remotes": {
       "Package": "remotes",
-      "Version": "2.4.2",
+      "Version": "2.4.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1493,7 +1492,7 @@
         "tools",
         "utils"
       ],
-      "Hash": "227045be9aee47e6dda9bb38ac870d67"
+      "Hash": "63d15047eb239f95160112bcadc4fcb9"
     },
     "renv": {
       "Package": "renv",
@@ -1906,7 +1905,7 @@
     },
     "usethis": {
       "Package": "usethis",
-      "Version": "2.1.6",
+      "Version": "2.2.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1933,7 +1932,7 @@
         "withr",
         "yaml"
       ],
-      "Hash": "a67a22c201832b12c036cc059f1d137d"
+      "Hash": "60e51f0b94d0324dc19e44110098fa9f"
     },
     "utf8": {
       "Package": "utf8",

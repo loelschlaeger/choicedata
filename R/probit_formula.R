@@ -163,5 +163,6 @@ print.probit_formula <- function(x, ...) {
   if (length(x$re) > 0) {
     cat("\nRandom effects:", x$re)
   }
+  cat("\n")
 }
 

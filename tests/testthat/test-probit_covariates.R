@@ -1,25 +1,31 @@
 test_that("covariates can be sampled", {
-  formula <- choice ~ cost | age | time
-  N <- 3
-  Tp <- 1:N
-  J <- 3
-  alternatives <- letters[1:J]
-  re <- NULL
-  seed <- 1
-  covariate_levels <- Inf
-  occasion_constant <- character()
-  covariate_mean <- 0
-  covariate_sd <- 1
-  covariate_correlation <- 0
-  delimiter <- "_"
+  N <- 10
+  Tp <- sample(1:N, size = N, replace = TRUE)
+  x <- sample_probit_covariates(
+    probit_formula = probit_formula(choice ~ cost | age | time),
+    N = N,
+    Tp = Tp,
+    probit_alternatives = probit_alternatives(J = 3)
+  )
+  expect_s3_class(x, "probit_covariates")
+  expect_true(is.probit_covariates(x))
+  expect_true(is.list(x))
+  expect_length(x, N)
+  for (n in 1:N) {
+    expect_length(x[[n]], Tp[n])
+  }
+})
 
-
-
-
-
-
-
-
+test_that("customization for covariates work", {
+  N <- 10
+  Tp <- sample(1:N, size = N, replace = TRUE)
+  x <- sample_probit_covariates(
+    probit_formula = probit_formula(choice ~ cost | age | time),
+    N = N,
+    Tp = Tp,
+    probit_alternatives = probit_alternatives(J = 3, alternatives = c("la", "le", "lu")),
+    covariate_mean = c("cost" = 100)
+  )
   expect_s3_class(x, "probit_covariates")
   expect_true(is.probit_covariates(x))
   expect_true(is.list(x))

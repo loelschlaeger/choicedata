@@ -92,6 +92,6 @@ print.probit_alternatives <- function(x, ...) {
   if (!x$ordered) {
     alt[alt == x$base] <- paste0(alt[alt == x$base], "*")
   }
-  cat("Alternatives:", alt, if (x$ordered) "(ordered)")
+  cat("Alternatives:", alt, if (x$ordered) "(ordered)", "\n")
 }
 

@@ -11,7 +11,7 @@
 \alias{covariate_number}
 \title{Define choice covariates}
 \usage{
-probit_covariates(probit_data = NULL, probit_formula, probit_alternatives)
+probit_covariates(probit_data)
 
 is.probit_covariates(x)
 
@@ -26,7 +26,9 @@ sample_probit_covariates(
   covariate_mean = 0,
   covariate_sd = 1,
   covariate_correlation = 0,
-  delimiter = "_"
+  delimiter = "_",
+  column_decider = "id",
+  column_occasion = "idc"
 )
 
 validate_probit_covariates(
@@ -34,25 +36,26 @@ validate_probit_covariates(
   N,
   Tp = 1,
   probit_formula,
-  probit_alternatives
+  probit_alternatives,
+  delimiter,
+  column_decider,
+  column_occasion
 )
 
-\method{as.list}{probit_covariates}()
+\method{as.list}{probit_covariates}(x)
 
-\method{as.data.frame}{probit_covariates}()
+\method{as.data.frame}{probit_covariates}(x)
 
 covariate_names(probit_formula, probit_alternatives, delimiter = "_")
 
 covariate_number(probit_formula, probit_alternatives)
 }
 \arguments{
-\item{probit_data}{An \code{\link{probit_data}} object.}
-
-\item{probit_formula}{An \code{\link{probit_formula}} object.}
-
-\item{probit_alternatives}{An \code{\link{probit_alternatives}} object.}
+\item{probit_data}{A \code{\link{probit_data}} object.}
 
 \item{x}{An \code{\link{probit_covariates}} object.}
+
+\item{probit_formula}{A \code{\link{probit_formula}} object.}
 
 \item{N}{A positive \code{integer}, the number of deciders.}
 
@@ -60,6 +63,8 @@ covariate_number(probit_formula, probit_alternatives)
 Can also be a \code{vector} of length \code{N} for a variable number of
 choice occasions per decider.
 By default, \code{Tp = 1}.}
+
+\item{probit_alternatives}{A \code{\link{probit_alternatives}} object.}
 
 \item{covariate_levels}{Defines the number of levels for the covariates. Two formats are allowed:
 \itemize{
