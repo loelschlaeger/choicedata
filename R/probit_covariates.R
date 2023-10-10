@@ -130,39 +130,44 @@ sample_probit_covariates <- function(
   checkmate::assert_string(column_decider)
   checkmate::assert_string(column_occasion)
   stopifnot(column_decider != column_occasion)
-
-  ### checks for covariate specifications
-  covariate_names <- covariate_names(
-    probit_formula, probit_alternatives, delimiter = delimiter
-  )
-  covariate_number <- covariate_number(probit_formula, probit_alternatives)
   covariate_levels <- check_covariate_levels(
-    covariate_levels = covariate_levels, covariate_names = covariate_names
+    covariate_levels = covariate_levels, probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives, delimiter = delimiter
   )
-  checkmate::assert_subset(
-    occasion_constant, covariate_names, empty.ok = TRUE
+  occasion_constant <- check_occasion_constant(
+    occasion_constant = occasion_constant, probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives, delimiter = delimiter
   )
   covariate_mean <- check_covariate_mean(
-    covariate_mean = covariate_mean, covariate_names = covariate_names
+    covariate_mean = covariate_mean, probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives, delimiter = delimiter
   )
   covariate_sd <- check_covariate_sd(
-    covariate_sd = covariate_sd, covariate_names = covariate_names
+    covariate_sd = covariate_sd, probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives, delimiter = delimiter
   )
   covariate_correlation <- check_covariate_correlation(
-    covariate_correlation = covariate_correlation, covariate_names = covariate_names
+    covariate_correlation = covariate_correlation, probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives, delimiter = delimiter
   )
-  covariate_Sigma <- diag(covariate_sd) %*% covariate_correlation %*% diag(covariate_sd)
 
   ### draw covariate values
   if (!is.null(seed)) {
     set.seed(seed)
   }
   covariates <- as.data.frame(
-    MASS::mvrnorm(n = sum(Tp), mu = covariate_mean, Sigma = covariate_Sigma)
+    MASS::mvrnorm(
+      n = sum(Tp), mu = covariate_mean,
+      Sigma = diag(covariate_sd) %*% covariate_correlation %*% diag(covariate_sd)
+    )
   )
   id <- rep(1:N, times = Tp)
   idc <- unlist(sapply(Tp, seq.int, simplify = FALSE))
   covariates <- cbind(id, idc, covariates)
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
   colnames(covariates) <- c(column_decider, column_occasion, covariate_names)
   for (cov in covariate_names) {
 
@@ -175,7 +180,7 @@ sample_probit_covariates <- function(
       covariates[cov] <- (brks[ints] + brks[ints + 1]) / 2
     }
 
-    ### set occasion constant covariates
+    ### set occasion-constant covariates
     if (cov %in% occasion_constant) {
       covariates[cov] <- covariates[1, cov]
     }
@@ -194,12 +199,24 @@ sample_probit_covariates <- function(
 
 #' @keywords internal
 
-check_covariate_levels <- function(covariate_levels, covariate_names) {
+check_covariate_levels <- function(
+    covariate_levels, probit_formula, probit_alternatives, delimiter
+  ) {
   checkmate::assert_numeric(
     covariate_levels, finite = FALSE, lower = 1, any.missing = FALSE
   )
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+  covariate_number <- length(covariate_names)
   covariate_levels <- round(covariate_levels, digits = 0)
   if (checkmate::test_named(covariate_levels, type = "strict")) {
+    covariate_levels <- covariate_spec_sugar(
+      covariate_spec = covariate_levels, probit_formula = probit_formula,
+      probit_alternatives = probit_alternatives, delimiter = delimiter,
+      named_vector = TRUE
+    )
     checkmate::assert_subset(names(covariate_levels), covariate_names)
     covariate_levels_input <- covariate_levels
     covariate_levels <- rep(Inf, length.out = covariate_number)
@@ -215,9 +232,41 @@ check_covariate_levels <- function(covariate_levels, covariate_names) {
 
 #' @keywords internal
 
-check_covariate_mean <- function(covariate_mean, covariate_names) {
+check_occasion_constant <- function(
+    occasion_constant, probit_formula, probit_alternatives, delimiter
+  ) {
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+  occasion_constant <- covariate_spec_sugar(
+    covariate_spec = occasion_constant, probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives, delimiter = delimiter,
+    named_vector = FALSE
+  )
+  checkmate::assert_subset(
+    occasion_constant, covariate_names, empty.ok = TRUE
+  )
+  return(occasion_constant)
+}
+
+#' @keywords internal
+
+check_covariate_mean <- function(
+    covariate_mean, probit_formula, probit_alternatives, delimiter
+  ) {
   checkmate::assert_numeric(covariate_mean, finite = TRUE, any.missing = FALSE)
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+  covariate_number <- length(covariate_names)
   if (checkmate::test_named(covariate_mean, type = "strict")) {
+    covariate_mean <- covariate_spec_sugar(
+      covariate_spec = covariate_mean, probit_formula = probit_formula,
+      probit_alternatives = probit_alternatives, delimiter = delimiter,
+      named_vector = TRUE
+    )
     checkmate::assert_subset(names(covariate_mean), covariate_names)
     covariate_mean_input <- covariate_mean
     covariate_mean <- rep(0, length.out = covariate_number)
@@ -233,11 +282,23 @@ check_covariate_mean <- function(covariate_mean, covariate_names) {
 
 #' @keywords internal
 
-check_covariate_sd <- function(covariate_sd, covariate_names) {
+check_covariate_sd <- function(
+    covariate_sd, probit_formula, probit_alternatives, delimiter
+  ) {
   checkmate::assert_numeric(
     covariate_sd, finite = TRUE, lower = 0, any.missing = FALSE
   )
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+  covariate_number <- length(covariate_names)
   if (checkmate::test_named(covariate_sd, type = "strict")) {
+    covariate_sd <- covariate_spec_sugar(
+      covariate_spec = covariate_sd, probit_formula = probit_formula,
+      probit_alternatives = probit_alternatives, delimiter = delimiter,
+      named_vector = TRUE
+    )
     checkmate::assert_subset(names(covariate_sd), covariate_names)
     covariate_sd_input <- covariate_sd
     covariate_sd <- rep(1, length.out = covariate_number)
@@ -253,7 +314,14 @@ check_covariate_sd <- function(covariate_sd, covariate_names) {
 
 #' @keywords internal
 
-check_covariate_correlation <- function(covariate_correlation, covariate_number) {
+check_covariate_correlation <- function(
+    covariate_correlation, probit_formula, probit_alternatives, delimiter
+  ) {
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+  covariate_number <- length(covariate_names)
   if (checkmate::test_number(covariate_correlation, lower = -1, upper = 1)) {
     covariate_correlation_input <- covariate_correlation
     covariate_correlation <- diag(covariate_number)
@@ -261,6 +329,72 @@ check_covariate_correlation <- function(covariate_correlation, covariate_number)
   }
   oeli::assert_correlation_matrix(covariate_correlation, dim = covariate_number)
   return(covariate_correlation)
+}
+
+#' @keywords internal
+
+covariate_spec_sugar <- function(
+    covariate_spec, probit_formula, probit_alternatives, delimiter, named_vector
+  ) {
+  checkmate::assert_flag(named_vector)
+  if (named_vector) {
+    checkmate::assert_vector(covariate_spec, any.missing = FALSE, names = "strict")
+  } else {
+    checkmate::assert_character(covariate_spec, any.missing = FALSE, unique = TRUE)
+  }
+  covariate_spec_input <- covariate_spec
+  probit_effects <- probit_effects(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+
+  ### quick and dirty check if alternative-specific covariate has been specified
+  ### without alternative label
+  for (i in seq_along(covariate_spec)) {
+
+    cov_name_i <- ifelse(named_vector, names(covariate_spec)[i], covariate_spec[i])
+
+    if (!cov_name_i %in% covariate_names) {
+      if (cov_name_i %in% probit_formula$var_types[c(1, 3)]) {
+
+        ### extend covariate name by all alternative labels
+        cov_name_i_extended <- paste(
+          cov_name_i, probit_alternatives$alternatives, sep = delimiter
+        )
+
+        if (named_vector) {
+
+          ### remove redundancies
+          cov_name_i_extended <- setdiff(cov_name_i_extended, names(covariate_spec))
+
+          ### add covariate name with alternative labels
+          covariate_spec_input[cov_name_i_extended] <- covariate_spec_input[cov_name_i]
+
+          ### remove bad covariate specification without alternative label
+          covariate_spec_input <- covariate_spec_input[names(covariate_spec_input) != cov_name_i]
+
+        } else {
+
+          ### remove redundancies
+          cov_name_i_extended <- setdiff(cov_name_i_extended, covariate_spec)
+
+          covariate_spec_input <- c(covariate_spec_input, cov_name_i_extended)
+          covariate_spec_input <- covariate_spec_input[covariate_spec_input != cov_name_i]
+
+        }
+      }
+    }
+  }
+
+  if (!named_vector) {
+    covariate_spec_input <- unique(covariate_spec_input)
+  }
+
+  return(covariate_spec_input)
 }
 
 #' @rdname probit_covariates
