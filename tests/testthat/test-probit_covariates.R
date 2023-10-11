@@ -39,6 +39,18 @@ test_that("customization for covariates works", {
   }
 })
 
+test_that("covariates can be transformed between data.frame and list format", {
+  x <- sample_probit_covariates(
+    probit_formula = probit_formula(choice ~ cost | age | time),
+    N = 5,
+    Tp = 1:5,
+    probit_alternatives = probit_alternatives(J = 3)
+  )
+  x_df <- as.data.frame(x)
+  x_list <- as.list(x_df)
+  expect_identical(x, x_list)
+})
+
 test_that("covariate names can be generated", {
   expect_equal(
     covariate_names(

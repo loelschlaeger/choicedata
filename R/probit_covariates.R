@@ -156,8 +156,8 @@ sample_probit_covariates <- function(
     set.seed(seed)
   }
   covariates <- as.data.frame(
-    MASS::mvrnorm(
-      n = sum(Tp), mu = covariate_mean,
+    oeli::rmvnorm(
+      n = sum(Tp), mean = covariate_mean,
       Sigma = diag(covariate_sd) %*% covariate_correlation %*% diag(covariate_sd)
     )
   )
@@ -336,6 +336,8 @@ check_covariate_correlation <- function(
 covariate_spec_sugar <- function(
     covariate_spec, probit_formula, probit_alternatives, delimiter, named_vector
   ) {
+
+  ### syntactic sugar for selecting alternative-specific covariate
   checkmate::assert_flag(named_vector)
   if (named_vector) {
     checkmate::assert_vector(covariate_spec, any.missing = FALSE, names = "strict")
@@ -395,6 +397,14 @@ covariate_spec_sugar <- function(
   }
 
   return(covariate_spec_input)
+}
+
+#' @keywords internal
+
+effect_is_ASC <- function(effect_name, delimiter) {
+  checkmate::assert_string(effect_name)
+  checkmate::assert_string(delimiter, n.chars = 1)
+  startsWith(effect_name, paste0("ASC", delimiter))
 }
 
 #' @rdname probit_covariates
@@ -465,7 +475,7 @@ as.list.probit_covariates <- function(x) {
     delimiter = delimiter
   )
 
-  ### transform to data.frame
+  ### transform to list
   covariates_matrix <- lapply(1:N, function(n) {
     lapply(1:Tp[n], function(t) {
 
@@ -489,7 +499,7 @@ as.list.probit_covariates <- function(x) {
 
             ### check for ASCs
             X_nt[effects[e, "alternative"], effects[e, "name"]] <-
-            if (startsWith(effects[e, "name"], paste0("ASC", delimiter))) {
+            if (effect_is_ASC(effects[e, "name"], delimiter)) {
               1
             } else {
               covariates_nt[[effects[e, "covariate"]]]
@@ -522,7 +532,75 @@ as.list.probit_covariates <- function(x) {
 #' @exportS3Method
 
 as.data.frame.probit_covariates <- function(x) {
-  # TODO
+
+  ### input checks
+  checkmate::assert_list(x)
+  checkmate::assert_class(x, "probit_covariates")
+  Tp <- attr(x, "Tp")
+  N <- length(Tp)
+  probit_formula <- attr(x, "probit_formula")
+  probit_alternatives <- attr(x, "probit_alternatives")
+  J <- probit_alternatives$J
+  delimiter <- attr(x, "delimiter")
+  effects <- probit_effects(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+  column_decider <- attr(x, "column_decider")
+  column_occasion <- attr(x, "column_occasion")
+
+  ### create structure of data.frame
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
+  covariate_number <- covariate_number(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives
+  )
+  covariates_df <- data.frame(
+    matrix(NA_real_, nrow = sum(Tp), ncol = covariate_number)
+  )
+  id <- rep(1:N, times = Tp)
+  idc <- unlist(sapply(Tp, seq.int, simplify = FALSE))
+  covariates_df <- cbind(id, idc, covariates_df)
+  colnames(covariates_df) <- c(column_decider, column_occasion, covariate_names)
+
+  ### enter covariates into data.frame
+  for (n in 1:N) {
+    for (t in 1:Tp[n]) {
+      cov_row <- which(
+        covariates_df[[column_decider]] == n & covariates_df[[column_occasion]] == t
+      )
+      X_nt <- x[[n]][[t]]
+      for (e in seq_len(nrow(effects))) {
+        if (effects[e, "as_covariate"]) {
+          if (effects[e, "as_effect"]) {
+            covariates_df[cov_row, effects[e, "name"]] <-
+              X_nt[effects[e, "alternative"], effects[e, "name"]]
+          } else {
+            cov_names <- paste(
+              effects[e, "covariate"], probit_alternatives$alternatives,
+              sep = delimiter
+            )
+            covariates_df[cov_row, cov_names] <- X_nt[, effects[e, "covariate"]]
+          }
+
+        } else {
+          if (!effect_is_ASC(effects[e, "name"], delimiter)) {
+            covariates_df[cov_row, effects[e, "covariate"]] <-
+              X_nt[effects[e, "alternative"], effects[e, "name"]]
+          }
+        }
+      }
+    }
+  }
+
+  ### validate
+  validate_probit_covariates(
+    covariates_df, N = N, Tp = Tp, probit_formula = probit_formula,
+    probit_alternatives = probit_alternatives, delimiter = delimiter,
+    column_decider = column_decider, column_occasion = column_occasion
+  )
 }
 
 #' @rdname probit_covariates

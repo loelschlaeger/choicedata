@@ -289,9 +289,35 @@ For scale normalization, we fix the top left element of \code{Sigma_diff} to
 \section{Drawing missing probit model parameters}{
 
 
-Unspecified probit model parameters are drawn independently from their
-conjugate prior distribution, see \code{\link[RprobitB]{RprobitB_prior}}
-for details.
+Unspecified probit model parameters are drawn independently from the
+following distributions:
+\describe{
+\item{\code{s}}{The class weights are drawn from a Dirichlet distribution
+with concentration 1.}
+\item{\code{alpha}}{The fixed coefficients are drawn from a
+multivariate normal distribution with zero mean and a diagonal covariance
+matrix with value 10 on the diagonal.}
+\item{\code{b}}{The class means are drawn from a
+multivariate normal distribution with zero mean and a diagonal covariance
+matrix with value 10 on the diagonal.}
+\item{\code{Omega}}{The class covariances are drawn from an Inverse-Wishart
+distribution with degrees of freedom equal to \code{P_r} + 2 and scale
+matrix equal to the identity matrix.}
+\item{\code{Sigma}}{The error term covariance matrix is drawn from an
+Inverse-Wishart distribution with degrees of freedom equal to \code{J} + 2
+and scale matrix equal to the identity matrix.}
+\item{\code{Sigma_diff}}{The differenced error term covariance matrix is
+derived from \code{Sigma}.}
+\item{\code{beta}}{The decider-specific coefficient vectors are drawn from
+a multivariate normal distribution with mean defined by \code{b} and
+covariance defined by \code{Omega}.
+}
+\item{\code{z}}{The class allocation variables are drawn from a discrete
+distribution over the class labels with probabilities defined by \code{s}.}
+\item{\code{d}}{The logarithmic increases of the utility thresholds are
+drawn from a multivariate normal distribution with zero mean and a diagonal
+covariance matrix with value 10 on the diagonal.}
+}
 }
 
 \examples{

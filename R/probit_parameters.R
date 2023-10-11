@@ -243,9 +243,35 @@ is.probit_parameter <- function(x) {
 #'
 #' @section Drawing missing probit model parameters:
 #'
-#' Unspecified probit model parameters are drawn independently from their
-#' conjugate prior distribution, see \code{\link[RprobitB]{RprobitB_prior}}
-#' for details.
+#' Unspecified probit model parameters are drawn independently from the
+#' following distributions:
+#' \describe{
+#'   \item{\code{s}}{The class weights are drawn from a Dirichlet distribution
+#'   with concentration 1.}
+#'   \item{\code{alpha}}{The fixed coefficients are drawn from a
+#'   multivariate normal distribution with zero mean and a diagonal covariance
+#'   matrix with value 10 on the diagonal.}
+#'   \item{\code{b}}{The class means are drawn from a
+#'   multivariate normal distribution with zero mean and a diagonal covariance
+#'   matrix with value 10 on the diagonal.}
+#'   \item{\code{Omega}}{The class covariances are drawn from an Inverse-Wishart
+#'   distribution with degrees of freedom equal to \code{P_r} + 2 and scale
+#'   matrix equal to the identity matrix.}
+#'   \item{\code{Sigma}}{The error term covariance matrix is drawn from an
+#'   Inverse-Wishart distribution with degrees of freedom equal to \code{J} + 2
+#'   and scale matrix equal to the identity matrix.}
+#'   \item{\code{Sigma_diff}}{The differenced error term covariance matrix is
+#'   derived from \code{Sigma}.}
+#'   \item{\code{beta}}{The decider-specific coefficient vectors are drawn from
+#'   a multivariate normal distribution with mean defined by \code{b} and
+#'   covariance defined by \code{Omega}.
+#'   }
+#'   \item{\code{z}}{The class allocation variables are drawn from a discrete
+#'   distribution over the class labels with probabilities defined by \code{s}.}
+#'   \item{\code{d}}{The logarithmic increases of the utility thresholds are
+#'   drawn from a multivariate normal distribution with zero mean and a diagonal
+#'   covariance matrix with value 10 on the diagonal.}
+#' }
 
 simulate_probit_parameter <- function(
     x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N,
@@ -260,70 +286,39 @@ simulate_probit_parameter <- function(
   if (missing(J)) {
     stop("Please specify the number 'J' of choice alternatives.")
   }
-  checkmate::assert_int(J, lower = 2)
   if (missing(N)) {
     stop("Please specify the number of deciders 'N'.")
   }
+  probit_formula <- probit_formula(formula = formula, re = re, ordered = ordered)
+  probit_alternatives <- probit_alternatives(J = J, ordered = ordered)
+  formula <- probit_formula$formula
+  re <- probit_formula$re
+  ordered <- probit_formula$ordered
+  J <- probit_alternatives$J
   checkmate::assert_int(N, lower = 1)
 
   ### simulate missing parameters
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
-  prior <- RprobitB::RprobitB_prior(
-    formula = formula, re = re, J = J, C = C, ordered = ordered
-  )
   if (!is.null(seed)) {
     set.seed(seed)
   }
   if (identical(x$s, NA) && x$C > 1) {
-    s_prior <- probit_prior_s(C = x$C)
-    x$s <- sort(
-      RprobitB::rdirichlet(
-        concentration = s_prior$s_prior_concentration
-      ),
-      decreasing = TRUE
-    )
+    x$s <- sort(oeli::rdirichlet(concentration = rep(1, x$C)), decreasing = TRUE)
   }
   if (identical(x$alpha, NA) && P_f > 0) {
-    alpha_prior <- probit_prior_alpha(P_f = P_f)
-    x$alpha <- do.call(
-      cbind,
-      replicate(
-        x$C,
-        RprobitB::rmvnorm(
-          mean = alpha_prior$alpha_prior_mean,
-          Sigma = alpha_prior$alpha_prior_Sigma
-        ),
-        simplify = FALSE
-      )
-    )
+    x$alpha <- t(oeli::rmvnorm(n = x$C, mean = numeric(P_f), Sigma = 10 * diag(P_f)))
   }
   if (identical(x$b, NA) && P_r > 0) {
-    b_prior <- probit_prior_b(P_r = P_r)
-    x$b <- do.call(
-      cbind,
-      replicate(
-        x$C,
-        RprobitB::rmvnorm(
-          mean = b_prior$b_prior_mean,
-          Sigma = b_prior$b_prior_Sigma
-        ),
-        simplify = FALSE
-      )
-    )
+    x$b <- t(oeli::rmvnorm(n = x$C, mean = numeric(P_r), Sigma = 10 * diag(P_r)))
   }
   if (identical(x$Omega, NA) && P_r > 0) {
-    Omega_prior <- probit_prior_Omega(P_r = P_r)
     x$Omega <- do.call(
       cbind,
       lapply(
         replicate(
           x$C,
-          RprobitB::rwishart(
-            df = Omega_prior$Omega_prior_df,
-            scale = Omega_prior$Omega_prior_scale,
-            inv = TRUE
-          ),
+          oeli::rwishart(df = P_r + 2, scale = diag(P_r), inv = TRUE),
           simplify = FALSE
         ),
         as.vector
@@ -333,22 +328,12 @@ simulate_probit_parameter <- function(
   if (ordered) {
     x$Sigma_diff <- NA
     if (identical(x$Sigma, NA)) {
-      Sigma_prior <- probit_prior_Sigma(ordered = TRUE, J = J)
-      x$Sigma <- RprobitB::rwishart(
-        df = Sigma_prior$Sigma_prior_df,
-        scale = Sigma_prior$Sigma_prior_scale,
-        inv = TRUE
-      )
+      x$Sigma <- oeli::rwishart(df = J + 2, scale = diag(J), inv = TRUE)
     }
   } else {
     if (identical(x$Sigma, NA)) {
       if (identical(x$Sigma_diff, NA)) {
-        Sigma_diff_prior <- probit_prior_Sigma_diff(ordered = FALSE, J = J)
-        x$Sigma_diff <- RprobitB::rwishart(
-          df = Sigma_diff_prior$Sigma_diff_prior_df,
-          scale = Sigma_diff_prior$Sigma_diff_prior_scale,
-          inv = TRUE
-        )
+        x$Sigma_diff <- oeli::rwishart(df = J + 1, scale = diag(J - 1), inv = TRUE)
       }
       x$Sigma <- undiff_Sigma(x$Sigma_diff, diff_alt = x$diff_alt)
     } else {
@@ -366,7 +351,7 @@ simulate_probit_parameter <- function(
     x$beta <- do.call(
       cbind,
       lapply(x$z, function(c) {
-        RprobitB::rmvnorm(
+        oeli::rmvnorm(
           mean = x$b[,c],
           Sigma = matrix(x$Omega[,c], nrow = P_r, ncol = P_r)
         )
@@ -374,11 +359,7 @@ simulate_probit_parameter <- function(
     )
   }
   if (ordered) {
-    d_prior <- probit_prior_d(ordered = TRUE, J = J)
-    x$d <- RprobitB::rmvnorm(
-      mean = d_prior$d_prior_mean,
-      Sigma = d_prior$d_prior_Sigma
-    )
+    x$d <- oeli::rmvnorm(n = J - 2, mean = numeric(J - 2), Sigma = diag(J - 2))
   } else {
     x$d <- NA
   }
