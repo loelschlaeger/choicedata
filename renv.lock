@@ -744,14 +744,14 @@
     },
     "oeli": {
       "Package": "oeli",
-      "Version": "0.0.0.9002",
+      "Version": "0.0.0.9004",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "oeli",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "2611c5f4205ee070a808dc2e8384894a130bd812",
+      "RemoteSha": "0b68656540c454e1b5347a1a7a678054a5cf4818",
       "Requirements": [
         "Rcpp",
         "RcppArmadillo",
@@ -760,7 +760,7 @@
         "stats",
         "testthat"
       ],
-      "Hash": "32fcab63bd598a9800b94498329a44c3"
+      "Hash": "cb979fdf9e150efd0fa1a61bcdb4912b"
     },
     "openssl": {
       "Package": "openssl",

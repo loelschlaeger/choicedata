@@ -180,14 +180,16 @@
 #' The error term differences \eqn{(\tilde{\epsilon}_{nt:})} again are
 #' multivariate normally distributed with mean \eqn{0} but transformed
 #' covariance matrix \eqn{\tilde{\Sigma}}, also denoted by \code{Sigma_diff}.
-#' See \code{\link{diff_Sigma}} for computing \code{Sigma_diff} from
-#' \code{Sigma}, and \code{\link{undiff_Sigma}} for the other way around.
+#' See \code{\link{oeli::diff_cov}} for computing \code{Sigma_diff} from
+#' \code{Sigma}, and \code{\link{oeli::undiff_cov}} for the other way around.
 #'
 #' For level normalization in the ordered probit model, we fix
 #' \eqn{\gamma_1 = 0}.
 #'
 #' For scale normalization, we fix the top left element of \code{Sigma_diff} to
-#' \eqn{1} (or \code{Sigma = 1} in the ordered probit case).
+#' \eqn{1} (or fix \code{Sigma = 1} in the ordered probit case).
+#'
+#' @export
 
 probit_parameter <- function(
     C = 1, s = NA, alpha = NA, b = NA, Omega = NA, Sigma = NA,
@@ -201,7 +203,7 @@ probit_parameter <- function(
   )
   parameter_names <- names(parameters)
   for (i in seq_along(parameters)) {
-    if (!is.na(parameters[[i]])) {
+    if (!checkmate::test_scalar_na(parameters[[i]])) {
       checkmate::assert_numeric(
         parameters[[i]], any.missing = FALSE, .var.name = parameter_names[i]
       )
@@ -228,6 +230,7 @@ probit_parameter <- function(
 #' @rdname probit_parameter
 #' @param x
 #' A \code{\link{probit_parameter}} object.
+#' @export
 
 is.probit_parameter <- function(x) {
   inherits(x, "probit_parameter")
@@ -272,6 +275,8 @@ is.probit_parameter <- function(x) {
 #'   drawn from a multivariate normal distribution with zero mean and a diagonal
 #'   covariance matrix with value 10 on the diagonal.}
 #' }
+#'
+#' @export
 
 simulate_probit_parameter <- function(
     x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N,
@@ -303,16 +308,24 @@ simulate_probit_parameter <- function(
   if (!is.null(seed)) {
     set.seed(seed)
   }
-  if (identical(x$s, NA) && x$C > 1) {
+  if (checkmate::test_scalar_na(x$s) && x$C > 1) {
     x$s <- sort(oeli::rdirichlet(concentration = rep(1, x$C)), decreasing = TRUE)
   }
-  if (identical(x$alpha, NA) && P_f > 0) {
-    x$alpha <- t(oeli::rmvnorm(n = x$C, mean = numeric(P_f), Sigma = 10 * diag(P_f)))
+  if (checkmate::test_scalar_na(x$alpha) && P_f > 0) {
+    x$alpha <- if (x$C == 1) {
+      matrix(oeli::rmvnorm(mean = numeric(P_f), Sigma = 10 * diag(P_f)))
+    } else {
+      t(oeli::rmvnorm(n = x$C, mean = numeric(P_f), Sigma = 10 * diag(P_f)))
+    }
   }
-  if (identical(x$b, NA) && P_r > 0) {
-    x$b <- t(oeli::rmvnorm(n = x$C, mean = numeric(P_r), Sigma = 10 * diag(P_r)))
+  if (checkmate::test_scalar_na(x$b) && P_r > 0) {
+    x$b <- if (x$C == 1) {
+      as.matrix(oeli::rmvnorm(mean = numeric(P_r), Sigma = 10 * diag(P_r)))
+    } else {
+      t(oeli::rmvnorm(n = x$C, mean = numeric(P_r), Sigma = 10 * diag(P_r)))
+    }
   }
-  if (identical(x$Omega, NA) && P_r > 0) {
+  if (checkmate::test_scalar_na(x$Omega) && P_r > 0) {
     x$Omega <- do.call(
       cbind,
       lapply(
@@ -326,42 +339,43 @@ simulate_probit_parameter <- function(
     )
   }
   if (ordered) {
-    x$Sigma_diff <- NA
-    if (identical(x$Sigma, NA)) {
-      x$Sigma <- oeli::rwishart(df = J + 2, scale = diag(J), inv = TRUE)
+    x$Sigma_diff <- NA_real_
+    if (checkmate::test_scalar_na(x$Sigma)) {
+      x$Sigma <- oeli::rwishart(df = 3, scale = diag(1), inv = TRUE)
     }
   } else {
-    if (identical(x$Sigma, NA)) {
-      if (identical(x$Sigma_diff, NA)) {
+    if (checkmate::test_scalar_na(x$Sigma)) {
+      if (checkmate::test_scalar_na(x$Sigma_diff)) {
         x$Sigma_diff <- oeli::rwishart(df = J + 1, scale = diag(J - 1), inv = TRUE)
       }
-      x$Sigma <- undiff_Sigma(x$Sigma_diff, diff_alt = x$diff_alt)
+      x$Sigma <- oeli::undiff_cov(x$Sigma_diff, ref = x$diff_alt)
     } else {
-      x$Sigma_diff <- diff_Sigma(x$Sigma, diff_alt = x$diff_alt)
+      x$Sigma_diff <- oeli::diff_cov(x$Sigma, ref = x$diff_alt)
     }
   }
-  if (identical(x$z, NA)) {
+  if (checkmate::test_scalar_na(x$z)) {
     if (x$C == 1) {
       x$z <- rep(1, N)
     } else {
       x$z <- sample.int(x$C, size = N, replace = TRUE, prob = x$s)
     }
   }
-  if (identical(x$beta, NA) && P_r > 0) {
+  if (checkmate::test_scalar_na(x$beta) && P_r > 0) {
     x$beta <- do.call(
       cbind,
       lapply(x$z, function(c) {
         oeli::rmvnorm(
-          mean = x$b[,c],
-          Sigma = matrix(x$Omega[,c], nrow = P_r, ncol = P_r)
+          mean = x$b[, c],
+          Sigma = matrix(x$Omega[, c], nrow = P_r, ncol = P_r)
         )
       })
     )
   }
   if (ordered) {
     x$d <- oeli::rmvnorm(n = J - 2, mean = numeric(J - 2), Sigma = diag(J - 2))
+    x$diff_alt <- NA_integer_
   } else {
-    x$d <- NA
+    x$d <- NA_real_
   }
   return(x)
 }
@@ -392,281 +406,119 @@ validate_probit_parameter <- function(
     stop("Please specify the input 'formula'.")
   }
   if (missing(J)) {
-    probit_stop(
-      "Please specify input 'J'.",
-      "It should be the number of choice alternatives."
-    )
-  }
-  if (!is_positive_integer(J)) {
-    probit_stop(
-      "Input 'J' must be a positive `integer`.",
-      "It should be the number of choice alternatives."
-    )
+    stop("Please specify the number of choice alternatives 'J'.")
   }
   if (missing(N)) {
-    probit_stop(
-      "Please specify input 'N'.",
-      "It should be the number of deciders."
-    )
+    stop("Please specify the number of deciders 'N'.")
   }
-  if (!is_positive_integer(N)) {
-    probit_stop(
-      "Input 'N' must be a positive `integer`.",
-      "It should be the number of deciders."
-    )
+  probit_formula <- probit_formula(formula = formula, re = re, ordered = ordered)
+  probit_alternatives <- probit_alternatives(J = J, ordered = ordered)
+  formula <- probit_formula$formula
+  re <- probit_formula$re
+  J <- probit_alternatives$J
+  ordered <- probit_alternatives$ordered
+
+  ### check C
+  checkmate::assert_int(x$C, lower = 1)
+
+  ### check diff_alt
+  if (ordered) {
+    x$diff_alt <- NA_integer_
+  } else {
+    checkmate::assert_int(x$diff_alt, lower = 1, upper = J)
   }
 
   ### add missing parameters
-  x <- simulate_probit_parameter()
+  x <- simulate_probit_parameter(
+    x = x, formula = formula, re = re, ordered = ordered, J = J, N = N
+  )
 
   ### validate parameters
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
-  ### check C
-  if (!is_positive_integer(x$C)) {
-    probit_stop(
-      "'C' is expected to be a positive `integer`.",
-      "Instead, it is (collapsed):",
-      glue::glue_collapse(
-        glue::glue("{x$C}"),
-        sep = " ",
-        width = getOption("width") - 3
-      )
-    )
-  }
+
   ### check s
   if (x$C == 1) {
     x$s <- 1
   }
-  if (length(x$s) != x$C || !is.numeric(x$s) ||
-      abs(sum(x$s) - 1) > .Machine$double.eps || is.unsorted(rev(x$s))) {
-    probit_stop(
-      glue::glue(
-        "'s' is expected to be a descending `numeric` `vector` of length {x$C} which sums up to 1."
-      ),
-      "Instead, it is (collapsed):",
-      glue::glue_collapse(
-        glue::glue("{x$s}"),
-        sep = " ",
-        width = getOption("width") - 3
-      )
-    )
-  }
+  checkmate::assert_atomic_vector(x$s, any.missing = FALSE, len = x$C)
+  stopifnot("'s' must sum up to 1." = abs(sum(x$s) - 1) < .Machine$double.eps)
+  stopifnot("'s' must be descending." = !is.unsorted(rev(x$s)))
+
   ### check alpha
   if (P_f > 0) {
-    if (P_f == 1 && is.vector(x$alpha) && length(x$alpha) == x$C) {
+    if (P_f == 1 && checkmate::test_atomic_vector(x$alpha, len = x$C)) {
       x$alpha <- matrix(x$alpha, nrow = 1, ncol = x$C)
     }
-    if (x$C == 1 && is.vector(x$alpha) && length(x$alpha) == P_f) {
+    if (x$C == 1 && checkmate::test_atomic_vector(x$alpha, len = P_f)) {
       x$alpha <- matrix(x$alpha, nrow = P_f, ncol = 1)
     }
-    if (!is.numeric(x$alpha) || !is.matrix(x$alpha) || nrow(x$alpha) != P_f ||
-        ncol(x$alpha) != x$C) {
-      probit_stop(
-        glue::glue(
-          "'alpha' is expected to be a `numeric` `matrix` of dimension {P_f} x {x$C}."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$alpha}"),
-          sep = " ",
-          width = getOption("width") - 3
-        )
-      )
-    }
+    checkmate::assert_matrix(
+      x$alpha, mode = "numeric", any.missing = FALSE, nrows = P_f, ncols = x$C
+    )
   } else {
-    x$alpha <- NA
+    x$alpha <- NA_real_
   }
+
   if (P_r > 0) {
+
     ### check b
-    if (P_r == 1 && is.vector(x$b) && length(x$b) == x$C) {
+    if (P_r == 1 && checkmate::test_atomic_vector(x$b, len = x$C)) {
       x$b <- matrix(x$b, nrow = 1, ncol = x$C)
     }
-    if (x$C == 1 && is.vector(x$b) && length(x$b) == P_r) {
+    if (x$C == 1 && checkmate::test_atomic_vector(x$b, len = P_r)) {
       x$b <- matrix(x$b, nrow = P_r, ncol = 1)
     }
-    if (!is.numeric(x$b) || !is.matrix(x$b) || nrow(x$b) != P_r || ncol(x$b) != x$C) {
-      probit_stop(
-        glue::glue(
-          "'b' is expected to be a `numeric` `matrix` of dimension {P_r} x {x$C}."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("'{x$b}'"),
-          sep = " ",
-          width = getOption("width") - 3
-        )
-      )
-    }
+    checkmate::assert_matrix(
+      x$b, mode = "numeric", any.missing = FALSE, nrows = P_r, ncols = x$C
+    )
+
     ### check Omega
-    if (P_r == 1 && is.vector(x$Omega) && length(x$Omega) == x$C) {
+    if (P_r == 1 && checkmate::test_atomic_vector(x$Omega, len = x$C)) {
       x$Omega <- matrix(x$Omega, nrow = 1, ncol = x$C)
     }
-    if (x$C == 1 && is.vector(x$Omega) && length(x$Omega) == P_r^2) {
+    if (x$C == 1 && checkmate::test_atomic_vector(x$Omega, len = P_r^2)) {
       x$Omega <- matrix(x$Omega, nrow = P_r^2, ncol = 1)
     }
-    if (!is.numeric(x$Omega) || !is.matrix(x$Omega) || nrow(x$Omega) != P_r^2 ||
-        ncol(x$Omega) != x$C) {
-      probit_stop(
-        glue::glue(
-          "'Omega' is expected to be a `numeric` `matrix` of dimension {P_r^2} x {x$C}."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$Omega}"),
-          sep = " ",
-          width = getOption("width") - 3
-        )
-      )
-    }
+    checkmate::assert_matrix(
+      x$Omega, mode = "numeric", any.missing = FALSE, nrows = P_r^2, ncols = x$C
+    )
     for (c in 1:x$C) {
-      if (!is_covariance_matrix(matrix(x$Omega[,c], nrow = P_r, ncol = P_r))) {
-        probit_stop(
-          glue::glue(
-            "Column {c} in 'Omega' is expected to be a proper covariance matrix."
-          ),
-          "Instead, it is (collapsed):",
-          glue::glue_collapse(
-            glue::glue("{x$Omega[,c]}"),
-            sep = " ",
-            width = getOption("width") - 3
-          ),
-          "Please check it with 'is_covariance_matrix()'."
-        )
-      }
+      oeli::assert_covariance_matrix(
+        matrix(x$Omega[, c], nrow = P_r, ncol = P_r), dim = P_r
+      )
     }
   } else {
-    x$b <- NA
-    x$Omega <- NA
+    x$b <- NA_real_
+    x$Omega <- NA_real_
   }
-  ### check diff_alt
-  if (!is_positive_integer(x$diff_alt) || x$diff_alt > J) {
-    probit_stop(
-      glue::glue(
-        "'diff_alt' is expected to be a positive `integer` smaller or equal {J}."
-      ),
-      "Instead, it is (collapsed):",
-      glue::glue_collapse(
-        glue::glue("{x$diff_alt}"),
-        sep = " ",
-        width = getOption("width") - 3
-      )
-    )
-  }
+
   ### check Sigma / Sigma_diff
   if (ordered) {
-    x$Sigma_diff <- NA
+    x$Sigma_diff <- NA_real_
     x$Sigma <- matrix(x$Sigma)
-    if (!is.numeric(x$Sigma) || !is.matrix(x$Sigma) || nrow(x$Sigma) != 1 ||
-        ncol(x$Sigma) != 1 || x$Sigma[1,1] <= 0) {
-      probit_stop(
-        glue::glue(
-          "'Sigma' is expected to be a `numeric` 1 x 1 `matrix` with a positive entry."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$Sigma}"),
-          sep = " ",
-          width = getOption("width") - 3
-        )
-      )
-    }
+    oeli::assert_covariance_matrix(x$Sigma, dim = 1)
   } else {
-    if (!is.numeric(x$Sigma) || !is.matrix(x$Sigma) || nrow(x$Sigma) != J ||
-        ncol(x$Sigma) != J) {
-      probit_stop(
-        glue::glue(
-          "'Sigma' is expected to be a `numeric` `matrix` of dimension {J} x {J}."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$Sigma}"),
-          sep = " ",
-          width = getOption("width") - 3
-        )
-      )
-    }
-    if (!is_covariance_matrix(x$Sigma)) {
-      probit_stop(
-        glue::glue(
-          "'Sigma' is expected to be a proper covariance matrix."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$Sigma}"),
-          sep = " ",
-          width = getOption("width") - 3
-        ),
-        "Please check it with 'is_covariance_matrix()'."
-      )
-    }
-    if (!is.numeric(x$Sigma_diff) || !is.matrix(x$Sigma_diff) ||
-        nrow(x$Sigma_diff) != J-1 || ncol(x$Sigma_diff) != J-1) {
-      probit_stop(
-        glue::glue(
-          "'Sigma_diff' is expected to be a `numeric` `matrix` of dimension {J-1} x {J-1}."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$Sigma_diff}"),
-          sep = " ",
-          width = getOption("width") - 3
-        )
-      )
-    }
-    if (!is_covariance_matrix(x$Sigma_diff)) {
-      probit_stop(
-        glue::glue(
-          "'Sigma_diff' is expected to be a proper covariance matrix."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$Sigma_diff}"),
-          sep = " ",
-          width = getOption("width") - 3
-        ),
-        "Please check it with 'is_covariance_matrix()'."
-      )
-    }
-    if (!isTRUE(all.equal(diff_Sigma(x$Sigma, diff_alt = x$diff_alt), x$Sigma_diff))) {
-      probit_stop(
-        glue::glue(
-          "Differencing 'Sigma' with respect to alternative {x$diff_alt} is expected to yield 'Sigma_diff'."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{diff_Sigma(x$Sigma, diff_alt = x$diff_alt)}"),
-          sep = " ",
-          width = getOption("width") - 3
-        ),
-        glue::glue("Please check it with 'diff_Sigma(Sigma, diff_alt = {x$diff_alt})'.")
-      )
+    oeli::assert_covariance_matrix(x$Sigma, dim = J)
+    oeli::assert_covariance_matrix(x$Sigma_diff, dim = J - 1)
+    if (!isTRUE(all.equal(oeli::diff_cov(x$Sigma, ref = x$diff_alt), x$Sigma_diff))) {
+      stop("Differencing 'Sigma' is expected to yield 'Sigma_diff'.")
     }
   }
+
   ### check beta
   if (P_r > 0) {
-    if (P_r == 1 && is.vector(x$beta) && length(x$beta) == N) {
+    if (P_r == 1 && checkmate::test_atomic_vector(x$beta, len = N)) {
       x$beta <- matrix(x$beta, nrow = 1, ncol = N)
     }
-    if (N == 1 && is.vector(x$beta) && length(x$beta) == P_r) {
+    if (N == 1 && checkmate::test_atomic_vector(x$beta, len = P_r)) {
       x$beta <- matrix(x$beta, nrow = P_r, ncol = 1)
     }
-    if (!is.numeric(x$beta) || !is.matrix(x$beta) || nrow(x$beta) != P_r ||
-        ncol(x$beta) != N) {
-      probit_stop(
-        glue::glue(
-          "'beta' is expected to be a `numeric` `matrix` of dimension {P_r} x {N}."
-        ),
-        "Instead, it is (collapsed):",
-        glue::glue_collapse(
-          glue::glue("{x$beta}"),
-          sep = " ",
-          width = getOption("width") - 3
-        )
-      )
-    }
+    checkmate::assert_matrix(
+      x$beta, mode = "numeric", any.missing = FALSE, nrows = P_r, ncols = N
+    )
   } else {
-    x$beta <- NA
+    x$beta <- NA_real_
   }
 
   ### check z
@@ -678,7 +530,7 @@ validate_probit_parameter <- function(
   if (ordered) {
     checkmate::assert_numeric(x$d, len = J - 2)
   } else {
-    x$d <- NA
+    x$d <- NA_real_
   }
 
   return(x)
@@ -698,14 +550,14 @@ print.probit_parameter <- function(
   checkmate::assert_class(x, "probit_parameter")
   pars <- list(...)
   ind <- if (length(pars) != 0) {
-    checkmate::assert_character(pars, any.missing = FALSE)
+    checkmate::assert_character(unlist(pars), any.missing = FALSE)
     sapply(pars, function(par) which(names(x) == par))
   } else {
     seq_along(x)
   }
   cat("Parameter:\n")
   for (i in ind) {
-    if(!identical(x[[i]], NA)) {
+    if(!checkmate::test_scalar_na(x[[i]])) {
       oeli::print_matrix(
         x[[i]], rowdots = rowdots, coldots = coldots, digits = digits,
         label = names(x)[i], simplify = simplify, details = details

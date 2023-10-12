@@ -7,7 +7,6 @@ Maintainer: Lennart Oelschläger <oelschlaeger.lennart@gmail.com>
 Description: Choice data simulation from a (ranked, ordered, multinomial) probit model.
 License: GPL (>= 3)
 Encoding: UTF-8
-LazyData: true
 URL: https://github.com/loelschlaeger/probitdata
 BugReports: https://github.com/loelschlaeger/probitdata/issues
 Roxygen: list(markdown = TRUE)
@@ -16,4 +15,5 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
-    oeli (>= 0.0.0.9002)
+    checkmate,
+    oeli (>= 0.0.0.9004)

@@ -457,9 +457,11 @@ validate_probit_covariates <- function(
 }
 
 #' @rdname probit_covariates
+#' @param ...
+#' Currently not used.
 #' @exportS3Method
 
-as.list.probit_covariates <- function(x) {
+as.list.probit_covariates <- function(x, ...) {
 
   ### input checks
   checkmate::assert_data_frame(x)
@@ -529,9 +531,11 @@ as.list.probit_covariates <- function(x) {
 }
 
 #' @rdname probit_covariates
+#' @param row.names,optional,...
+#' Currently not used.
 #' @exportS3Method
 
-as.data.frame.probit_covariates <- function(x) {
+as.data.frame.probit_covariates <- function(x, row.names, optional, ...) {
 
   ### input checks
   checkmate::assert_list(x)

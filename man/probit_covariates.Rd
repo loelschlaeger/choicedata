@@ -42,9 +42,9 @@ validate_probit_covariates(
   column_occasion
 )
 
-\method{as.list}{probit_covariates}(x)
+\method{as.list}{probit_covariates}(x, ...)
 
-\method{as.data.frame}{probit_covariates}(x)
+\method{as.data.frame}{probit_covariates}(x, row.names, optional, ...)
 
 covariate_names(probit_formula, probit_alternatives, delimiter = "_")
 
@@ -110,6 +110,10 @@ must equal the output of \code{\link{covariate_number}}. The
 \code{(i,j)}-th element defines the correlation between covariate \code{i}
 and covariate \code{j} in the output of \code{\link{covariate_names}}.
 }}
+
+\item{...}{Currently not used.}
+
+\item{row.names, optional, ...}{Currently not used.}
 }
 \value{
 An \code{\link{probit_covariates}} object. It is a \code{list} of

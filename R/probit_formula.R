@@ -66,6 +66,8 @@
 #' \code{+} to the corresponding name in \code{re}.
 #' To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
 #' \code{re}.
+#'
+#' @export
 
 probit_formula <- function(formula, re = NULL, ordered = FALSE) {
 
@@ -147,6 +149,7 @@ probit_formula <- function(formula, re = NULL, ordered = FALSE) {
 #' @rdname probit_formula
 #' @param x
 #' An \code{\link{probit_formula}} object.
+#' @export
 
 is.probit_formula <- function(x) {
   inherits(x, "probit_formula")

@@ -43,6 +43,8 @@
 #' \code{base}.
 #' The base alternative is marked with a \code{*} when printing a
 #' \code{\link{probit_alternatives}} object.
+#'
+#' @export
 
 probit_alternatives <- function(
     J = 2, alternatives = LETTERS[1:J], base = alternatives[1], ordered = FALSE
@@ -76,6 +78,7 @@ probit_alternatives <- function(
 #' @rdname probit_alternatives
 #' @param x
 #' A \code{\link{probit_alternatives}} object.
+#' @export
 
 is.probit_alternatives <- function(x) {
   inherits(x, "probit_alternatives")
