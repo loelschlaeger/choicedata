@@ -71,7 +71,7 @@ probit_alternatives <- function(
       base = base,
       ordered = ordered
     ),
-    class = "probit_alternatives"
+    class = c("probit_alternatives", "list")
   )
 }
 

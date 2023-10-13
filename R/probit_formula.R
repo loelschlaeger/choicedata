@@ -142,7 +142,7 @@ probit_formula <- function(formula, re = NULL, ordered = FALSE) {
       re_n = re_n,
       re_ln = re_ln
     ),
-    class = "probit_formula"
+    class = c("probit_formula", "list")
   )
 }
 

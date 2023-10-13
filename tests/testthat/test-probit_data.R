@@ -1,3 +1,10 @@
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
+test_that("probit data can be simulated", {
+  probit_covariates = sample_probit_covariates(
+    probit_formula = probit_formula(formula = choice ~ A | 0 | C), N = 10, Tp = 1:10,
+    probit_alternatives = probit_alternatives(J = 3)
+  )
+  probit_parameter <- probit_parameter()
+  ranked <- FALSE
+  column_choice <- "choice"
 })
+

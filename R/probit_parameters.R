@@ -568,6 +568,22 @@ print.probit_parameter <- function(
   invisible(x)
 }
 
+#' @keywords internal
+
+get_coefficient_vector <- function(probit_parameter, decider_id) {
+  checkmate::assert_class(probit_parameter, "probit_parameter")
+  checkmate::assert_int(n, lower = 1)
+  z_n <- probit_parameter$z[n]
+  checkmate::assert_int(z_n, lower = 1)
+  coef <- numeric()
+  if (checkmate::test_numeric(probit_parameter$alpha, any.missing = FALSE)) {
+    coef <- c(coef, probit_parameter$alpha[, z_n])
+  }
+  if (checkmate::test_numeric(probit_parameter$beta, any.missing = FALSE)) {
+    coef <- c(coef, probit_parameter$beta[, z_n])
+  }
+  return(coef)
+}
 
 
 

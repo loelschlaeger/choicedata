@@ -2,6 +2,7 @@
 % Please edit documentation in R/probit_data.R
 \name{probit_data}
 \alias{probit_data}
+\alias{validate_probit_data}
 \title{Define probit data}
 \usage{
 probit_data(
@@ -12,9 +13,11 @@ probit_data(
   ranked = FALSE,
   ordered = FALSE
 )
+
+validate_probit_data()
 }
 \arguments{
-\item{data}{TBA}
+\item{data}{A \code{data.frame}.}
 }
 \description{
 These functions construct and validate an object of class
