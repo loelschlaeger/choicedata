@@ -122,7 +122,13 @@ By default, \code{re = NULL}, i.e., no random effects.}
 \item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 
-\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the simulation of
+\item{J}{An \code{integer}, the number of choice alternatives.
+Must be at least \code{2}.
+If \code{ordered = TRUE}, must be at least \code{3}.}
+
+\item{N}{A positive \code{integer}, the number of deciders.}
+
+\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the sampling of
 missing probit parameters reproducible.
 By default, \code{seed = NULL}, i.e., no seed is set.}
 
@@ -276,8 +282,8 @@ also denoted by \code{diff_alt})
 The error term differences \eqn{(\tilde{\epsilon}_{nt:})} again are
 multivariate normally distributed with mean \eqn{0} but transformed
 covariance matrix \eqn{\tilde{\Sigma}}, also denoted by \code{Sigma_diff}.
-See \code{\link{oeli::diff_cov}} for computing \code{Sigma_diff} from
-\code{Sigma}, and \code{\link{oeli::undiff_cov}} for the other way around.
+See \code{\link[oeli]{diff_cov}} for computing \code{Sigma_diff} from
+\code{Sigma}, and \code{\link[oeli]{undiff_cov}} for the other way around.
 
 For level normalization in the ordered probit model, we fix
 \eqn{\gamma_1 = 0}.

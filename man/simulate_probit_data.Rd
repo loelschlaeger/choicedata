@@ -17,12 +17,18 @@ simulate_probit_data(
 \item{probit_covariates}{An \code{\link{probit_covariates}} object, which contains the covariate
 matrices used for the choice data simulation.}
 
-\item{ranked}{TODO}
-
-\item{true_parameter}{An \code{\link{probit_parameter}} object, which contains the model
+\item{probit_parameter}{An \code{\link{probit_parameter}} object, which contains the model
 parameters used for the choice data simulation.
 By default, \code{probit_parameter = probit_parameter()}, i.e. default
 parameters are used.}
+
+\item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
+
+\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the sampling of
+probit covariates reproducible.
+By default, \code{seed = NULL}, i.e., no seed is set.}
+
+\item{column_choice}{TODO}
 }
 \value{
 An \code{\link{probit_data}} object.
@@ -76,23 +82,29 @@ To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
 
 \examples{
 ### simulate data from a binary probit model with two latent classes
-data <- simulate_probit_data(
-  formula = choice ~ cost | income | time, N = 10, J = 2, T = 1:10,
-  alternatives = c("car", "bus"), re = c("cost", "time"),
-  true_parameter = probit_parameter(C = 2)
-)
+# data <- simulate_probit_data(
+#   probit_covariates = sample_probit_covariates(
+#     probit_formula = probit_formula(
+#       formula = choice ~ cost | income | time, re = c("cost", "time")
+#     ),
+#     N = 10, Tp = 1:10,
+#     probit_alternatives = probit_alternatives(
+#       J = 2, alternatives = c("car", "bus")
+#     )
+#   )
+# )
 
 ### simulate data from an ordered probit model
-data <- simulate_probit_data(
-  formula = opinion ~ age + gender, N = 50, J = 5,
-  alternatives = c("very bad", "bad", "indifferent", "good", "very good"),
-  ordered = TRUE
-)
+# data <- simulate_probit_data(
+#   formula = opinion ~ age + gender, N = 50, J = 5,
+#   alternatives = c("very bad", "bad", "indifferent", "good", "very good"),
+#   ordered = TRUE
+# )
 
 ### simulate data from a ranked probit model
-data <- simulate_probit_data(
-  formula = product ~ price, N = 10, J = 3, T = 1:10, ranked = TRUE
-)
+# data <- simulate_probit_data(
+#   formula = product ~ price, N = 10, J = 3, T = 1:10, ranked = TRUE
+# )
 
 }
 \seealso{

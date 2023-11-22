@@ -3,19 +3,22 @@
 \name{probit_choice_set}
 \alias{probit_choice_set}
 \alias{is.probit_choice_set}
-\alias{print.probit_probit_choice_set}
+\alias{print.probit_choice_set}
 \title{Define probit choice set}
 \usage{
 probit_choice_set(probit_alternatives, ranked = FALSE, delimiter = "_")
 
 is.probit_choice_set(x)
 
-\method{print}{probit_probit_choice_set}(x, ...)
+\method{print}{probit_choice_set}(x, ...)
 }
 \arguments{
 \item{probit_alternatives}{A \code{\link{probit_alternatives}} object.}
 
 \item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
+
+\item{delimiter}{A \code{character}, the delimiter between alternative names in the ranked
+case. By default, \code{delimiter = "_"}.}
 
 \item{x}{A \code{\link{probit_choice_set}} object.}
 
@@ -31,6 +34,21 @@ This function constructs an object of class
 }
 \section{Ranked choices}{
 
-TODO
+Ranked choices are yet another model variation: rather than recording only
+the single most preferred alternative, some surveys ask for a full ranking of
+all the alternatives, which reveals far more about the underlying
+preferences. Ranked choices can by analyzed by setting \code{ranked = TRUE}.
+The choice column of the data set must provide the full ranking for each
+choice occasion (from most preferred to least preferred), where the
+alternatives are separated by the \code{delimiter} string.
+
+The ranked probit model follows directly from the general unordered case
+noting that the ranking implies that the highest ranked alternative is chosen
+in any case, while the second highest ranked alternative is chosen, if the
+highest ranked alternative is not available and so forth. The only difference
+is that we take flexible utility differences such that the differenced
+utility vector is always negative, in contrast to the general case where we
+difference with respect to a fixed reference alternative. Thereby, we
+incorporate information of the full ranking.
 }
 

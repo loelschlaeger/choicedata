@@ -158,4 +158,69 @@ test_that("probit parameter can be validated", {
     ),
     "probit_parameter"
   )
+  expect_s3_class(
+    validate_probit_parameter(
+      x = probit_parameter(C = 2, alpha = 1:2),
+      formula = choice ~ A + B + C, J = 3, N = 10, ordered = TRUE, re = c("A", "B")
+    ),
+    "probit_parameter"
+  )
+  expect_s3_class(
+    validate_probit_parameter(
+      x = probit_parameter(C = 1, b = 1:2, Omega = c(1, 0.5, 0.5, 1)),
+      formula = choice ~ A + B + C, J = 3, N = 10, ordered = TRUE, re = c("A", "B")
+    ),
+    "probit_parameter"
+  )
+  expect_s3_class(
+    validate_probit_parameter(
+      x = probit_parameter(C = 2, b = 1:2, Omega = 1:2),
+      formula = choice ~ A + B + C, J = 3, N = 10, ordered = TRUE, re = c("A")
+    ),
+    "probit_parameter"
+  )
+  expect_s3_class(
+    validate_probit_parameter(
+      x = probit_parameter(C = 1, b = 1:2, beta = matrix(1:20, nrow = 2, ncol = 10), Omega = c(1, 0.5, 0.5, 1)),
+      formula = choice ~ A + B + C, J = 3, N = 10, ordered = TRUE, re = c("A", "B")
+    ),
+    "probit_parameter"
+  )
+  expect_s3_class(
+    validate_probit_parameter(
+      x = probit_parameter(C = 2, b = 1:2, beta = matrix(1:10, nrow = 1, ncol = 10), Omega = 1:2),
+      formula = choice ~ A + B + C, J = 3, N = 10, ordered = TRUE, re = c("A")
+    ),
+    "probit_parameter"
+  )
+  expect_s3_class(
+    validate_probit_parameter(
+      x = probit_parameter(C = 2, beta = 1:10),
+      formula = choice ~ A + B + C, J = 3, N = 10, ordered = TRUE, re = c("A")
+    ),
+    "probit_parameter"
+  )
+  expect_s3_class(
+    validate_probit_parameter(
+      x = probit_parameter(beta = 1:2),
+      formula = choice ~ A + B + C, J = 3, N = 1, ordered = TRUE, re = c("A", "B")
+    ),
+    "probit_parameter"
+  )
 })
+
+test_that("coefficient vector for decider can be extracted", {
+  probit_parameter <- simulate_probit_parameter(
+    formula = A ~ B | C, re = "B", J = 3, N = 10
+  )
+  checkmate::expect_numeric(
+    get_coefficient_vector(probit_parameter, decider_id = 1),
+    any.missing = FALSE, len = 5
+  )
+  expect_error(
+    get_coefficient_vector(probit_parameter, decider_id = 11),
+    "Assertion on 'decider_id' failed: Element 1 is not <= 10."
+  )
+})
+
+

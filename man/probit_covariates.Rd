@@ -32,7 +32,7 @@ sample_probit_covariates(
 )
 
 validate_probit_covariates(
-  covariates,
+  x,
   N,
   Tp = 1,
   probit_formula,
@@ -65,6 +65,10 @@ choice occasions per decider.
 By default, \code{Tp = 1}.}
 
 \item{probit_alternatives}{A \code{\link{probit_alternatives}} object.}
+
+\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the sampling of
+probit covariates reproducible.
+By default, \code{seed = NULL}, i.e., no seed is set.}
 
 \item{covariate_levels}{Defines the number of levels for the covariates. Two formats are allowed:
 \itemize{
@@ -111,9 +115,17 @@ must equal the output of \code{\link{covariate_number}}. The
 and covariate \code{j} in the output of \code{\link{covariate_names}}.
 }}
 
+\item{delimiter}{A \code{character}, the delimiter between covariate and alternative name
+to build the effect name.
+By default, \code{delimiter = "_"}.}
+
+\item{column_decider}{TODO}
+
+\item{column_occasion}{TODO}
+
 \item{...}{Currently not used.}
 
-\item{row.names, optional, ...}{Currently not used.}
+\item{row.names, optional}{Currently not used.}
 }
 \value{
 An \code{\link{probit_covariates}} object. It is a \code{list} of
@@ -140,7 +152,7 @@ see the details.
 \code{\link{as.data.frame.probit_covariates}} transform the covariates in
 \code{list} or \code{data.frame} form, respectively.
 
-\code{\link{covariate_names}} and \code{\link{covariate_numbers}} provide the
+\code{\link{covariate_names}} and \code{\link{covariate_number}} provide the
 names and number of covariates for a given model specification.
 }
 \section{Covariate matrices}{

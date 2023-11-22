@@ -64,6 +64,8 @@
 #' A \code{numeric} of length \code{J - 2}, the vector of logarithmic increases
 #' of the utility thresholds.
 #' Only relevant in the ordered probit model case (see details).
+#' @inheritParams probit_alternatives
+#' @inheritParams expand_Tp
 #'
 #' @return
 #' A \code{\link{probit_parameter}} object.
@@ -180,8 +182,8 @@
 #' The error term differences \eqn{(\tilde{\epsilon}_{nt:})} again are
 #' multivariate normally distributed with mean \eqn{0} but transformed
 #' covariance matrix \eqn{\tilde{\Sigma}}, also denoted by \code{Sigma_diff}.
-#' See \code{\link{oeli::diff_cov}} for computing \code{Sigma_diff} from
-#' \code{Sigma}, and \code{\link{oeli::undiff_cov}} for the other way around.
+#' See \code{\link[oeli]{diff_cov}} for computing \code{Sigma_diff} from
+#' \code{Sigma}, and \code{\link[oeli]{undiff_cov}} for the other way around.
 #'
 #' For level normalization in the ordered probit model, we fix
 #' \eqn{\gamma_1 = 0}.
@@ -240,7 +242,7 @@ is.probit_parameter <- function(x) {
 #' @inheritParams probit_formula
 #' @inheritParams probit_data
 #' @param seed
-#' An \code{integer}, passed to \code{set.seed()} to make the simulation of
+#' An \code{integer}, passed to \code{set.seed()} to make the sampling of
 #' missing probit parameters reproducible.
 #' By default, \code{seed = NULL}, i.e., no seed is set.
 #'
@@ -361,6 +363,18 @@ simulate_probit_parameter <- function(
     }
   }
   if (checkmate::test_scalar_na(x$beta) && P_r > 0) {
+    if (P_r == 1 && checkmate::test_atomic_vector(x$b, len = x$C)) {
+      x$b <- matrix(x$b, nrow = 1, ncol = x$C)
+    }
+    if (x$C == 1 && checkmate::test_atomic_vector(x$b, len = P_r)) {
+      x$b <- matrix(x$b, nrow = P_r, ncol = 1)
+    }
+    if (P_r == 1 && checkmate::test_atomic_vector(x$Omega, len = x$C)) {
+      x$Omega <- matrix(x$Omega, nrow = 1, ncol = x$C)
+    }
+    if (x$C == 1 && checkmate::test_atomic_vector(x$Omega, len = P_r^2)) {
+      x$Omega <- matrix(x$Omega, nrow = P_r^2, ncol = 1)
+    }
     x$beta <- do.call(
       cbind,
       lapply(x$z, function(c) {
@@ -568,12 +582,20 @@ print.probit_parameter <- function(
   invisible(x)
 }
 
+#' Extract the coefficient vector for a single decider
+#'
+#' @description
+#' This helper function extracts the coefficient vector with fixed and random
+#' effects for a single decider.
+#'
 #' @keywords internal
 
 get_coefficient_vector <- function(probit_parameter, decider_id) {
   checkmate::assert_class(probit_parameter, "probit_parameter")
-  checkmate::assert_int(n, lower = 1)
-  z_n <- probit_parameter$z[n]
+  checkmate::assert_int(
+    decider_id, lower = 1, upper = length(probit_parameter$z)
+  )
+  z_n <- probit_parameter$z[decider_id]
   checkmate::assert_int(z_n, lower = 1)
   coef <- numeric()
   if (checkmate::test_numeric(probit_parameter$alpha, any.missing = FALSE)) {

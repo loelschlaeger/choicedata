@@ -18,6 +18,20 @@ validate_probit_data()
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
+
+\item{column_choice}{TODO}
+
+\item{column_decider}{TODO}
+
+\item{column_occasion}{TODO}
+
+\item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
+
+\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
+\code{FALSE} (default) else.}
+}
+\value{
+TODO
 }
 \description{
 These functions construct and validate an object of class

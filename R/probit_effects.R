@@ -142,6 +142,7 @@ probit_effects <- function(
 #' @inheritParams probit_formula
 #' @inheritParams probit_parameter
 #' @inheritParams probit_effects
+#' @inheritParams probit_alternatives
 #'
 #' @inheritSection probit_formula Model formula
 #' @inheritSection probit_formula Random effects

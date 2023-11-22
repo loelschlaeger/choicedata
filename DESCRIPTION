@@ -16,4 +16,4 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     checkmate,
-    oeli (>= 0.0.0.9004)
+    oeli (>= 0.2.0)

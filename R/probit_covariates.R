@@ -11,7 +11,7 @@
 #' \code{\link{as.data.frame.probit_covariates}} transform the covariates in
 #' \code{list} or \code{data.frame} form, respectively.
 #'
-#' \code{\link{covariate_names}} and \code{\link{covariate_numbers}} provide the
+#' \code{\link{covariate_names}} and \code{\link{covariate_number}} provide the
 #' names and number of covariates for a given model specification.
 #'
 #' @param probit_data
@@ -20,6 +20,13 @@
 #' A \code{\link{probit_formula}} object.
 #' @param probit_alternatives
 #' A \code{\link{probit_alternatives}} object.
+#' @inheritParams probit_effects
+#' @param seed
+#' An \code{integer}, passed to \code{set.seed()} to make the sampling of
+#' probit covariates reproducible.
+#' By default, \code{seed = NULL}, i.e., no seed is set.
+#' @param ...
+#' Currently not used.
 #'
 #' @section Covariate matrices:
 #' A covariate matrix contains the choice covariates of a decider at some choice
@@ -188,7 +195,7 @@ sample_probit_covariates <- function(
 
   ### validate data.frame format
   x <- validate_probit_covariates(
-    covariates = covariates, N = N, Tp = Tp, probit_formula = probit_formula,
+    covariates, N = N, Tp = Tp, probit_formula = probit_formula,
     probit_alternatives = probit_alternatives, delimiter = delimiter,
     column_decider = column_decider, column_occasion = column_occasion
   )
@@ -410,7 +417,7 @@ effect_is_ASC <- function(effect_name, delimiter) {
 #' @rdname probit_covariates
 
 validate_probit_covariates <- function(
-  covariates, N, Tp = 1, probit_formula, probit_alternatives, delimiter,
+  x, N, Tp = 1, probit_formula, probit_alternatives, delimiter,
   column_decider, column_occasion
 ) {
 
@@ -426,27 +433,27 @@ validate_probit_covariates <- function(
   )
 
   ### validate 'probit_covariates'
-  if (checkmate::test_class(covariates, "probit_covariates")) {
-    return(covariates)
-  } else if (checkmate::test_list(covariates)) {
+  if (checkmate::test_class(x, "probit_covariates")) {
+    return(x)
+  } else if (checkmate::test_list(x)) {
 
     # TODO
-    class(covariates) <- c("probit_covariates", "list")
+    class(x) <- c("probit_covariates", "list")
 
 
-  } else if (checkmate::test_data_frame(covariates)) {
+  } else if (checkmate::test_data_frame(x)) {
 
     # TODO
-    checkmate::assert_data_frame(covariates)
-    class(covariates) <- c("probit_covariates", "data.frame")
+    checkmate::assert_data_frame(x)
+    class(x) <- c("probit_covariates", "data.frame")
 
   } else {
-    stop("Input 'covariates' must be a 'list' or a 'data.frame'.")
+    stop("Input 'x' must be a 'list' or a 'data.frame'.")
   }
 
   ### add attributes
   structure(
-    covariates,
+    x,
     "Tp" = Tp,
     "probit_formula" = probit_formula,
     "probit_alternatives" = probit_alternatives,
@@ -457,8 +464,6 @@ validate_probit_covariates <- function(
 }
 
 #' @rdname probit_covariates
-#' @param ...
-#' Currently not used.
 #' @exportS3Method
 
 as.list.probit_covariates <- function(x, ...) {
@@ -531,7 +536,7 @@ as.list.probit_covariates <- function(x, ...) {
 }
 
 #' @rdname probit_covariates
-#' @param row.names,optional,...
+#' @param row.names,optional
 #' Currently not used.
 #' @exportS3Method
 
