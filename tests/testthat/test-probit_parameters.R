@@ -53,7 +53,7 @@ test_that("probit parameter can be created", {
   re <- "A"
   J <- 3
   N <- 100
-  x <- simulate_probit_parameter(
+  x <- sample_probit_parameter(
     x, formula = formula, re = re, J = J, N = N, seed = 1
   )
   expect_s3_class(x, "probit_parameter")
@@ -63,7 +63,7 @@ test_that("probit parameter can be created", {
     print.probit_parameter(1),
     "Assertion on 'x' failed: Must inherit from class 'probit_parameter', but has class 'numeric'."
   )
-  x <- simulate_probit_parameter(
+  x <- sample_probit_parameter(
     formula = choice ~ A + B, re = c("A", "B"), ordered = TRUE, J = 3, N = 10,
     seed = 1
   )
@@ -74,31 +74,31 @@ test_that("probit parameter can be created", {
 
 test_that("missing probit parameters can be simulated", {
   expect_error(
-    simulate_probit_parameter(x = "bad_object"),
+    sample_probit_parameter(x = "bad_object"),
     "Assertion on 'x' failed: Must inherit from class 'probit_parameter', but has class 'character'."
   )
   expect_error(
-    simulate_probit_parameter(x = probit_parameter()),
+    sample_probit_parameter(x = probit_parameter()),
     "Please specify the model 'formula'."
   )
   expect_error(
-    simulate_probit_parameter(x = probit_parameter(), formula = A ~ B),
+    sample_probit_parameter(x = probit_parameter(), formula = A ~ B),
     "Please specify the number 'J' of choice alternatives."
   )
   expect_error(
-    simulate_probit_parameter(x = probit_parameter(), formula = A ~ B, J = 3),
+    sample_probit_parameter(x = probit_parameter(), formula = A ~ B, J = 3),
     "Please specify the number of deciders 'N'."
   )
   expect_true(
     is.probit_parameter(
-      simulate_probit_parameter(
+      sample_probit_parameter(
         x = probit_parameter(C = 2), formula = A ~ B, J = 3, N = 10
       )
     )
   )
   expect_true(
     is.probit_parameter(
-      simulate_probit_parameter(
+      sample_probit_parameter(
         x = probit_parameter(C = 2), formula = A ~ B, J = 3, N = 10,
         ordered = TRUE
       )
@@ -106,7 +106,7 @@ test_that("missing probit parameters can be simulated", {
   )
   expect_true(
     is.probit_parameter(
-      simulate_probit_parameter(
+      sample_probit_parameter(
         x = probit_parameter(C = 2, Sigma = diag(3)), formula = A ~ B, J = 3,
         N = 10, ordered = FALSE
       )
@@ -210,7 +210,7 @@ test_that("probit parameter can be validated", {
 })
 
 test_that("coefficient vector for decider can be extracted", {
-  probit_parameter <- simulate_probit_parameter(
+  probit_parameter <- sample_probit_parameter(
     formula = A ~ B | C, re = "B", J = 3, N = 10
   )
   checkmate::expect_numeric(

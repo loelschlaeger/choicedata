@@ -19,9 +19,19 @@
 #' TODO
 
 probit_data <- function(
-  data, column_choice = "choice", column_decider = "id",
-  column_occasion = "idc", ranked = FALSE, ordered = FALSE
+  probit_covariates, probit_choices,
+  column_choice = "choice", column_decider = "id", column_occasion = "idc",
+  ranked = FALSE, ordered = FALSE
 ) {
+
+  ### merge choices and covariates
+
+
+
+
+  ### validate list format
+
+  ### transform to data.frame format
 
   structure(
     "simulated" = FALSE
@@ -60,17 +70,17 @@ validate_probit_data <- function() {
 #'
 #' @examples
 #' ### simulate data from a binary probit model with two latent classes
-#' # data <- simulate_probit_data(
-#' #   probit_covariates = sample_probit_covariates(
-#' #     probit_formula = probit_formula(
-#' #       formula = choice ~ cost | income | time, re = c("cost", "time")
-#' #     ),
-#' #     N = 10, Tp = 1:10,
-#' #     probit_alternatives = probit_alternatives(
-#' #       J = 2, alternatives = c("car", "bus")
-#' #     )
-#' #   )
-#' # )
+#' data <- simulate_probit_data(
+#'   probit_covariates = sample_probit_covariates(
+#'     probit_formula = probit_formula(
+#'       formula = choice ~ cost | income | time, re = c("cost", "time")
+#'     ),
+#'     N = 10, Tp = 1:10,
+#'     probit_alternatives = probit_alternatives(
+#'       J = 2, alternatives = c("car", "bus")
+#'     )
+#'   )
+#' )
 #'
 #' ### simulate data from an ordered probit model
 #' # data <- simulate_probit_data(
@@ -93,7 +103,8 @@ validate_probit_data <- function() {
 
 simulate_probit_data <- function(
     probit_covariates = sample_probit_covariates(
-      probit_formula, N, Tp = 1, probit_alternatives = probit_alternatives(J = 3)
+      probit_formula, N, Tp = 1,
+      probit_alternatives = probit_alternatives(J = 3)
     ),
     probit_parameter = probit_parameter(), ranked = FALSE, seed = NULL,
     column_choice = "choice"
@@ -117,33 +128,23 @@ simulate_probit_data <- function(
   checkmate::assert_string(column_choice, min.chars = 1)
 
   ### simulate choices
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
-  choices <- lapply(seq_len(N), function(n) {
-    coef <- get_coefficient_vector(
-      probit_parameter = probit_parameter, decider_id = n
-    )
-    lapply(seq_len(Tp[n]), function(t) {
-      X_nt <- probit_covariates[[n]][[t]]
-      U_nt <- oeli::rmvnorm(
-        mean = as.vector(X_nt %*% coef),
-        Sigma = probit_parameter$Sigma
-      )
-      if (ranked) {
+  probit_choices <- simulate_probit_choices(
+    probit_parameter = probit_parameter,
+    probit_covariates = probit_covariates,
+    probit_choice_set = probit_choice_set,
+    seed = seed
+  )
 
-      } else {
-        probit_choice_set[which.max(U_nt)]
-      }
-    })
-  })
-
-  ### merge choices and covariates
-
-  ### validate list format
-
-  ### transform to data.frame format
-
+  ### create and return 'probit_data' object
+  probit_data(
+    probit_covariates = probit_covariates,
+    probit_choices = probit_choices,
+    column_choice = column_choice,
+    column_decider = "id",
+    column_occasion = "idc",
+    ranked = ranked,
+    ordered = FALSE
+  )
 }
 
 read_probit_data <- function() {

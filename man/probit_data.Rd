@@ -6,7 +6,8 @@
 \title{Define probit data}
 \usage{
 probit_data(
-  data,
+  probit_covariates,
+  probit_choices,
   column_choice = "choice",
   column_decider = "id",
   column_occasion = "idc",
@@ -17,8 +18,6 @@ probit_data(
 validate_probit_data()
 }
 \arguments{
-\item{data}{A \code{data.frame}.}
-
 \item{column_choice}{TODO}
 
 \item{column_decider}{TODO}
@@ -29,6 +28,8 @@ validate_probit_data()
 
 \item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
+
+\item{data}{A \code{data.frame}.}
 }
 \value{
 TODO

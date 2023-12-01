@@ -3,7 +3,7 @@
 \name{probit_parameter}
 \alias{probit_parameter}
 \alias{is.probit_parameter}
-\alias{simulate_probit_parameter}
+\alias{sample_probit_parameter}
 \alias{validate_probit_parameter}
 \alias{print.probit_parameter}
 \title{Define probit model parameters}
@@ -24,7 +24,7 @@ probit_parameter(
 
 is.probit_parameter(x)
 
-simulate_probit_parameter(
+sample_probit_parameter(
   x = probit_parameter(),
   formula,
   re = NULL,
@@ -175,7 +175,7 @@ These functions construct and validate an object of class
 \code{\link{probit_parameter}}, which contains the parameters of a probit
 model, see details.
 
-\code{simulate_probit_parameters()} draws (missing) probit model
+\code{sample_probit_parameters()} draws (missing) probit model
 parameters at random, see details.
 }
 \section{Setting probit model parameters}{

@@ -5,7 +5,7 @@
 #' \code{\link{probit_parameter}}, which contains the parameters of a probit
 #' model, see details.
 #'
-#' \code{simulate_probit_parameters()} draws (missing) probit model
+#' \code{sample_probit_parameters()} draws (missing) probit model
 #' parameters at random, see details.
 #'
 #' @param C
@@ -280,7 +280,7 @@ is.probit_parameter <- function(x) {
 #'
 #' @export
 
-simulate_probit_parameter <- function(
+sample_probit_parameter <- function(
     x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N,
     seed = NULL
 ) {
@@ -304,7 +304,7 @@ simulate_probit_parameter <- function(
   J <- probit_alternatives$J
   checkmate::assert_int(N, lower = 1)
 
-  ### simulate missing parameters
+  ### sample missing parameters
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
   if (!is.null(seed)) {
@@ -396,7 +396,7 @@ simulate_probit_parameter <- function(
 
 #' @rdname probit_parameter
 #'
-#' @inheritParams simulate_probit_parameter
+#' @inheritParams sample_probit_parameter
 #' @inheritParams probit_formula
 #' @inheritParams probit_data
 #'
@@ -443,7 +443,7 @@ validate_probit_parameter <- function(
   }
 
   ### add missing parameters
-  x <- simulate_probit_parameter(
+  x <- sample_probit_parameter(
     x = x, formula = formula, re = re, ordered = ordered, J = J, N = N
   )
 

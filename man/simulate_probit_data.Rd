@@ -82,17 +82,17 @@ To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
 
 \examples{
 ### simulate data from a binary probit model with two latent classes
-# data <- simulate_probit_data(
-#   probit_covariates = sample_probit_covariates(
-#     probit_formula = probit_formula(
-#       formula = choice ~ cost | income | time, re = c("cost", "time")
-#     ),
-#     N = 10, Tp = 1:10,
-#     probit_alternatives = probit_alternatives(
-#       J = 2, alternatives = c("car", "bus")
-#     )
-#   )
-# )
+data <- simulate_probit_data(
+  probit_covariates = sample_probit_covariates(
+    probit_formula = probit_formula(
+      formula = choice ~ cost | income | time, re = c("cost", "time")
+    ),
+    N = 10, Tp = 1:10,
+    probit_alternatives = probit_alternatives(
+      J = 2, alternatives = c("car", "bus")
+    )
+  )
+)
 
 ### simulate data from an ordered probit model
 # data <- simulate_probit_data(
