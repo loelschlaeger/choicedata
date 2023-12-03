@@ -2,7 +2,7 @@
 #'
 #' @description
 #' These functions construct and validate an object of class
-#' \code{\link{probit_parameter}}, which contains the parameters of a probit
+#' \code{\link{probit_parameter}}, which defines the parameters of a probit
 #' model, see details.
 #'
 #' \code{sample_probit_parameters()} draws (missing) probit model

@@ -143,7 +143,7 @@ their \code{t}-th choice occasion.
 }
 \description{
 These functions create and validate an object of class
-\code{\link{probit_covariates}}, which contains the model covariate,
+\code{\link{probit_covariates}}, which defines the model covariates,
 see the details.
 
 \code{\link{sample_probit_covariates}} samples covariates.

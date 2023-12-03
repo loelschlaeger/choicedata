@@ -160,5 +160,9 @@ as.data.frame.probit_data <- function() {
 
 }
 
+plot.probit_data <- function() {
+
+
+}
 
 
