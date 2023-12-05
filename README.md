@@ -32,7 +32,9 @@ install.packages("probitdata")
 
 ## Package design
 
-A probit model is of the form $$
+A probit model is of the form
+
+$$
 U_{nt} = X_{nt} \beta + \epsilon_{nt}, \quad \epsilon_{nt} \sim N_J(0, \Sigma), \quad y_{nt} = \arg \max U_{nt}.
 $$ That means, the discrete choice $y_{nt} \in \{1,\dots,J\}$ of decider
 $n$ at choice occasion $t$ is explained as the sum of a linear
@@ -51,7 +53,9 @@ alternatives (for example the decider’s age). Each choice covariate can
 either be connected to multiple, alternative-specific coefficients or to
 just a single, alternative-constant coefficient (but only if the
 covariate varies across alternatives). So the $j$-th row of the utility
-system above can be written more explicit as $$
+system above can be written more explicit as
+
+$$
 U_{ntj} = X_{ntj}^{(1)} \beta^{(1)} + X_{nt}^{(2)} \beta_j^{(2)} + X_{ntj}^{(3)} \beta_j^{(3)} + \epsilon_{ntj}
 $$ and we can (and should) distinguish between type-1, type-2, and
 type-3 covariates.
@@ -105,6 +109,10 @@ functions and methods:
 
 ### Binary probit model
 
+``` r
+data(Train, package = "mlogit")
+```
+
 ### Multinomial probit model
 
 ### Ordered probit model
@@ -113,7 +121,11 @@ functions and methods:
 
 ### Mixed probit model
 
+simulate
+
 ### Latent class probit model
+
+simulate
 
 ## Contact
 
