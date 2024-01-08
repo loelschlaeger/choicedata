@@ -11,6 +11,15 @@
 #' \code{\link{as.data.frame.probit_covariates}} transform the covariates in
 #' \code{list} or \code{data.frame} form, respectively.
 #'
+#' In \code{list} form, it is a \code{list} of \code{list}s of \code{matrix}
+#' elements. More precise: Let the return value be \code{out}, then
+#' - \code{out} contains the covariate matrices of all deciders at all choice
+#'   occasions,
+#' - \code{out[[n]]} is a \code{list} of the covariate matrices of decider
+#'   \code{n} at all of their choice occasions,
+#' - \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at
+#'   their \code{t}-th choice occasion.
+#'
 #' \code{\link{covariate_names}} and \code{\link{covariate_number}} provide the
 #' names and number of covariates for a given model specification.
 #'
@@ -46,16 +55,7 @@
 #'   \code{covariate_correlation}.
 #'
 #' @return
-#' An \code{\link{probit_covariates}} object. It is a \code{list} of
-#' \code{list}s of \code{matrix} elements.
-#'
-#' More precise: Let the return value be \code{out}, then
-#' - \code{out} contains the covariate matrices of all deciders at all choice
-#'   occasions,
-#' - \code{out[[n]]} is a \code{list} of the covariate matrices of decider
-#'   \code{n} at all of their choice occasions,
-#' - \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at
-#'   their \code{t}-th choice occasion.
+#' A \code{data.frame}.
 #'
 #' @keywords object
 
@@ -86,10 +86,10 @@ is.probit_covariates <- function(x) {
 #' Defines the number of levels for the covariates. Two formats are allowed:
 #' - Can be a single, positive \code{numeric} which defines the number of levels
 #'   for all covariates. By default, \code{covariate_levels = Inf}.
-#' - Can be a named \code{numeric} \code{vector} for specific mean values for
-#'   specific covariates. Names must correspond to the output of
-#'   \code{\link{covariate_names}}. Means for missing covariates are set to
-#'   \code{0}.
+#' - Can be a named \code{numeric} \code{vector} for specific number of levels
+#'   for specific covariates. Names must correspond to the output of
+#'   \code{\link{covariate_names}}. Number of levels for missing covariates are
+#'   set to \code{Inf}.
 #' @param occasion_constant
 #' A \code{character} \code{vector} of covariate names
 #' (see \code{\link{covariate_names}})
@@ -193,15 +193,12 @@ sample_probit_covariates <- function(
     }
   }
 
-  ### validate data.frame format
-  x <- validate_probit_covariates(
+  ### validate object
+  validate_probit_covariates(
     covariates, N = N, Tp = Tp, probit_formula = probit_formula,
     probit_alternatives = probit_alternatives, delimiter = delimiter,
     column_decider = column_decider, column_occasion = column_occasion
   )
-
-  ### transform to list format
-  as.list(x)
 }
 
 #' @keywords internal
@@ -666,6 +663,8 @@ covariate_number <- function(probit_formula, probit_alternatives) {
 #'
 #' @return
 #' An \code{integer} \code{vector} of length \code{N}.
+#'
+#' @keywords internal
 
 expand_Tp <- function(N, Tp = 1) {
   if (missing(N)) {

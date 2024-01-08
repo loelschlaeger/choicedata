@@ -74,10 +74,10 @@ By default, \code{seed = NULL}, i.e., no seed is set.}
 \itemize{
 \item Can be a single, positive \code{numeric} which defines the number of levels
 for all covariates. By default, \code{covariate_levels = Inf}.
-\item Can be a named \code{numeric} \code{vector} for specific mean values for
-specific covariates. Names must correspond to the output of
-\code{\link{covariate_names}}. Means for missing covariates are set to
-\code{0}.
+\item Can be a named \code{numeric} \code{vector} for specific number of levels
+for specific covariates. Names must correspond to the output of
+\code{\link{covariate_names}}. Number of levels for missing covariates are
+set to \code{Inf}.
 }}
 
 \item{occasion_constant}{A \code{character} \code{vector} of covariate names
@@ -128,18 +128,7 @@ By default, \code{delimiter = "_"}.}
 \item{row.names, optional}{Currently not used.}
 }
 \value{
-An \code{\link{probit_covariates}} object. It is a \code{list} of
-\code{list}s of \code{matrix} elements.
-
-More precise: Let the return value be \code{out}, then
-\itemize{
-\item \code{out} contains the covariate matrices of all deciders at all choice
-occasions,
-\item \code{out[[n]]} is a \code{list} of the covariate matrices of decider
-\code{n} at all of their choice occasions,
-\item \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at
-their \code{t}-th choice occasion.
-}
+A \code{data.frame}.
 }
 \description{
 These functions create and validate an object of class
@@ -151,6 +140,17 @@ see the details.
 \code{\link{as.list.probit_covariates}} and
 \code{\link{as.data.frame.probit_covariates}} transform the covariates in
 \code{list} or \code{data.frame} form, respectively.
+
+In \code{list} form, it is a \code{list} of \code{list}s of \code{matrix}
+elements. More precise: Let the return value be \code{out}, then
+\itemize{
+\item \code{out} contains the covariate matrices of all deciders at all choice
+occasions,
+\item \code{out[[n]]} is a \code{list} of the covariate matrices of decider
+\code{n} at all of their choice occasions,
+\item \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at
+their \code{t}-th choice occasion.
+}
 
 \code{\link{covariate_names}} and \code{\link{covariate_number}} provide the
 names and number of covariates for a given model specification.

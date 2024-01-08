@@ -4,7 +4,7 @@
 \alias{get_coefficient_vector}
 \title{Extract the coefficient vector for a single decider}
 \usage{
-get_coefficient_vector(probit_parameter, decider_id)
+get_coefficient_vector(probit_parameters, decider_id)
 }
 \description{
 This helper function extracts the coefficient vector with fixed and random

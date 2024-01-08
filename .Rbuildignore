@@ -7,3 +7,4 @@
 ^\.github$
 ^codecov\.yml$
 ^dev_pkgs\.R$
+^ref\.bib$

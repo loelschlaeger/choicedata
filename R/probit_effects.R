@@ -140,7 +140,7 @@ probit_effects <- function(
 #' \code{compute_P_r()} computes the number \code{P_r} of random model effects.
 #'
 #' @inheritParams probit_formula
-#' @inheritParams probit_parameter
+#' @inheritParams probit_parameters
 #' @inheritParams probit_effects
 #' @inheritParams probit_alternatives
 #'

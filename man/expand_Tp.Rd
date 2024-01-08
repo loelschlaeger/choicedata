@@ -21,3 +21,4 @@ An \code{integer} \code{vector} of length \code{N}.
 This function expands the number of choice occasions \code{Tp} to a
 \code{vector} of length \code{N}.
 }
+\keyword{internal}

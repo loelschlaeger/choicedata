@@ -54,10 +54,10 @@ validate_probit_data <- function() {
 #' @param probit_covariates
 #' An \code{\link{probit_covariates}} object, which contains the covariate
 #' matrices used for the choice data simulation.
-#' @param probit_parameter
-#' An \code{\link{probit_parameter}} object, which contains the model
+#' @param probit_parameters
+#' An \code{\link{probit_parameters}} object, which contains the model
 #' parameters used for the choice data simulation.
-#' By default, \code{probit_parameter = probit_parameter()}, i.e. default
+#' By default, \code{probit_parameters = probit_parameters()}, i.e. default
 #' parameters are used.
 #' @inheritParams probit_data
 #' @inheritParams probit_covariates
@@ -106,7 +106,7 @@ simulate_probit_data <- function(
       probit_formula, N, Tp = 1,
       probit_alternatives = probit_alternatives(J = 3)
     ),
-    probit_parameter = probit_parameter(), ranked = FALSE, seed = NULL,
+    probit_parameters = probit_parameters(), ranked = FALSE, seed = NULL,
     column_choice = "choice"
 ) {
 
@@ -116,9 +116,9 @@ simulate_probit_data <- function(
   N <- length(Tp)
   probit_alternatives <- attr(probit_covariates, "probit_alternatives")
   probit_formula <- attr(probit_covariates, "probit_formula")
-  checkmate::assert_class(probit_parameter, "probit_parameter")
-  probit_parameter <- validate_probit_parameter(
-    x = probit_parameter, formula = probit_formula$formula,
+  checkmate::assert_class(probit_parameters, "probit_parameters")
+  probit_parameters <- validate_probit_parameters(
+    x = probit_parameters, formula = probit_formula$formula,
     re = probit_formula$re, ordered = probit_alternatives$ordered,
     J = probit_alternatives$J, N = N
   )
@@ -129,7 +129,7 @@ simulate_probit_data <- function(
 
   ### simulate choices
   probit_choices <- simulate_probit_choices(
-    probit_parameter = probit_parameter,
+    probit_parameters = probit_parameters,
     probit_covariates = probit_covariates,
     probit_choice_set = probit_choice_set,
     seed = seed

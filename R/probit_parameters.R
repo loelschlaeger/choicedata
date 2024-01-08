@@ -2,7 +2,7 @@
 #'
 #' @description
 #' These functions construct and validate an object of class
-#' \code{\link{probit_parameter}}, which defines the parameters of a probit
+#' \code{\link{probit_parameters}}, which defines the parameters of a probit
 #' model, see details.
 #'
 #' \code{sample_probit_parameters()} draws (missing) probit model
@@ -68,7 +68,7 @@
 #' @inheritParams expand_Tp
 #'
 #' @return
-#' A \code{\link{probit_parameter}} object.
+#' A \code{\link{probit_parameters}} object.
 #'
 #' It contains the elements:
 #' \describe{
@@ -87,12 +87,12 @@
 #'
 #' @section Setting probit model parameters:
 #'
-#' 1. Use \code{probit_parameter()} to construct a
-#'    \code{\link{probit_parameter}} object, where any model parameter can be
+#' 1. Use \code{probit_parameters()} to construct a
+#'    \code{\link{probit_parameters}} object, where any model parameter can be
 #'    specified (see below).
 #'
-#' 2. Next, call \code{validate_probit_parameter()} with the
-#'    \code{\link{probit_parameter}} object created in step 1. This will add
+#' 2. Next, call \code{validate_probit_parameters()} with the
+#'    \code{\link{probit_parameters}} object created in step 1. This will add
 #'    unspecified parameters (see below for details) and validate all specified
 #'    parameters.
 #'
@@ -193,7 +193,7 @@
 #'
 #' @export
 
-probit_parameter <- function(
+probit_parameters <- function(
     C = 1, s = NA, alpha = NA, b = NA, Omega = NA, Sigma = NA,
     Sigma_diff = NA, diff_alt = 1, beta = NA, z = NA, d = NA
 ) {
@@ -225,20 +225,20 @@ probit_parameter <- function(
       "z" = z,
       "d" = d
     ),
-    class = c("probit_parameter", "list")
+    class = c("probit_parameters", "list")
   )
 }
 
-#' @rdname probit_parameter
+#' @rdname probit_parameters
 #' @param x
-#' A \code{\link{probit_parameter}} object.
+#' A \code{\link{probit_parameters}} object.
 #' @export
 
-is.probit_parameter <- function(x) {
-  inherits(x, "probit_parameter")
+is.probit_parameters <- function(x) {
+  inherits(x, "probit_parameters")
 }
 
-#' @rdname probit_parameter
+#' @rdname probit_parameters
 #' @inheritParams probit_formula
 #' @inheritParams probit_data
 #' @param seed
@@ -280,13 +280,13 @@ is.probit_parameter <- function(x) {
 #'
 #' @export
 
-sample_probit_parameter <- function(
-    x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N,
+sample_probit_parameters <- function(
+    x = probit_parameters(), formula, re  = NULL, ordered = FALSE, J, N,
     seed = NULL
 ) {
 
   ### input checks
-  checkmate::assert_class(x, "probit_parameter")
+  checkmate::assert_class(x, "probit_parameters")
   if (missing(formula)) {
     stop("Please specify the model 'formula'.")
   }
@@ -394,28 +394,28 @@ sample_probit_parameter <- function(
   return(x)
 }
 
-#' @rdname probit_parameter
+#' @rdname probit_parameters
 #'
-#' @inheritParams sample_probit_parameter
+#' @inheritParams sample_probit_parameters
 #' @inheritParams probit_formula
 #' @inheritParams probit_data
 #'
 #' @examples
-#' (x <- probit_parameter(C = 2))
+#' (x <- probit_parameters(C = 2))
 #' formula <- choice ~ A | B
 #' re <- "A"
 #' J <- 3
 #' N <- 100
-#' (x <- validate_probit_parameter(x, formula = formula, re = re, J = J, N = N))
+#' (x <- validate_probit_parameters(x, formula = formula, re = re, J = J, N = N))
 #'
 #' @export
 
-validate_probit_parameter <- function(
-    x = probit_parameter(), formula, re  = NULL, ordered = FALSE, J, N
+validate_probit_parameters <- function(
+    x = probit_parameters(), formula, re  = NULL, ordered = FALSE, J, N
 ) {
 
   ### input checks
-  checkmate::assert_class(x, "probit_parameter")
+  checkmate::assert_class(x, "probit_parameters")
   if (missing(formula)) {
     stop("Please specify the input 'formula'.")
   }
@@ -443,7 +443,7 @@ validate_probit_parameter <- function(
   }
 
   ### add missing parameters
-  x <- sample_probit_parameter(
+  x <- sample_probit_parameters(
     x = x, formula = formula, re = re, ordered = ordered, J = J, N = N
   )
 
@@ -550,18 +550,18 @@ validate_probit_parameter <- function(
   return(x)
 }
 
-#' @rdname probit_parameter
+#' @rdname probit_parameters
 #' @param ...
 #' A \code{character} (vector), the names of model parameters to be printed.
 #' By default, all available parameters are printed.
 #' @inheritParams oeli::print_matrix
 #' @exportS3Method
 
-print.probit_parameter <- function(
+print.probit_parameters <- function(
     x, ..., rowdots = 4, coldots = 4, digits = 2, simplify = FALSE,
     details = !simplify
 ) {
-  checkmate::assert_class(x, "probit_parameter")
+  checkmate::assert_class(x, "probit_parameters")
   pars <- list(...)
   ind <- if (length(pars) != 0) {
     checkmate::assert_character(unlist(pars), any.missing = FALSE)
@@ -590,19 +590,19 @@ print.probit_parameter <- function(
 #'
 #' @keywords internal
 
-get_coefficient_vector <- function(probit_parameter, decider_id) {
-  checkmate::assert_class(probit_parameter, "probit_parameter")
+get_coefficient_vector <- function(probit_parameters, decider_id) {
+  checkmate::assert_class(probit_parameters, "probit_parameters")
   checkmate::assert_int(
-    decider_id, lower = 1, upper = length(probit_parameter$z)
+    decider_id, lower = 1, upper = length(probit_parameters$z)
   )
-  z_n <- probit_parameter$z[decider_id]
+  z_n <- probit_parameters$z[decider_id]
   checkmate::assert_int(z_n, lower = 1)
   coef <- numeric()
-  if (checkmate::test_numeric(probit_parameter$alpha, any.missing = FALSE)) {
-    coef <- c(coef, probit_parameter$alpha[, z_n])
+  if (checkmate::test_numeric(probit_parameters$alpha, any.missing = FALSE)) {
+    coef <- c(coef, probit_parameters$alpha[, z_n])
   }
-  if (checkmate::test_numeric(probit_parameter$beta, any.missing = FALSE)) {
-    coef <- c(coef, probit_parameter$beta[, z_n])
+  if (checkmate::test_numeric(probit_parameters$beta, any.missing = FALSE)) {
+    coef <- c(coef, probit_parameters$beta[, z_n])
   }
   return(coef)
 }

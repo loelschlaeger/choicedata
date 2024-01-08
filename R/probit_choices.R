@@ -28,12 +28,12 @@ probit_choices <- function(
 #' @rdname probit_choices
 
 simulate_probit_choices <- function(
-  probit_parameter, probit_covariates, probit_choice_set, seed = NULL,
+  probit_parameters, probit_covariates, probit_choice_set, seed = NULL,
   column_choice = "choice", column_decider = "id", column_occasion = "idc"
 ) {
 
   ### input checks
-  is.probit_parameter(probit_parameter)
+  is.probit_parameters(probit_parameters)
   is.probit_covariates(probit_covariates)
   is.probit_choice_set(probit_choice_set)
 
@@ -48,13 +48,13 @@ simulate_probit_choices <- function(
   }
   choices <- lapply(seq_len(N), function(n) {
     coef <- get_coefficient_vector(
-      probit_parameter = probit_parameter, decider_id = n
+      probit_parameters = probit_parameters, decider_id = n
     )
     lapply(seq_len(Tp[n]), function(t) {
       X_nt <- probit_covariates[[n]][[t]]
       U_nt <- oeli::rmvnorm(
         mean = as.vector(X_nt %*% coef),
-        Sigma = probit_parameter$Sigma
+        Sigma = probit_parameters$Sigma
       )
       if (ranked) {
 

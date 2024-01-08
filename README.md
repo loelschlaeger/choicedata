@@ -101,9 +101,9 @@ functions and methods:
 | Compute the number of model effects               | `compute_P()` (and `probit_effects()` provides an overview            |
 | Transform choice data to design matrix form       | `as.list.probit_data()` (creates a `list` of design matrices)         |
 | Visualize choice data                             | `plot.probit_data()` (creates a `ggplot` object)                      |
-| Sample parameters for a probit model              | `sample_probit_parameters()` (creates a `probit_parameter` object)    |
+| Sample parameters for a probit model              | `sample_probit_parameters()` (creates a `probit_parameters` object)    |
 | Compute the model likelihood                      | `probit_likelihood()`                                                 |
-| Create a `vector` of identified model parameters  | `as.vector.probit_parameter()` (required for likelihood optimization) |
+| Create a `vector` of identified model parameters  | `as.vector.probit_parameters()` (required for likelihood optimization) |
 
 ## Examples
 

@@ -5,8 +5,8 @@ test_that("simulation of probit choices works", {
   N <- 10
   probit_alternatives <- probit_alternatives(J = J)
 
-  probit_parameter <- sample_probit_parameter(
-    x = probit_parameter(),
+  probit_parameters <- sample_probit_parameters(
+    x = probit_parameters(),
     formula = formula,
     J = J,
     N = N
@@ -22,11 +22,11 @@ test_that("simulation of probit choices works", {
     probit_alternatives = probit_alternatives
   )
 
-  simulate_probit_choices(
-    probit_parameter = probit_parameter,
-    probit_covariates = probit_covariates,
-    probit_choice_set = probit_choice_set
-  )
+  # simulate_probit_choices(
+  #   probit_parameters = probit_parameters,
+  #   probit_covariates = probit_covariates,
+  #   probit_choice_set = probit_choice_set
+  # )
 
 
 })

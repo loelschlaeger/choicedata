@@ -7,7 +7,7 @@
 simulate_probit_data(
   probit_covariates = sample_probit_covariates(probit_formula, N, Tp = 1,
     probit_alternatives = probit_alternatives(J = 3)),
-  probit_parameter = probit_parameter(),
+  probit_parameters = probit_parameters(),
   ranked = FALSE,
   seed = NULL,
   column_choice = "choice"
@@ -17,9 +17,9 @@ simulate_probit_data(
 \item{probit_covariates}{An \code{\link{probit_covariates}} object, which contains the covariate
 matrices used for the choice data simulation.}
 
-\item{probit_parameter}{An \code{\link{probit_parameter}} object, which contains the model
+\item{probit_parameters}{An \code{\link{probit_parameters}} object, which contains the model
 parameters used for the choice data simulation.
-By default, \code{probit_parameter = probit_parameter()}, i.e. default
+By default, \code{probit_parameters = probit_parameters()}, i.e. default
 parameters are used.}
 
 \item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}

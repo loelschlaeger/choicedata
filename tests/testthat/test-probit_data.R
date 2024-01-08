@@ -4,7 +4,7 @@ test_that("probit data can be simulated", {
     N = 10, Tp = 1:10,
     probit_alternatives = probit_alternatives(J = 3)
   )
-  probit_parameter <- probit_parameter()
+  probit_parameters <- probit_parameters()
   ranked <- FALSE
   column_choice <- "choice"
 })

@@ -17,7 +17,7 @@ probit_choices(
 )
 
 simulate_probit_choices(
-  probit_parameter,
+  probit_parameters,
   probit_covariates,
   probit_choice_set,
   seed = NULL,
