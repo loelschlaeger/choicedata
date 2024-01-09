@@ -1,5 +1,5 @@
 test_that("covariates can be sampled", {
-  N <- 10
+  N <- 100
   Tp <- sample(1:N, size = N, replace = TRUE)
   x <- sample_probit_covariates(
     probit_formula = probit_formula(choice ~ cost | age | time),
@@ -13,19 +13,28 @@ test_that("covariates can be sampled", {
 })
 
 test_that("customization for covariates works", {
-  N <- 10
-  Tp <- sample(1:N, size = N, replace = TRUE)
-  x <- sample_probit_covariates(
-    probit_formula = probit_formula(choice ~ cost | age | time),
-    N = N,
-    Tp = Tp,
-    probit_alternatives = probit_alternatives(J = 3, alternatives = c("la", "le", "lu")),
-    occasion_constant = c("cost"),
-    covariate_mean = c("cost_la" = 100, "time" = 12, "time_la" = -1),
-    covariate_sd = c("time" = 2),
-    covariate_levels = c("age" = 10),
-    seed = 1
+  N <- 100
+  Tp <- 10
+  expect_warning(
+    x <- sample_probit_covariates(
+      probit_formula = probit_formula(choice ~ cost | age),
+      N = N,
+      Tp = Tp,
+      probit_alternatives = probit_alternatives(J = 3, alternatives = c("la", "le", "lu")),
+      occasion_constant = c("cost"),
+      covariate_mean = c("cost_la" = 100),
+      covariate_sd = c("age" = 2),
+      covariate_levels = c("age" = 2),
+      covariate_correlation = 0.8,
+      empirical = TRUE
+    ),
+    "empirical means, standard deviations, and correlations cannot be enforced for covariates"
   )
+
+  #round(cor(x[,-c(1:2)]), 2)
+  #round(apply(x[,-c(1:2)], 2, mean), 2)
+  #round(apply(x[,-c(1:2)], 2, sd), 2)
+
   expect_s3_class(x, "probit_covariates")
   expect_true(is.probit_covariates(x))
   expect_true(is.list(x))
@@ -154,10 +163,6 @@ test_that("covariate specification sugar works", {
 test_that("effect can be checked whether it is an ASC", {
   expect_true(effect_is_ASC("ASC_test", delimiter = "_"))
   expect_false(effect_is_ASC("ASCtest", delimiter = "_"))
-})
-
-test_that("covariates can be validated", {
-
 })
 
 test_that("covariates can be transformed between data.frame and list format", {

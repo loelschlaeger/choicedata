@@ -26,6 +26,7 @@ sample_probit_covariates(
   covariate_mean = 0,
   covariate_sd = 1,
   covariate_correlation = 0,
+  empirical = FALSE,
   delimiter = "_",
   column_decider = "id",
   column_occasion = "idc"
@@ -114,6 +115,11 @@ must equal the output of \code{\link{covariate_number}}. The
 \code{(i,j)}-th element defines the correlation between covariate \code{i}
 and covariate \code{j} in the output of \code{\link{covariate_names}}.
 }}
+
+\item{empirical}{If \code{TRUE}, \code{covariate_mean}, \code{covariate_sd}, and
+\code{covariate_correlation} specify the empirical mean, standard
+deviation and correlation. If \code{FALSE} (default), they specify the
+values for the population.}
 
 \item{delimiter}{A \code{character}, the delimiter between covariate and alternative name
 to build the effect name.

@@ -65,7 +65,6 @@ probit_covariates <- function(probit_data) {
   # TODO
 
   ### validate 'probit_covariates'
-  # TODO
   # validate_probit_covariates()
 }
 
@@ -119,13 +118,24 @@ is.probit_covariates <- function(x) {
 #'   must equal the output of \code{\link{covariate_number}}. The
 #'   \code{(i,j)}-th element defines the correlation between covariate \code{i}
 #'   and covariate \code{j} in the output of \code{\link{covariate_names}}.
+#' @param empirical
+#' If \code{TRUE}, \code{covariate_mean}, \code{covariate_sd}, and
+#' \code{covariate_correlation} specify the empirical mean, standard
+#' deviation and correlation. If \code{FALSE} (default), they specify the
+#' values for the population.
 #' @export
 
 sample_probit_covariates <- function(
   probit_formula, N, Tp = 1, probit_alternatives, seed = NULL,
-  covariate_levels = Inf, occasion_constant = character(),
-  covariate_mean = 0, covariate_sd = 1, covariate_correlation = 0,
-  delimiter = "_", column_decider = "id", column_occasion = "idc"
+  covariate_levels = Inf,
+  occasion_constant = character(),
+  covariate_mean = 0,
+  covariate_sd = 1,
+  covariate_correlation = 0,
+  empirical = FALSE,
+  delimiter = "_",
+  column_decider = "id",
+  column_occasion = "idc"
 ) {
 
   ### input checks
@@ -134,6 +144,7 @@ sample_probit_covariates <- function(
     probit_formula = probit_formula,
     probit_alternatives = probit_alternatives
   )
+  checkmate::assert_flag(empirical)
   checkmate::assert_string(column_decider)
   checkmate::assert_string(column_occasion)
   stopifnot(column_decider != column_occasion)
@@ -157,40 +168,81 @@ sample_probit_covariates <- function(
     covariate_correlation = covariate_correlation, probit_formula = probit_formula,
     probit_alternatives = probit_alternatives, delimiter = delimiter
   )
+  covariate_names <- covariate_names(
+    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
+    delimiter = delimiter
+  )
 
   ### draw covariate values
   if (!is.null(seed)) {
     set.seed(seed)
   }
   covariates <- as.data.frame(
-    oeli::rmvnorm(
-      n = sum(Tp), mean = covariate_mean,
-      Sigma = diag(covariate_sd) %*% covariate_correlation %*% diag(covariate_sd)
+    matrix(
+      stats::rnorm(sum(Tp) * length(covariate_mean)),
+      ncol = length(covariate_mean)
     )
   )
-  id <- rep(1:N, times = Tp)
-  idc <- unlist(sapply(Tp, seq.int, simplify = FALSE))
-  covariates <- cbind(id, idc, covariates)
-  covariate_names <- covariate_names(
-    probit_formula = probit_formula, probit_alternatives = probit_alternatives,
-    delimiter = delimiter
+  covariates <- cbind(
+    rep(1:N, times = Tp),                          # decider ids
+    unlist(sapply(Tp, seq.int, simplify = FALSE)), # choice occasion ids
+    covariates
   )
   colnames(covariates) <- c(column_decider, column_occasion, covariate_names)
-  for (cov in covariate_names) {
 
-    ### set covariate levels
-    if (covariate_levels[cov] < sum(Tp)) {
-      brks <- stats::quantile(
-        covariates[[cov]], seq(0, 1, length.out = covariate_levels[cov] + 1)
-      )
-      ints <- findInterval(covariates[[cov]], brks, all.inside = TRUE)
-      covariates[cov] <- (brks[ints] + brks[ints + 1]) / 2
-    }
+  ### enforce mean, standard deviation and correlation
+  Sigma <- outer(covariate_sd, covariate_sd) * covariate_correlation
+  eigen_Sigma <- eigen(Sigma, symmetric = TRUE)
+  reg <- as.matrix(covariates[, -(1:2), drop = FALSE])
+  if (empirical) {
+    reg <- scale(reg, center = TRUE, scale = FALSE)
+    reg <- reg %*% svd(reg)$v
+    reg <- scale(reg, center = FALSE, scale = TRUE)
+  }
+  reg <- covariate_mean +
+    eigen_Sigma$vectors %*% diag(sqrt(pmax(eigen_Sigma$values, 0))) %*% t(reg)
+  covariates[, -(1:2)] <- t(reg)
+
+  ### enforce levels and occasion-constant covariates
+  modified_cov <- character()
+  for (cov in covariate_names) {
 
     ### set occasion-constant covariates
     if (cov %in% occasion_constant) {
-      covariates[cov] <- covariates[1, cov]
+      for (n in 1:N) {
+        if (Tp[n] > 1) {
+          covariates[covariates$id == n, cov] <- covariates[covariates$id == n, cov][1]
+        }
+      }
+      if (any(Tp > 1)) {
+        modified_cov <- c(modified_cov, cov)
+      }
     }
+
+    ### set covariate levels
+    if (is.finite(covariate_levels[cov])) {
+      if (length(unique(covariates[[cov]])) < covariate_levels[cov]) {
+        warning(
+          "column '", cov, "' can only have ", length(unique(covariates[[cov]])),
+          " levels", call. = FALSE
+        )
+      } else {
+        brks <- stats::quantile(
+          covariates[[cov]], seq(0, 1, length.out = covariate_levels[cov] + 1)
+        )
+        ints <- findInterval(covariates[[cov]], brks, all.inside = TRUE)
+        covariates[cov] <- (brks[ints] + brks[ints + 1]) / 2
+        modified_cov <- c(modified_cov, cov)
+      }
+    }
+  }
+  if (length(modified_cov) > 0) {
+    warning(
+      ifelse(empirical, "empirical", ""),
+      " means, standard deviations, and correlations cannot be enforced for covariates\n",
+      paste(unique(modified_cov), collapse = ", "),
+      call. = FALSE
+    )
   }
 
   ### validate object
@@ -199,6 +251,7 @@ sample_probit_covariates <- function(
     probit_alternatives = probit_alternatives, delimiter = delimiter,
     column_decider = column_decider, column_occasion = column_occasion
   )
+
 }
 
 #' @keywords internal
@@ -326,7 +379,10 @@ check_covariate_correlation <- function(
     delimiter = delimiter
   )
   covariate_number <- length(covariate_names)
-  if (checkmate::test_number(covariate_correlation, lower = -1, upper = 1)) {
+  if (checkmate::test_number(covariate_correlation)) {
+    if (covariate_correlation < -1 || covariate_correlation > 1) {
+      stop("correlation must be between -1 and 1", call. = FALSE)
+    }
     covariate_correlation_input <- covariate_correlation
     covariate_correlation <- diag(covariate_number)
     covariate_correlation[row(covariate_correlation) != col(covariate_correlation)] <- covariate_correlation_input
@@ -434,14 +490,13 @@ validate_probit_covariates <- function(
     return(x)
   } else if (checkmate::test_list(x)) {
 
-    # TODO
+    # TODO: add validation cases for list
     class(x) <- c("probit_covariates", "list")
 
 
   } else if (checkmate::test_data_frame(x)) {
 
-    # TODO
-    checkmate::assert_data_frame(x)
+    # TODO: add validationcases for data.frame
     class(x) <- c("probit_covariates", "data.frame")
 
   } else {
@@ -678,8 +733,6 @@ expand_Tp <- function(N, Tp = 1) {
   checkmate::assert_integerish(Tp, lower = 1, len = N, any.missing = FALSE)
   as.integer(Tp)
 }
-
-
 
 
 
