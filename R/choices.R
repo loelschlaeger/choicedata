@@ -4,6 +4,21 @@
 #' These functions construct and validate an object of class
 #' \code{\link{choices}}, which defines the observed choices.
 #'
+#' @param choice_parameters
+#' TODO
+#' @param choice_covariates
+#' TODO
+#' @param choice_set
+#' TODO
+#' @param seed
+#' TODO
+#' @param column_choice
+#' TODO
+#' @param column_decider
+#' TODO
+#' @param column_occasion
+#' TODO
+#'
 #' @return
 #' A \code{\link{choices}} object.
 

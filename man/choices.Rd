@@ -23,6 +23,21 @@ simulate_choices(
 
 \method{as.list}{choices}()
 }
+\arguments{
+\item{choice_parameters}{TODO}
+
+\item{choice_covariates}{TODO}
+
+\item{choice_set}{TODO}
+
+\item{seed}{TODO}
+
+\item{column_choice}{TODO}
+
+\item{column_decider}{TODO}
+
+\item{column_occasion}{TODO}
+}
 \value{
 A \code{\link{choices}} object.
 }

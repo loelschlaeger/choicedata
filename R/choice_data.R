@@ -6,6 +6,8 @@
 #'
 #' @param data
 #' A \code{data.frame}.
+#' @param choice_covariates
+#' TODO
 #' @param choices
 #' The observed choices in one of two possible formats:
 #' - Can be a \code{data.frame} with three columns, named according to
@@ -29,7 +31,7 @@
 #' TODO
 
 choice_data <- function(
-  choice_covariates, choices,
+  data, choice_covariates, choices,
   column_choice = "choice", column_decider = "id", column_occasion = "idc",
   ranked = FALSE, ordered = FALSE
 ) {
@@ -79,18 +81,18 @@ validate_choice_data <- function() {
 #' @inheritSection choice_formula Random effects
 #'
 #' @examples
-#' ### simulate data from a binary probit model with two latent classes
-#' data <- simulate_choice_data(
-#'   choice_covariates = sample_choice_covariates(
-#'     choice_formula = choice_formula(
-#'       formula = choice ~ cost | income | time, re = c("cost", "time")
-#'     ),
-#'     N = 10, Tp = 1:10,
-#'     choice_alternatives = choice_alternatives(
-#'       J = 2, alternatives = c("car", "bus")
-#'     )
-#'   )
-#' )
+#' # ### simulate data from a binary probit model with two latent classes
+#' # data <- simulate_choice_data(
+#' #   choice_covariates = sample_choice_covariates(
+#' #     choice_formula = choice_formula(
+#' #       formula = choice ~ cost | income | time, re = c("cost", "time")
+#' #     ),
+#' #     N = 10, Tp = 1:10,
+#' #     choice_alternatives = choice_alternatives(
+#' #       J = 2, alternatives = c("car", "bus")
+#' #     )
+#' #   )
+#' # )
 #'
 #' ### simulate data from an ordered probit model
 #' # data <- simulate_choice_data(

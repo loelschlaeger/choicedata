@@ -6,6 +6,7 @@
 \title{Define choice data}
 \usage{
 choice_data(
+  data,
   choice_covariates,
   choices,
   column_choice = "choice",
@@ -18,6 +19,10 @@ choice_data(
 validate_choice_data()
 }
 \arguments{
+\item{data}{A \code{data.frame}.}
+
+\item{choice_covariates}{TODO}
+
 \item{choices}{The observed choices in one of two possible formats:
 \itemize{
 \item Can be a \code{data.frame} with three columns, named according to
@@ -40,8 +45,6 @@ in \code{column_occasion}.
 
 \item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
-
-\item{data}{A \code{data.frame}.}
 }
 \value{
 TODO
