@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(probitdata)
+library(choicedata)
 
-test_check("probitdata")
+test_check("choicedata")

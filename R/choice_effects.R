@@ -1,24 +1,24 @@
-#' Define probit model effects
+#' Define choice model effects
 #'
 #' @description
-#' This function constructs an object of class
-#' \code{\link{probit_effects}}, which defines the model effects.
+#' This function constructs an object of class \code{\link{choice_effects}},
+#' which defines the choice model effects.
 #'
-#' @param probit_formula
-#' A \code{\link{probit_formula}} object.
-#' @param probit_alternatives
-#' A \code{\link{probit_alternatives}} object.
+#' @param choice_formula
+#' A \code{\link{choice_formula}} object.
+#' @param choice_alternatives
+#' A \code{\link{choice_alternatives}} object.
 #' @param delimiter
 #' A \code{character}, the delimiter between covariate and alternative name
 #' to build the effect name.
 #' By default, \code{delimiter = "_"}.
 #'
-#' @inheritSection probit_formula Model formula
-#' @inheritSection probit_formula Random effects
-#' @inheritSection probit_alternatives Base alternative
+#' @inheritSection choice_formula Model formula
+#' @inheritSection choice_formula Random effects
+#' @inheritSection choice_alternatives Base alternative
 #'
 #' @return
-#' A \code{\link{probit_effects}} object, which is a \code{data.frame}, where
+#' A \code{\link{choice_effects}} object, which is a \code{data.frame}, where
 #' each row is an effect, and columns are
 #' 1. \code{"name"}, the effect name (composed of covariate and alternative
 #'    name),
@@ -37,39 +37,39 @@
 #' is determined by occurrence in \code{formula}.
 #'
 #' @examples
-#' probit_effects(
-#'   probit_formula = probit_formula(
+#' choice_effects(
+#'   choice_formula = choice_formula(
 #'     formula = choice ~ price | income | comfort,
 #'     re = c("price+", "income")
 #'   ),
-#'   probit_alternatives = probit_alternatives(J = 3)
+#'   choice_alternatives = choice_alternatives(J = 3)
 #' )
 #'
 #' @export
 
-probit_effects <- function(
-    probit_formula, probit_alternatives, delimiter = "_"
+choice_effects <- function(
+    choice_formula, choice_alternatives, delimiter = "_"
 ) {
 
   ### input checks
-  if (missing(probit_formula)) {
-    stop("Please specify the input 'probit_formula'.")
+  if (missing(choice_formula)) {
+    stop("Please specify the input 'choice_formula'.")
   }
-  checkmate::assert_class(probit_formula, "probit_formula")
-  if (missing(probit_alternatives)) {
-    stop("Please specify the input 'probit_alternatives'.")
+  checkmate::assert_class(choice_formula, "choice_formula")
+  if (missing(choice_alternatives)) {
+    stop("Please specify the input 'choice_alternatives'.")
   }
-  checkmate::assert_class(probit_alternatives, "probit_alternatives")
+  checkmate::assert_class(choice_alternatives, "choice_alternatives")
   checkmate::assert_string(delimiter, n.chars = 1)
 
-  ### build probit effects
-  J <- probit_alternatives$J
-  alt <- probit_alternatives$alternatives
-  base <- probit_alternatives$base
-  ordered <- probit_alternatives$ordered
-  var_types <- probit_formula$var_types
-  re_n <- probit_formula$re_n
-  re_ln <- probit_formula$re_ln
+  ### build choice model effects
+  J <- choice_alternatives$J
+  alt <- choice_alternatives$alternatives
+  base <- choice_alternatives$base
+  ordered <- choice_alternatives$ordered
+  var_types <- choice_formula$var_types
+  re_n <- choice_formula$re_n
+  re_ln <- choice_formula$re_ln
   re <- c(re_n, re_ln)
   overview <- data.frame(matrix(ncol = 7, nrow = 0))
   if (ordered){
@@ -86,7 +86,7 @@ probit_effects <- function(
         c(var, var, NA_character_, TRUE, FALSE, var %in% re, var %in% re_ln)
       )
     }
-    for (var in c(var_types[[2]], if (probit_formula$ASC) "ASC")) {
+    for (var in c(var_types[[2]], if (choice_formula$ASC) "ASC")) {
       for (j in (1:J)[-which(alt == base)]) {
         overview <- rbind(
           overview,
@@ -126,7 +126,7 @@ probit_effects <- function(
   ### return effects
   structure(
     overview,
-    class = c("probit_effects", "data.frame")
+    class = c("choice_effects", "data.frame")
   )
 }
 
@@ -139,13 +139,13 @@ probit_effects <- function(
 #' \code{compute_P_f()} computes the number \code{P_f} of fixed model effects.
 #' \code{compute_P_r()} computes the number \code{P_r} of random model effects.
 #'
-#' @inheritParams probit_formula
-#' @inheritParams probit_parameters
-#' @inheritParams probit_effects
-#' @inheritParams probit_alternatives
+#' @inheritParams choice_formula
+#' @inheritParams choice_parameters
+#' @inheritParams choice_effects
+#' @inheritParams choice_alternatives
 #'
-#' @inheritSection probit_formula Model formula
-#' @inheritSection probit_formula Random effects
+#' @inheritSection choice_formula Model formula
+#' @inheritSection choice_formula Random effects
 #'
 #' @return
 #' An \code{integer}, the number of model effects.
@@ -169,11 +169,11 @@ compute_P <- function(formula, re, J, ordered = FALSE) {
 #' @export
 
 compute_P_f <- function(formula, re, J, ordered = FALSE) {
-  effects <- probit_effects(
-    probit_formula = probit_formula(
+  effects <- choice_effects(
+    choice_formula = choice_formula(
       formula = formula, re = re, ordered = ordered
     ),
-    probit_alternatives = probit_alternatives(J = J, ordered = ordered)
+    choice_alternatives = choice_alternatives(J = J, ordered = ordered)
   )
   as.integer(sum(!effects$random))
 }
@@ -182,10 +182,10 @@ compute_P_f <- function(formula, re, J, ordered = FALSE) {
 #' @export
 
 compute_P_r <- function(formula, re, J, ordered = FALSE) {
-  effects <- probit_effects(
-    probit_formula = probit_formula(formula = formula, re = re,
+  effects <- choice_effects(
+    choice_formula = choice_formula(formula = formula, re = re,
                                         ordered = ordered),
-    probit_alternatives = probit_alternatives(J = J, ordered = ordered)
+    choice_alternatives = choice_alternatives(J = J, ordered = ordered)
   )
   as.integer(sum(effects$random))
 }

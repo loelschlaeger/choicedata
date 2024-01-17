@@ -1,38 +1,38 @@
 test_that("effect overview can be created", {
   expect_error(
-    probit_effects(),
-    "Please specify the input 'probit_formula'."
+    choice_effects(),
+    "Please specify the input 'choice_formula'."
   )
   expect_error(
-    probit_effects(probit_formula = choice ~ A),
-    "Assertion on 'probit_formula' failed: Must inherit from class 'probit_formula', but has class 'formula'."
+    choice_effects(choice_formula = choice ~ A),
+    "Assertion on 'choice_formula' failed: Must inherit from class 'choice_formula', but has class 'formula'."
   )
   expect_error(
-    probit_effects(probit_formula = probit_formula(formula = A ~ B)),
-    "Please specify the input 'probit_alternatives'."
+    choice_effects(choice_formula = choice_formula(formula = A ~ B)),
+    "Please specify the input 'choice_alternatives'."
   )
   expect_error(
-    probit_effects(
-      probit_formula = probit_formula(formula = A ~ B),
-      probit_alternatives = 2
+    choice_effects(
+      choice_formula = choice_formula(formula = A ~ B),
+      choice_alternatives = 2
     ),
-    "Assertion on 'probit_alternatives' failed: Must inherit from class 'probit_alternatives', but has class 'numeric'."
+    "Assertion on 'choice_alternatives' failed: Must inherit from class 'choice_alternatives', but has class 'numeric'."
   )
   expect_error(
-    probit_effects(
-      probit_formula = probit_formula(formula = A ~ B),
-      probit_alternatives = probit_alternatives(J = 3),
+    choice_effects(
+      choice_formula = choice_formula(formula = A ~ B),
+      choice_alternatives = choice_alternatives(J = 3),
       delimiter = 1
     ),
     "Assertion on 'delimiter' failed: Must be of type 'string', not 'double'."
   )
   expect_equal(
-    probit_effects(
-      probit_formula = probit_formula(
+    choice_effects(
+      choice_formula = choice_formula(
         formula = choice ~ cov,
         re = c("cov+", "ASC+")
       ),
-      probit_alternatives = probit_alternatives(
+      choice_alternatives = choice_alternatives(
         J = 3,
         alternatives = c("C", "B", "A"),
         base = "B"
@@ -49,16 +49,16 @@ test_that("effect overview can be created", {
         log_normal = c(TRUE, TRUE, TRUE)
       ),
       row.names = c(NA, -3L),
-      class = c("probit_effects", "data.frame")
+      class = c("choice_effects", "data.frame")
     )
   )
   expect_equal(
-    probit_effects(
-      probit_formula = probit_formula(
+    choice_effects(
+      choice_formula = choice_formula(
         formula = choice ~ A | B + 0 | C,
         re = NULL
       ),
-      probit_alternatives = probit_alternatives(
+      choice_alternatives = choice_alternatives(
         J = 2,
         alternatives = c("A", "B")
       ),
@@ -75,16 +75,16 @@ test_that("effect overview can be created", {
         log_normal = c(FALSE, FALSE, FALSE, FALSE)
       ),
       row.names = c(NA, -4L),
-      class = c("probit_effects", "data.frame")
+      class = c("choice_effects", "data.frame")
     )
   )
   expect_equal(
-    probit_effects(
-      probit_formula = probit_formula(
+    choice_effects(
+      choice_formula = choice_formula(
         formula = choice ~ A + B + C,
         re = "A+", ordered = TRUE
       ),
-      probit_alternatives = probit_alternatives(
+      choice_alternatives = choice_alternatives(
         J = 3, ordered = TRUE
       )
     ),
@@ -99,7 +99,7 @@ test_that("effect overview can be created", {
         log_normal = c(FALSE, FALSE, TRUE)
       ),
       row.names = c(NA, -3L),
-      class = c("probit_effects", "data.frame")
+      class = c("choice_effects", "data.frame")
     )
   )
 })

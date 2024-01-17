@@ -1,8 +1,8 @@
-#' Define probit choice alternatives
+#' Define choice alternatives
 #'
 #' @description
 #' This function constructs an object of class
-#' \code{\link{probit_alternatives}}, which defines the choice alternatives.
+#' \code{\link{choice_alternatives}}, which defines the choice alternatives.
 #'
 #' @param J
 #' An \code{integer}, the number of choice alternatives.
@@ -17,14 +17,14 @@
 #' not alternative specific, see details.
 #' \code{base} must be contained in \code{alternatives}.
 #' Ignored if the model has no alternative specific covariates (e.g., in the
-#' ordered probit case).
+#' ordered case).
 #' By default, \code{base} is the first element of \code{alternatives}.
 #' @param ordered
 #' A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 #' \code{FALSE} (default) else.
 #'
 #' @return
-#' A \code{\link{probit_alternatives}} object.
+#' A \code{\link{choice_alternatives}} object.
 #'
 #' It contains the elements:
 #' \describe{
@@ -42,11 +42,11 @@
 #' The other coefficients then have to be interpreted with respect to
 #' \code{base}.
 #' The base alternative is marked with a \code{*} when printing a
-#' \code{\link{probit_alternatives}} object.
+#' \code{\link{choice_alternatives}} object.
 #'
 #' @export
 
-probit_alternatives <- function(
+choice_alternatives <- function(
     J = 2, alternatives = LETTERS[1:J], base = alternatives[1], ordered = FALSE
 ) {
   checkmate::assert_flag(ordered)
@@ -71,26 +71,26 @@ probit_alternatives <- function(
       base = base,
       ordered = ordered
     ),
-    class = c("probit_alternatives", "list")
+    class = c("choice_alternatives", "list")
   )
 }
 
-#' @rdname probit_alternatives
+#' @rdname choice_alternatives
 #' @param x
-#' A \code{\link{probit_alternatives}} object.
+#' A \code{\link{choice_alternatives}} object.
 #' @export
 
-is.probit_alternatives <- function(x) {
-  inherits(x, "probit_alternatives")
+is.choice_alternatives <- function(x) {
+  inherits(x, "choice_alternatives")
 }
 
-#' @rdname probit_alternatives
+#' @rdname choice_alternatives
 #' @exportS3Method
 #' @param ...
 #' Currently not used.
 
-print.probit_alternatives <- function(x, ...) {
-  checkmate::assert_class(x, "probit_alternatives")
+print.choice_alternatives <- function(x, ...) {
+  checkmate::assert_class(x, "choice_alternatives")
   alt <- x$alternatives
   if (!x$ordered) {
     alt[alt == x$base] <- paste0(alt[alt == x$base], "*")

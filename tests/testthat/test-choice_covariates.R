@@ -1,14 +1,14 @@
 test_that("covariates can be sampled", {
   N <- 100
   Tp <- sample(1:N, size = N, replace = TRUE)
-  x <- sample_probit_covariates(
-    probit_formula = probit_formula(choice ~ cost | age | time),
+  x <- sample_choice_covariates(
+    choice_formula = choice_formula(choice ~ cost | age | time),
     N = N,
     Tp = Tp,
-    probit_alternatives = probit_alternatives(J = 3)
+    choice_alternatives = choice_alternatives(J = 3)
   )
-  expect_s3_class(x, "probit_covariates")
-  expect_true(is.probit_covariates(x))
+  expect_s3_class(x, "choice_covariates")
+  expect_true(is.choice_covariates(x))
   expect_true(is.data.frame(x))
 })
 
@@ -16,11 +16,11 @@ test_that("customization for covariates works", {
   N <- 100
   Tp <- 10
   expect_warning(
-    x <- sample_probit_covariates(
-      probit_formula = probit_formula(choice ~ cost | age),
+    x <- sample_choice_covariates(
+      choice_formula = choice_formula(choice ~ cost | age),
       N = N,
       Tp = Tp,
-      probit_alternatives = probit_alternatives(J = 3, alternatives = c("la", "le", "lu")),
+      choice_alternatives = choice_alternatives(J = 3, alternatives = c("la", "le", "lu")),
       occasion_constant = c("cost"),
       covariate_mean = c("cost_la" = 100),
       covariate_sd = c("age" = 2),
@@ -35,8 +35,8 @@ test_that("customization for covariates works", {
   #round(apply(x[,-c(1:2)], 2, mean), 2)
   #round(apply(x[,-c(1:2)], 2, sd), 2)
 
-  expect_s3_class(x, "probit_covariates")
-  expect_true(is.probit_covariates(x))
+  expect_s3_class(x, "choice_covariates")
+  expect_true(is.choice_covariates(x))
   expect_true(is.list(x))
   expect_true(is.data.frame(x))
 })
@@ -45,8 +45,8 @@ test_that("check for covariate_levels works", {
   expect_equal(
     check_covariate_levels(
       covariate_levels = 2,
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     c(A_A = 2, A_B = 2)
@@ -54,8 +54,8 @@ test_that("check for covariate_levels works", {
   expect_equal(
     check_covariate_levels(
       covariate_levels = c("A_A" = 3),
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     c(A_A = 3, A_B = Inf)
@@ -66,8 +66,8 @@ test_that("check for occasion_constant works", {
   expect_equal(
     check_occasion_constant(
       occasion_constant = c("A", "B"),
-      probit_formula = probit_formula(formula = choice ~ A | B),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A | B),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     c("B", "A_A", "A_B")
@@ -78,8 +78,8 @@ test_that("check for covariate_mean works", {
   expect_equal(
     check_covariate_mean(
       covariate_mean = 2,
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     c(A_A = 2, A_B = 2)
@@ -87,8 +87,8 @@ test_that("check for covariate_mean works", {
   expect_equal(
     check_covariate_mean(
       covariate_mean = c("A_A" = 3),
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     c(A_A = 3, A_B = 0)
@@ -99,8 +99,8 @@ test_that("check for covariate_sd works", {
   expect_equal(
     check_covariate_sd(
       covariate_sd = 2,
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     c(A_A = 2, A_B = 2)
@@ -108,8 +108,8 @@ test_that("check for covariate_sd works", {
   expect_equal(
     check_covariate_sd(
       covariate_sd = c("A_A" = 3),
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     c(A_A = 3, A_B = 1)
@@ -120,8 +120,8 @@ test_that("check for covariate_correlation works", {
   expect_equal(
     check_covariate_correlation(
       covariate_correlation = diag(2),
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     diag(2)
@@ -129,8 +129,8 @@ test_that("check for covariate_correlation works", {
   expect_equal(
     check_covariate_correlation(
       covariate_correlation = 1,
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_"
     ),
     matrix(1, 2, 2)
@@ -141,8 +141,8 @@ test_that("covariate specification sugar works", {
   expect_equal(
     covariate_spec_sugar(
       covariate_spec = "A",
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_",
       named_vector = FALSE
     ),
@@ -151,8 +151,8 @@ test_that("covariate specification sugar works", {
   expect_equal(
     covariate_spec_sugar(
       covariate_spec = c("A" = 3),
-      probit_formula = probit_formula(formula = choice ~ A),
-      probit_alternatives = probit_alternatives(J = 2),
+      choice_formula = choice_formula(formula = choice ~ A),
+      choice_alternatives = choice_alternatives(J = 2),
       delimiter = "_",
       named_vector = TRUE
     ),
@@ -166,11 +166,11 @@ test_that("effect can be checked whether it is an ASC", {
 })
 
 test_that("covariates can be transformed between data.frame and list format", {
-  x <- sample_probit_covariates(
-    probit_formula = probit_formula(choice ~ cost | age | time),
+  x <- sample_choice_covariates(
+    choice_formula = choice_formula(choice ~ cost | age | time),
     N = 5,
     Tp = 1:5,
-    probit_alternatives = probit_alternatives(J = 3)
+    choice_alternatives = choice_alternatives(J = 3)
   )
   x_list <- as.list(x)
   x_df <- as.data.frame(x_list)
@@ -180,8 +180,8 @@ test_that("covariates can be transformed between data.frame and list format", {
 test_that("covariate names can be generated", {
   expect_equal(
     covariate_names(
-      probit_formula(formula = choice ~ cost | age | time),
-      probit_alternatives(J = 2)
+      choice_formula(formula = choice ~ cost | age | time),
+      choice_alternatives(J = 2)
     ),
     c("cost_A", "cost_B", "age", "time_A", "time_B")
   )
@@ -190,8 +190,8 @@ test_that("covariate names can be generated", {
 test_that("covariate number can be computed", {
   expect_equal(
     covariate_number(
-      probit_formula(choice ~ A | B | C),
-      probit_alternatives(J = 3)
+      choice_formula(choice ~ A | B | C),
+      choice_alternatives(J = 3)
     ),
     7
   )

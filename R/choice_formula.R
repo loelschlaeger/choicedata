@@ -1,20 +1,20 @@
-#' Define probit model formula
+#' Define choice model formula
 #'
 #' @description
-#' This function constructs an object of class \code{\link{probit_formula}},
-#' which defines the formula for a probit model.
+#' This function constructs an object of class \code{\link{choice_formula}},
+#' which defines the formula for a choice model.
 #'
 #' @param formula
-#' A \code{\link[stats]{formula}}, a symbolic description of the probit model,
+#' A \code{\link[stats]{formula}}, a symbolic description of the choice model,
 #' see details.
 #' @param re
 #' A \code{character}, the vector of names of covariates in \code{formula} that
 #' should have a random effect, see details.
 #' By default, \code{re = NULL}, i.e., no random effects.
-#' @inheritParams probit_alternatives
+#' @inheritParams choice_alternatives
 #'
 #' @return
-#' A \code{\link{probit_formula}} object.
+#' A \code{\link{choice_formula}} object.
 #'
 #' It contains the elements:
 #' \describe{
@@ -52,7 +52,7 @@
 #' \code{choice ~ A | 0 | C} is interpreted as no covariates of the second
 #' category and no ASCs.
 #'
-#' In the ordered probit model (\code{ordered = TRUE}), covariates are not
+#' In the ordered model case (\code{ordered = TRUE}), covariates are not
 #' alternative specific, i.e., there exists only one type of covariate.
 #' Therefore, the \code{formula} object does not need the special
 #' separation form via \code{|}, and hence has the simple structure
@@ -69,7 +69,7 @@
 #'
 #' @export
 
-probit_formula <- function(formula, re = NULL, ordered = FALSE) {
+choice_formula <- function(formula, re = NULL, ordered = FALSE) {
 
   ### input checks
   if (missing(formula)) {
@@ -142,26 +142,26 @@ probit_formula <- function(formula, re = NULL, ordered = FALSE) {
       re_n = re_n,
       re_ln = re_ln
     ),
-    class = c("probit_formula", "list")
+    class = c("choice_formula", "list")
   )
 }
 
-#' @rdname probit_formula
+#' @rdname choice_formula
 #' @param x
-#' An \code{\link{probit_formula}} object.
+#' An \code{\link{choice_formula}} object.
 #' @export
 
-is.probit_formula <- function(x) {
-  inherits(x, "probit_formula")
+is.choice_formula <- function(x) {
+  inherits(x, "choice_formula")
 }
 
-#' @rdname probit_formula
+#' @rdname choice_formula
 #' @exportS3Method
 #' @param ...
 #' Currently not used.
 
-print.probit_formula <- function(x, ...) {
-  checkmate::assert_class(x, "probit_formula")
+print.choice_formula <- function(x, ...) {
+  checkmate::assert_class(x, "choice_formula")
   cat("Model formula:", deparse1(x$formula))
   if (length(x$re) > 0) {
     cat("\nRandom effects:", x$re)

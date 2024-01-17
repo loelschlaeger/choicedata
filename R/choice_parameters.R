@@ -1,11 +1,11 @@
-#' Define probit model parameters
+#' Define choice model parameters
 #'
 #' @description
 #' These functions construct and validate an object of class
-#' \code{\link{probit_parameters}}, which defines the parameters of a probit
+#' \code{\link{choice_parameters}}, which defines the parameters of a choice
 #' model, see details.
 #'
-#' \code{sample_probit_parameters()} draws (missing) probit model
+#' \code{sample_choice_parameters()} draws (missing) choice model
 #' parameters at random, see details.
 #'
 #' @param C
@@ -35,13 +35,13 @@
 #' class \code{c} in vector form.
 #' @param Sigma
 #' A \code{matrix} of dimension \code{J} x \code{J}, the error term covariance
-#' matrix.
+#' matrix for a probit model.
 #' In the ordered probit model (see details), \code{Sigma} is a
 #' \code{matrix} of dimension \code{1} x \code{1} (or simply a single
 #' \code{numeric}).
 #' @param Sigma_diff
 #' A \code{matrix} of dimension \code{J-1} x \code{J-1}, the differenced error
-#' term covariance matrix
+#' term covariance matrix for a probit model.
 #' \code{Sigma_diff} is assumed to be differenced with respect to alternative
 #' \code{diff_alt}, see details.
 #' \code{Sigma_diff} is ignored in case of the ordered probit model
@@ -63,12 +63,12 @@
 #' @param d
 #' A \code{numeric} of length \code{J - 2}, the vector of logarithmic increases
 #' of the utility thresholds.
-#' Only relevant in the ordered probit model case (see details).
-#' @inheritParams probit_alternatives
+#' Only relevant in the ordered model case (see details).
+#' @inheritParams choice_alternatives
 #' @inheritParams expand_Tp
 #'
 #' @return
-#' A \code{\link{probit_parameters}} object.
+#' A \code{\link{choice_parameters}} object.
 #'
 #' It contains the elements:
 #' \describe{
@@ -85,14 +85,14 @@
 #'   \item{\code{d}}{The logarithmic increases of the utility thresholds.}
 #' }
 #'
-#' @section Setting probit model parameters:
+#' @section Setting choice model parameters:
 #'
-#' 1. Use \code{probit_parameters()} to construct a
-#'    \code{\link{probit_parameters}} object, where any model parameter can be
+#' 1. Use \code{choice_parameters()} to construct a
+#'    \code{\link{choice_parameters}} object, where any model parameter can be
 #'    specified (see below).
 #'
-#' 2. Next, call \code{validate_probit_parameters()} with the
-#'    \code{\link{probit_parameters}} object created in step 1. This will add
+#' 2. Next, call \code{validate_choice_parameters()} with the
+#'    \code{\link{choice_parameters}} object created in step 1. This will add
 #'    unspecified parameters (see below for details) and validate all specified
 #'    parameters.
 #'
@@ -167,7 +167,7 @@
 #' For level normalization, we fix \eqn{\gamma_1 = 0}.
 #'
 #' @section Level and scale normalization:
-#' The probit model is invariant towards the level and scale of utility, hence
+#' Choice models are invariant towards the level and scale of utility, hence
 #' a transformation is required for identifiability.
 #'
 #' For level normalization, we take utility differences:
@@ -185,7 +185,7 @@
 #' See \code{\link[oeli]{diff_cov}} for computing \code{Sigma_diff} from
 #' \code{Sigma}, and \code{\link[oeli]{undiff_cov}} for the other way around.
 #'
-#' For level normalization in the ordered probit model, we fix
+#' For level normalization in the ordered model case, we fix
 #' \eqn{\gamma_1 = 0}.
 #'
 #' For scale normalization, we fix the top left element of \code{Sigma_diff} to
@@ -193,7 +193,7 @@
 #'
 #' @export
 
-probit_parameters <- function(
+choice_parameters <- function(
     C = 1, s = NA, alpha = NA, b = NA, Omega = NA, Sigma = NA,
     Sigma_diff = NA, diff_alt = 1, beta = NA, z = NA, d = NA
 ) {
@@ -225,30 +225,30 @@ probit_parameters <- function(
       "z" = z,
       "d" = d
     ),
-    class = c("probit_parameters", "list")
+    class = c("choice_parameters", "list")
   )
 }
 
-#' @rdname probit_parameters
+#' @rdname choice_parameters
 #' @param x
-#' A \code{\link{probit_parameters}} object.
+#' A \code{\link{choice_parameters}} object.
 #' @export
 
-is.probit_parameters <- function(x) {
-  inherits(x, "probit_parameters")
+is.choice_parameters <- function(x) {
+  inherits(x, "choice_parameters")
 }
 
-#' @rdname probit_parameters
-#' @inheritParams probit_formula
-#' @inheritParams probit_data
+#' @rdname choice_parameters
+#' @inheritParams choice_formula
+#' @inheritParams choice_data
 #' @param seed
 #' An \code{integer}, passed to \code{set.seed()} to make the sampling of
-#' missing probit parameters reproducible.
+#' missing choice parameters reproducible.
 #' By default, \code{seed = NULL}, i.e., no seed is set.
 #'
-#' @section Drawing missing probit model parameters:
+#' @section Drawing missing choice model parameters:
 #'
-#' Unspecified probit model parameters are drawn independently from the
+#' Unspecified choice model parameters are drawn independently from the
 #' following distributions:
 #' \describe{
 #'   \item{\code{s}}{The class weights are drawn from a Dirichlet distribution
@@ -280,13 +280,13 @@ is.probit_parameters <- function(x) {
 #'
 #' @export
 
-sample_probit_parameters <- function(
-    x = probit_parameters(), formula, re  = NULL, ordered = FALSE, J, N,
+sample_choice_parameters <- function(
+    x = choice_parameters(), formula, re  = NULL, ordered = FALSE, J, N,
     seed = NULL
 ) {
 
   ### input checks
-  checkmate::assert_class(x, "probit_parameters")
+  checkmate::assert_class(x, "choice_parameters")
   if (missing(formula)) {
     stop("Please specify the model 'formula'.")
   }
@@ -296,12 +296,12 @@ sample_probit_parameters <- function(
   if (missing(N)) {
     stop("Please specify the number of deciders 'N'.")
   }
-  probit_formula <- probit_formula(formula = formula, re = re, ordered = ordered)
-  probit_alternatives <- probit_alternatives(J = J, ordered = ordered)
-  formula <- probit_formula$formula
-  re <- probit_formula$re
-  ordered <- probit_formula$ordered
-  J <- probit_alternatives$J
+  choice_formula <- choice_formula(formula = formula, re = re, ordered = ordered)
+  choice_alternatives <- choice_alternatives(J = J, ordered = ordered)
+  formula <- choice_formula$formula
+  re <- choice_formula$re
+  ordered <- choice_formula$ordered
+  J <- choice_alternatives$J
   checkmate::assert_int(N, lower = 1)
 
   ### sample missing parameters
@@ -394,28 +394,28 @@ sample_probit_parameters <- function(
   return(x)
 }
 
-#' @rdname probit_parameters
+#' @rdname choice_parameters
 #'
-#' @inheritParams sample_probit_parameters
-#' @inheritParams probit_formula
-#' @inheritParams probit_data
+#' @inheritParams sample_choice_parameters
+#' @inheritParams choice_formula
+#' @inheritParams choice_data
 #'
 #' @examples
-#' (x <- probit_parameters(C = 2))
+#' (x <- choice_parameters(C = 2))
 #' formula <- choice ~ A | B
 #' re <- "A"
 #' J <- 3
 #' N <- 100
-#' (x <- validate_probit_parameters(x, formula = formula, re = re, J = J, N = N))
+#' (x <- validate_choice_parameters(x, formula = formula, re = re, J = J, N = N))
 #'
 #' @export
 
-validate_probit_parameters <- function(
-    x = probit_parameters(), formula, re  = NULL, ordered = FALSE, J, N
+validate_choice_parameters <- function(
+    x = choice_parameters(), formula, re  = NULL, ordered = FALSE, J, N
 ) {
 
   ### input checks
-  checkmate::assert_class(x, "probit_parameters")
+  checkmate::assert_class(x, "choice_parameters")
   if (missing(formula)) {
     stop("Please specify the input 'formula'.")
   }
@@ -425,12 +425,12 @@ validate_probit_parameters <- function(
   if (missing(N)) {
     stop("Please specify the number of deciders 'N'.")
   }
-  probit_formula <- probit_formula(formula = formula, re = re, ordered = ordered)
-  probit_alternatives <- probit_alternatives(J = J, ordered = ordered)
-  formula <- probit_formula$formula
-  re <- probit_formula$re
-  J <- probit_alternatives$J
-  ordered <- probit_alternatives$ordered
+  choice_formula <- choice_formula(formula = formula, re = re, ordered = ordered)
+  choice_alternatives <- choice_alternatives(J = J, ordered = ordered)
+  formula <- choice_formula$formula
+  re <- choice_formula$re
+  J <- choice_alternatives$J
+  ordered <- choice_alternatives$ordered
 
   ### check C
   checkmate::assert_int(x$C, lower = 1)
@@ -443,7 +443,7 @@ validate_probit_parameters <- function(
   }
 
   ### add missing parameters
-  x <- sample_probit_parameters(
+  x <- sample_choice_parameters(
     x = x, formula = formula, re = re, ordered = ordered, J = J, N = N
   )
 
@@ -550,18 +550,18 @@ validate_probit_parameters <- function(
   return(x)
 }
 
-#' @rdname probit_parameters
+#' @rdname choice_parameters
 #' @param ...
 #' A \code{character} (vector), the names of model parameters to be printed.
 #' By default, all available parameters are printed.
 #' @inheritParams oeli::print_matrix
 #' @exportS3Method
 
-print.probit_parameters <- function(
+print.choice_parameters <- function(
     x, ..., rowdots = 4, coldots = 4, digits = 2, simplify = FALSE,
     details = !simplify
 ) {
-  checkmate::assert_class(x, "probit_parameters")
+  checkmate::assert_class(x, "choice_parameters")
   pars <- list(...)
   ind <- if (length(pars) != 0) {
     checkmate::assert_character(unlist(pars), any.missing = FALSE)
@@ -590,19 +590,19 @@ print.probit_parameters <- function(
 #'
 #' @keywords internal
 
-get_coefficient_vector <- function(probit_parameters, decider_id) {
-  checkmate::assert_class(probit_parameters, "probit_parameters")
+get_coefficient_vector <- function(choice_parameters, decider_id) {
+  checkmate::assert_class(choice_parameters, "choice_parameters")
   checkmate::assert_int(
-    decider_id, lower = 1, upper = length(probit_parameters$z)
+    decider_id, lower = 1, upper = length(choice_parameters$z)
   )
-  z_n <- probit_parameters$z[decider_id]
+  z_n <- choice_parameters$z[decider_id]
   checkmate::assert_int(z_n, lower = 1)
   coef <- numeric()
-  if (checkmate::test_numeric(probit_parameters$alpha, any.missing = FALSE)) {
-    coef <- c(coef, probit_parameters$alpha[, z_n])
+  if (checkmate::test_numeric(choice_parameters$alpha, any.missing = FALSE)) {
+    coef <- c(coef, choice_parameters$alpha[, z_n])
   }
-  if (checkmate::test_numeric(probit_parameters$beta, any.missing = FALSE)) {
-    coef <- c(coef, probit_parameters$beta[, z_n])
+  if (checkmate::test_numeric(choice_parameters$beta, any.missing = FALSE)) {
+    coef <- c(coef, choice_parameters$beta[, z_n])
   }
   return(coef)
 }
