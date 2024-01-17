@@ -6,6 +6,7 @@
 \alias{sample_choice_parameters}
 \alias{validate_choice_parameters}
 \alias{print.choice_parameters}
+\alias{as.vector.choice_parameters}
 \title{Define choice model parameters}
 \usage{
 choice_parameters(
@@ -52,6 +53,8 @@ validate_choice_parameters(
   simplify = FALSE,
   details = !simplify
 )
+
+\method{as.vector}{choice_parameters}(x, mode = "numeric")
 }
 \arguments{
 \item{C}{An \code{integer}, the number (greater or equal 1) of latent classes of

@@ -75,7 +75,7 @@ These objects can be created via eponymous constructors, but for specific tasks 
 | Transform choice data to design matrix form       | `as.list.choice_data()` (creates a `list` of design matrices)         |
 | Visualize choice data                             | `plot.choice_data()` (creates a `ggplot` object)                      |
 | Sample parameters for a choice model              | `sample_choice_parameters()` (creates a `choice_parameters` object)    |
-| Compute the model likelihood                      | `choice_likelihood()`                                                 |
+| Compute the choice model likelihood               | `choice_likelihood()`                                                 |
 | Create a `vector` of identified model parameters  | `as.vector.choice_parameters()` (required for likelihood optimization) |
 
 ## Examples

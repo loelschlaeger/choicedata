@@ -607,5 +607,10 @@ get_coefficient_vector <- function(choice_parameters, decider_id) {
   return(coef)
 }
 
+#' @rdname choice_parameters
+#' @exportS3Method
 
+as.vector.choice_parameters <- function(x, mode = "numeric") {
+
+}
 
