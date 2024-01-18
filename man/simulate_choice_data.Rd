@@ -28,7 +28,8 @@ parameters are used.}
 covariates reproducible.
 By default, \code{seed = NULL}, i.e., no seed is set.}
 
-\item{column_choice}{TODO}
+\item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
+choices.}
 }
 \value{
 An \code{\link{choice_data}} object.

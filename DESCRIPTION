@@ -23,4 +23,5 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     checkmate,
+    cli,
     oeli (>= 0.2.0)

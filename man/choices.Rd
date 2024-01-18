@@ -3,11 +3,21 @@
 \name{choices}
 \alias{choices}
 \alias{simulate_choices}
+\alias{is.choice_formula}
+\alias{validate_choices}
 \alias{as.data.frame.choices}
 \alias{as.list.choices}
 \title{Define choices}
 \usage{
-choices()
+choices(
+  choices = list(),
+  column_choice = column_choice,
+  column_decider = "id",
+  column_occasion = "idc",
+  ranked = FALSE,
+  ordered = FALSE,
+  delimiter = "_"
+)
 
 simulate_choices(
   choice_parameters,
@@ -19,27 +29,60 @@ simulate_choices(
   column_occasion = "idc"
 )
 
-\method{as.data.frame}{choices}()
+is.choice_formula(x)
 
-\method{as.list}{choices}()
+validate_choices()
+
+\method{as.data.frame}{choices}(x, ...)
+
+\method{as.list}{choices}(x, ...)
 }
 \arguments{
-\item{choice_parameters}{TODO}
+\item{choices}{A \code{list}, where the \code{n}-th element is a \code{list} of choices for
+the \code{n}-th decider, where the \code{t}-th element is an element from
+\code{choice_set} that defines the choice at their \code{t}-th choice
+occasion.}
 
-\item{choice_covariates}{TODO}
+\item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
+choices.}
 
-\item{choice_set}{TODO}
+\item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
+decider identifiers.}
 
-\item{seed}{TODO}
+\item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
+identifiers for the choice occasions.}
 
-\item{column_choice}{TODO}
+\item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
 
-\item{column_decider}{TODO}
+\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
+\code{FALSE} (default) else.}
 
-\item{column_occasion}{TODO}
+\item{choice_parameters}{A \code{\link{choice_parameters}} object.}
+
+\item{choice_covariates}{A \code{\link{choice_covariates}} object.}
+
+\item{choice_set}{A \code{\link{choice_set}} object.}
+
+\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the simulation of
+choices reproducible.
+By default, \code{seed = NULL}, i.e., no seed is set.}
+
+\item{x}{An \code{\link{choices}} object.}
 }
 \value{
-A \code{\link{choices}} object.
+A \code{\link{choices}} object. It can be in \code{data.frame} or \code{list}
+and can be transformed between these two formats via the functions
+\code{as.data.frame.choices()} or \code{as.list.choices()}.
+\itemize{
+\item \code{data.frame} format: a \code{data.frame} with three columns
+named \code{column_choice} (the choices), \code{column_decider}
+(the decider identifiers), and \code{column_occasion} (the
+identifiers for the choice occasions)
+\item \code{list} format: a \code{list}, where the \code{n}-th element is
+a \code{list} of choices for the \code{n}-th decider, where the
+\code{t}-th element is an element from \code{choice_set} that defines
+the choice at their \code{t}-th choice occasion
+}
 }
 \description{
 These functions construct and validate an object of class

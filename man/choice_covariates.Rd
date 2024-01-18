@@ -9,6 +9,7 @@
 \alias{as.data.frame.choice_covariates}
 \alias{covariate_names}
 \alias{covariate_number}
+\alias{print.choice_covariates}
 \title{Define choice covariates}
 \usage{
 choice_covariates(choice_data)
@@ -50,6 +51,8 @@ validate_choice_covariates(
 covariate_names(choice_formula, choice_alternatives, delimiter = "_")
 
 covariate_number(choice_formula, choice_alternatives)
+
+\method{print}{choice_covariates}(x, ...)
 }
 \arguments{
 \item{choice_data}{A \code{\link{choice_data}} object.}
@@ -125,9 +128,11 @@ values for the population.}
 to build the effect name.
 By default, \code{delimiter = "_"}.}
 
-\item{column_decider}{TODO}
+\item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
+decider identifiers.}
 
-\item{column_occasion}{TODO}
+\item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
+identifiers for the choice occasions.}
 
 \item{...}{Currently not used.}
 

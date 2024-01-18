@@ -10,6 +10,7 @@
 \title{Define choice model parameters}
 \usage{
 choice_parameters(
+  model_type = "probit",
   C = 1,
   s = NA,
   alpha = NA,
@@ -57,6 +58,9 @@ validate_choice_parameters(
 \method{as.vector}{choice_parameters}(x, mode = "numeric")
 }
 \arguments{
+\item{model_type}{Either \code{"probit"} (default) to select the probit model, or
+\code{"logit"} to select the logit model.}
+
 \item{C}{An \code{integer}, the number (greater or equal 1) of latent classes of
 decision makers.
 By default, \code{C = 1}.}

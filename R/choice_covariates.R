@@ -702,39 +702,12 @@ covariate_number <- function(choice_formula, choice_alternatives) {
   )
 }
 
-#' Expand \code{Tp}
-#'
-#' @description
-#' This function expands the number of choice occasions \code{Tp} to a
-#' \code{vector} of length \code{N}.
-#'
-#' @param N
-#' A positive \code{integer}, the number of deciders.
-#' @param Tp
-#' A positive \code{integer}, the number of choice occasions per decider.
-#' Can also be a \code{vector} of length \code{N} for a variable number of
-#' choice occasions per decider.
-#' By default, \code{Tp = 1}.
-#'
-#' @return
-#' An \code{integer} \code{vector} of length \code{N}.
-#'
-#' @keywords internal
+#' @rdname choice_covariates
+#' @exportS3Method
 
-expand_Tp <- function(N, Tp = 1) {
-  if (missing(N)) {
-    stop("Please specify the number 'N' of deciders.")
-  }
-  checkmate::assert_int(N, lower = 1)
-  checkmate::assert_numeric(Tp)
-  if (length(Tp) == 1) {
-    Tp <- rep(Tp, N)
-  }
-  checkmate::assert_integerish(Tp, lower = 1, len = N, any.missing = FALSE)
-  as.integer(Tp)
+print.choice_covariates <- function(x, ...) {
+  return(x)
+  # TODO: abbreviated data.frame (or list)
 }
-
-
-
 
 

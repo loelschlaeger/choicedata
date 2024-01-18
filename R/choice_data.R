@@ -7,7 +7,7 @@
 #' @param data
 #' A \code{data.frame}.
 #' @param choice_covariates
-#' TODO
+#' A \code{\link{choice_covariates}} object.
 #' @param choices
 #' The observed choices in one of two possible formats:
 #' - Can be a \code{data.frame} with three columns, named according to
@@ -19,11 +19,14 @@
 #'   \code{list} that has the choice of decider \code{n} at choice occasion
 #'   \code{t} as the \code{t}th element.
 #' @param column_choice
-#' TODO
+#' A \code{character}, the column name of the \code{data.frame} with the
+#' choices.
 #' @param column_decider
-#' TODO
+#' A \code{character}, the column name of the \code{data.frame} with the
+#' decider identifiers.
 #' @param column_occasion
-#' TODO
+#' A \code{character}, the column name of the \code{data.frame} with the
+#' identifiers for the choice occasions.
 #' @inheritParams choice_alternatives
 #' @inheritParams choice_set
 #'

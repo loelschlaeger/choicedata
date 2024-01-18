@@ -21,7 +21,7 @@ validate_choice_data()
 \arguments{
 \item{data}{A \code{data.frame}.}
 
-\item{choice_covariates}{TODO}
+\item{choice_covariates}{A \code{\link{choice_covariates}} object.}
 
 \item{choices}{The observed choices in one of two possible formats:
 \itemize{
@@ -35,11 +35,14 @@ in \code{column_occasion}.
 \code{t} as the \code{t}th element.
 }}
 
-\item{column_choice}{TODO}
+\item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
+choices.}
 
-\item{column_decider}{TODO}
+\item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
+decider identifiers.}
 
-\item{column_occasion}{TODO}
+\item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
+identifiers for the choice occasions.}
 
 \item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
 

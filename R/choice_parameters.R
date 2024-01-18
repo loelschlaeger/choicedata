@@ -8,6 +8,9 @@
 #' \code{sample_choice_parameters()} draws (missing) choice model
 #' parameters at random, see details.
 #'
+#' @param model_type
+#' Either \code{"probit"} (default) to select the probit model, or
+#' \code{"logit"} to select the logit model.
 #' @param C
 #' An \code{integer}, the number (greater or equal 1) of latent classes of
 #' decision makers.
@@ -194,9 +197,17 @@
 #' @export
 
 choice_parameters <- function(
-    C = 1, s = NA, alpha = NA, b = NA, Omega = NA, Sigma = NA,
-    Sigma_diff = NA, diff_alt = 1, beta = NA, z = NA, d = NA
+    model_type = "probit", C = 1, s = NA, alpha = NA, b = NA, Omega = NA,
+    Sigma = NA, Sigma_diff = NA, diff_alt = 1, beta = NA, z = NA, d = NA
 ) {
+  checkmate::assert_choice(model_type, choices = c("probit", "logit"))
+  if (model_type == "logit") {
+    warning(
+      "Support for the logit model is currently under development.\n",
+      "Selecting the probit model instead.",
+      call. = FALSE
+    )
+  }
   checkmate::assert_count(C, positive = TRUE)
   checkmate::assert_count(diff_alt, positive = TRUE)
   parameters <- list(
