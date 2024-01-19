@@ -1,14 +1,65 @@
+test_that("checks for choice identifiers work", {
+  expect_error(
+    choice_identifiers(
+      data.frame("id" = 1), column_decider = "id", column_occasion = "id"
+    ),
+    "Names for `column_decider` and `column_occasion` must be different."
+  )
+  expect_error(
+    choice_identifiers(
+      data.frame("id" = 1:3, "idc" = 1), column_decider = "bad"
+    ),
+    "not found in `data_frame`."
+  )
+  expect_error(
+    choice_identifiers(
+      data.frame("id" = c(1, NA, 3), "idc" = 1), column_decider = "id"
+    ),
+    "must not have NAs"
+  )
+  expect_error(
+    choice_identifiers(
+      data.frame("id" = c(1, 1, 3), "idc" = 1), column_decider = "id"
+    ),
+    "must not have duplicated values if there are no identifiers for the choice occasions."
+  )
+  expect_error(
+    choice_identifiers(
+      data.frame("occasionID" = c(1, 2, 3)), column_decider = "occasionID"
+    ),
+    "`column_decider` must not equal"
+  )
+  expect_error(
+    choice_identifiers(
+      data.frame("id" = c(1, 2, 3)), column_decider = "id", column_occasion = "idc"
+    ),
+    "not found in `data_frame`."
+  )
+  expect_error(
+    choice_identifiers(
+      data.frame("id" = c(1, 2, 3), "idc" = c(1, NA, 1)), column_decider = "id", column_occasion = "idc"
+    ),
+    "of `data_frame` must not have NAs."
+  )
+  expect_error(
+    choice_identifiers(
+      data.frame("id" = c(1, 1), "idc" = c(1, 1)), column_decider = "id", column_occasion = "idc"
+    ),
+    "must have unique values for a given decider"
+  )
+})
+
 test_that("choice identifiers can be generated", {
   expect_equal(
     generate_choice_identifiers(N = 3, Tp = 1:3),
     structure(
       list(
-        id = structure(
+        deciderID = structure(
           c(1L, 2L, 2L, 3L, 3L, 3L),
           levels = c("1", "2", "3"),
           class = "factor"
         ),
-        idc = structure(
+        occasionID = structure(
           c(1L, 1L, 2L, 1L, 2L, 3L),
           levels = c("1", "2", "3"),
           class = "factor"
@@ -19,7 +70,7 @@ test_that("choice identifiers can be generated", {
     )
   )
   expect_error(
-    generate_choice_identifiers(N = 3, Tp = 1:3, column_decider = "idc"),
+    generate_choice_identifiers(N = 3, Tp = 1:3, column_decider = "occasionID"),
     "`column_decider` must not equal"
   )
   expect_error(
@@ -52,6 +103,28 @@ test_that("choice identifiers can be read", {
           levels = c("1", "2", "3"),
           class = "factor")
         ),
+      class = c("choice_identifiers", "data.frame"),
+      row.names = c(NA, 3L)
+    )
+  )
+  expect_equal(
+    read_choice_identifiers(
+      data_frame = data_frame, column_decider = "decider",
+      column_occasion = "occasion", as_cs = TRUE
+    ),
+    structure(
+      list(
+        decider = structure(
+          c(1L, 3L, 2L),
+          levels = c("A.1", "A.3", "B.2"),
+          class = "factor"
+        ),
+        occasion = structure(
+          c(1L, 1L, 1L),
+          levels = c("1"),
+          class = "factor"
+        )
+      ),
       class = c("choice_identifiers", "data.frame"),
       row.names = c(NA, 3L)
     )

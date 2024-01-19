@@ -13,7 +13,7 @@
 #' A \code{data.frame}.
 #' @param column_decider
 #' A \code{character}, the name of the \code{data.frame} column with identifier
-#' for the deciders.
+#' for the deciders. The default is \code{"deciderID"}.
 #' @param column_occasion
 #' A \code{character}, different from \code{column_decider}, the name of the
 #' \code{data.frame} column with identifier for the choice occasions. These
@@ -22,7 +22,7 @@
 #' It can also be \code{NULL} (default), in which case data is treated as
 #' cross-sectional. The decider ids must be unique in this case. A column for
 #' the (trivial) choice occasion identifiers is generated anyways with the
-#' default name \code{"idc"}.
+#' default name \code{"occasionID"}.
 #' @param as_cs
 #' Either \code{TRUE} to treat the data as cross-sectional (i.e., dropping the
 #' information of multiple choices by the same decider), or \code{FALSE}
@@ -31,20 +31,20 @@
 #' @return
 #' A \code{\link{choice_identifiers}} object. It is a \code{data.frame} with
 #' two columns, one named \code{column_decider} and containing the decider ids,
-#' and the other one either named \code{column_occasion} or \code{"idc"} by
+#' and the other one either named \code{column_occasion} or \code{"occasionID"} by
 #' default, containing the choice occasion ids.
 #'
 #' @keywords
 #' object
 
 choice_identifiers <- function(
-  data_frame = data.frame(), column_decider = "id", column_occasion = NULL,
-  as_cs = FALSE
+  data_frame = data.frame(), column_decider = "deciderID",
+  column_occasion = NULL, as_cs = FALSE
 ) {
   checkmate::assert_data_frame(data_frame)
   checkmate::assert_string(column_decider)
   checkmate::assert_string(column_occasion, null.ok = TRUE)
-  if (column_decider == column_occasion) {
+  if (identical(column_decider, column_occasion)) {
     cli::cli_abort(
       "Names for {.var column_decider} and {.var column_occasion} must be
       different."
@@ -70,10 +70,10 @@ choice_identifiers <- function(
       )
     }
     occasion_ids <- rep("1", length(decider_ids))
-    column_occasion <- "idc"
-    if (column_decider == "idc") {
+    column_occasion <- "occasionID"
+    if (column_decider == "occasionID") {
       cli::cli_abort(
-        "{.var column_decider} must not equal {.val idc}."
+        "{.var column_decider} must not equal {.val occasionID}."
       )
     }
   } else if (!column_occasion %in% colnames(data_frame)) {
@@ -84,13 +84,13 @@ choice_identifiers <- function(
     occasion_ids <- as.character(data_frame[[column_occasion]])
     if (anyNA(occasion_ids)) {
       cli::cli_abort(
-        "Column {.val {occasion_ids}} of {.var data_frame} must not have NAs."
+        "Column {.val {column_occasion}} of {.var data_frame} must not have NAs."
       )
     }
     for (decider_id in unique(decider_ids)) {
       if (anyDuplicated(occasion_ids[which(decider_ids == decider_id)])) {
         cli::cli_abort(
-          "Column {.val {occasion_ids}} of {.var data_frame} must have unique
+          "Column {.val {column_occasion}} of {.var data_frame} must have unique
           values for a given decider, but decider {.val decider_id} has
           duplicates for their occasion id."
         )
@@ -99,7 +99,7 @@ choice_identifiers <- function(
   }
   if (as_cs) {
     if (anyDuplicated(decider_ids)) {
-      decider_ids <- paste(decider_ids, ".", occasion_ids)
+      decider_ids <- paste(decider_ids, occasion_ids, sep = ".")
     }
     occasion_ids <- rep("1", length(decider_ids))
   }
@@ -114,16 +114,16 @@ choice_identifiers <- function(
 #' @inheritParams expand_Tp
 
 generate_choice_identifiers <- function(
-  N, Tp = 1, column_decider = "id", column_occasion = NULL
+  N, Tp = 1, column_decider = "deciderID", column_occasion = NULL
 ) {
   Tp <- expand_Tp(N = N, Tp = Tp)
   checkmate::assert_string(column_decider)
   checkmate::assert_string(column_occasion, null.ok = TRUE)
   if (is.null(column_occasion)) {
-    column_occasion <- "idc"
-    if (column_decider == "idc") {
+    column_occasion <- "occasionID"
+    if (column_decider == "occasionID") {
       cli::cli_abort(
-        "{.var column_decider} must not equal {.val idc}."
+        "{.var column_decider} must not equal {.val occasionID}."
       )
     }
   }
@@ -149,7 +149,7 @@ generate_choice_identifiers <- function(
 #' @rdname choice_identifiers
 
 read_choice_identifiers <- function(
-  data_frame = data.frame(), column_decider = "id", column_occasion = NULL,
+  data_frame = data.frame(), column_decider = "deciderID", column_occasion = NULL,
   as_cs = FALSE
 ) {
   choice_identifiers(

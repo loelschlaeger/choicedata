@@ -1,7 +1,6 @@
 test_that("choice_formula can be specified and validated", {
   expect_choice_formula <- function(object, var_types, ASC, re_n, re_ln) {
-    expect(inherits(object, "choice_formula"), "bad class")
-    expect(is.choice_formula(object), "bad formula")
+    expect(is.choice_formula(object), "bad class")
     expect(identical(object$var_types, var_types), "bad variable types")
     expect(identical(object$ASC, ASC), "bad ASC")
     expect(identical(object$re_n, re_n), "bad normal random effects")

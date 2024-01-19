@@ -3,7 +3,7 @@
 \name{choices}
 \alias{choices}
 \alias{simulate_choices}
-\alias{is.choice_formula}
+\alias{is.choices}
 \alias{validate_choices}
 \alias{as.data.frame.choices}
 \alias{as.list.choices}
@@ -29,7 +29,7 @@ simulate_choices(
   column_occasion = "idc"
 )
 
-is.choice_formula(x)
+is.choices(x)
 
 validate_choices()
 

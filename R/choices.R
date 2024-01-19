@@ -116,7 +116,7 @@ simulate_choices <- function(
 #' An \code{\link{choices}} object.
 #' @export
 
-is.choice_formula <- function(x) {
+is.choices <- function(x) {
   inherits(x, "choices")
 }
 

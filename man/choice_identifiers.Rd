@@ -8,7 +8,7 @@
 \usage{
 choice_identifiers(
   data_frame = data.frame(),
-  column_decider = "id",
+  column_decider = "deciderID",
   column_occasion = NULL,
   as_cs = FALSE
 )
@@ -16,13 +16,13 @@ choice_identifiers(
 generate_choice_identifiers(
   N,
   Tp = 1,
-  column_decider = "id",
+  column_decider = "deciderID",
   column_occasion = NULL
 )
 
 read_choice_identifiers(
   data_frame = data.frame(),
-  column_decider = "id",
+  column_decider = "deciderID",
   column_occasion = NULL,
   as_cs = FALSE
 )
@@ -31,7 +31,7 @@ read_choice_identifiers(
 \item{data_frame}{A \code{data.frame}.}
 
 \item{column_decider}{A \code{character}, the name of the \code{data.frame} column with identifier
-for the deciders.}
+for the deciders. The default is \code{"deciderID"}.}
 
 \item{column_occasion}{A \code{character}, different from \code{column_decider}, the name of the
 \code{data.frame} column with identifier for the choice occasions. These
@@ -40,7 +40,7 @@ identifiers must be unique for a given decider.
 It can also be \code{NULL} (default), in which case data is treated as
 cross-sectional. The decider ids must be unique in this case. A column for
 the (trivial) choice occasion identifiers is generated anyways with the
-default name \code{"idc"}.}
+default name \code{"occasionID"}.}
 
 \item{as_cs}{Either \code{TRUE} to treat the data as cross-sectional (i.e., dropping the
 information of multiple choices by the same decider), or \code{FALSE}
@@ -56,7 +56,7 @@ By default, \code{Tp = 1}.}
 \value{
 A \code{\link{choice_identifiers}} object. It is a \code{data.frame} with
 two columns, one named \code{column_decider} and containing the decider ids,
-and the other one either named \code{column_occasion} or \code{"idc"} by
+and the other one either named \code{column_occasion} or \code{"occasionID"} by
 default, containing the choice occasion ids.
 }
 \description{
