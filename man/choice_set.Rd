@@ -18,7 +18,7 @@ is.choice_set(x)
 \item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
 
 \item{delimiter}{A \code{character}, the delimiter between alternative names in the ranked
-case. By default, \code{delimiter = "_"}.}
+case. By default, \code{delimiter = "_"}. Ignored if \code{ranked = FALSE}.}
 
 \item{x}{A \code{\link{choice_set}} object.}
 

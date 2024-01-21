@@ -38,7 +38,7 @@
 
 choices <- function(
     choices = list(), column_choice = column_choice,
-    column_decider = "id", column_occasion = "idc",
+    column_decider = "deciderID", column_occasion = "occasionID",
     ranked = FALSE, ordered = FALSE, delimiter = "_"
 ) {
   oeli::assert_list_of_lists(choices)
@@ -60,7 +60,8 @@ choices <- function(
 
 simulate_choices <- function(
   choice_parameters, choice_covariates, choice_set, seed = NULL,
-  column_choice = "choice", column_decider = "id", column_occasion = "idc"
+  column_choice = "choice", column_decider = "deciderID",
+  column_occasion = "occasionID"
 ) {
 
   ### input checks
@@ -74,6 +75,7 @@ simulate_choices <- function(
   ### extract information from objects
   Tp <- attr(choice_covariates, "Tp")
   N <- length(Tp)
+  ordered <- attr(choice_set, "ordered")
   ranked <- attr(choice_set, "ranked")
 
   ### simulate choices

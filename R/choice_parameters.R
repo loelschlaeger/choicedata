@@ -196,18 +196,13 @@
 #'
 #' @export
 
+# TODO: LC for FE, RE, both
+
 choice_parameters <- function(
-    model_type = "probit", C = 1, s = NA, alpha = NA, b = NA, Omega = NA,
-    Sigma = NA, Sigma_diff = NA, diff_alt = 1, beta = NA, z = NA, d = NA
-) {
-  checkmate::assert_choice(model_type, choices = c("probit", "logit"))
-  if (model_type == "logit") {
-    warning(
-      "Support for the logit model is currently under development.\n",
-      "Selecting the probit model instead.",
-      call. = FALSE
-    )
-  }
+    C = 1, s = NA, alpha = NA, b = NA, Omega = NA,
+    Sigma = NA, Sigma_diff = NA, diff_alt = 1, beta = NA, z = NA, d = NA,
+    model_type = NA_character_, ordered = NA
+  ) {
   checkmate::assert_count(C, positive = TRUE)
   checkmate::assert_count(diff_alt, positive = TRUE)
   parameters <- list(
@@ -222,6 +217,8 @@ choice_parameters <- function(
       )
     }
   }
+  checkmate::assert_choice(model_type, choices = c("probit", "logit", NA))
+  checkmate::assert_flag(ordered, na.ok = TRUE)
   structure(
     list(
       "C" = C,
@@ -236,6 +233,8 @@ choice_parameters <- function(
       "z" = z,
       "d" = d
     ),
+    model_type = as.character(model_type),
+    ordered = ordered,
     class = c("choice_parameters", "list")
   )
 }
@@ -292,12 +291,21 @@ is.choice_parameters <- function(x) {
 #' @export
 
 sample_choice_parameters <- function(
-    x = choice_parameters(), formula, re  = NULL, ordered = FALSE, J, N,
-    seed = NULL
+    x = choice_parameters(), model_type = "probit", formula, re  = NULL,
+    ordered = FALSE, J, N, seed = NULL, validate = TRUE
 ) {
 
   ### input checks
   checkmate::assert_class(x, "choice_parameters")
+  checkmate::assert_choice(model_type, choices = c("probit", "logit"))
+  if (model_type == "logit") {
+    warning(
+      "Support for the logit model is currently under development.\n",
+      "Selecting the probit model instead.",
+      call. = FALSE
+    )
+    model_type <- "probit"
+  }
   if (missing(formula)) {
     stop("Please specify the model 'formula'.")
   }
@@ -402,7 +410,15 @@ sample_choice_parameters <- function(
   } else {
     x$d <- NA_real_
   }
-  return(x)
+  if (validate) {
+    validate_choice_parameters(
+      x = x, formula = formula, re = re, ordered = ordered, J = J, N = N
+    )
+  } else {
+    attr(x, "model_type") <- model_type
+    attr(x, "ordered") <- ordered
+    return(x)
+  }
 }
 
 #' @rdname choice_parameters
@@ -436,7 +452,9 @@ validate_choice_parameters <- function(
   if (missing(N)) {
     stop("Please specify the number of deciders 'N'.")
   }
-  choice_formula <- choice_formula(formula = formula, re = re, ordered = ordered)
+  choice_formula <- choice_formula(
+    formula = formula, re = re, ordered = ordered
+  )
   choice_alternatives <- choice_alternatives(J = J, ordered = ordered)
   formula <- choice_formula$formula
   re <- choice_formula$re
@@ -455,7 +473,8 @@ validate_choice_parameters <- function(
 
   ### add missing parameters
   x <- sample_choice_parameters(
-    x = x, formula = formula, re = re, ordered = ordered, J = J, N = N
+    x = x, formula = formula, re = re, ordered = ordered, J = J, N = N,
+    validate = FALSE
   )
 
   ### validate parameters

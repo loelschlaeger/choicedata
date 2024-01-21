@@ -5,6 +5,7 @@
     Output
       Parameter:
       C : 1
+      s : 1
       alpha : 4 x 1 matrix of doubles 
             [,1]
       [1,] -1.98
@@ -51,6 +52,7 @@
     Output
       Parameter:
       C : 1
+      s : 1
       b : 2 x 1 matrix of doubles 
             [,1]
       [1,] -1.98
@@ -71,7 +73,7 @@
       
       z : double vector of length 10 
       1 1 1 ... 1
-      d : -1.47
+      d : -0.48
 
 ---
 
@@ -79,5 +81,5 @@
       print(x, "d")
     Output
       Parameter:
-      d : -1.47
+      d : -0.48
 

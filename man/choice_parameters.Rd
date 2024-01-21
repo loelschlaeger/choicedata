@@ -10,7 +10,6 @@
 \title{Define choice model parameters}
 \usage{
 choice_parameters(
-  model_type = "probit",
   C = 1,
   s = NA,
   alpha = NA,
@@ -21,19 +20,23 @@ choice_parameters(
   diff_alt = 1,
   beta = NA,
   z = NA,
-  d = NA
+  d = NA,
+  model_type = NA_character_,
+  ordered = NA
 )
 
 is.choice_parameters(x)
 
 sample_choice_parameters(
   x = choice_parameters(),
+  model_type = "probit",
   formula,
   re = NULL,
   ordered = FALSE,
   J,
   N,
-  seed = NULL
+  seed = NULL,
+  validate = TRUE
 )
 
 validate_choice_parameters(
@@ -58,9 +61,6 @@ validate_choice_parameters(
 \method{as.vector}{choice_parameters}(x, mode = "numeric")
 }
 \arguments{
-\item{model_type}{Either \code{"probit"} (default) to select the probit model, or
-\code{"logit"} to select the logit model.}
-
 \item{C}{An \code{integer}, the number (greater or equal 1) of latent classes of
 decision makers.
 By default, \code{C = 1}.}
@@ -117,6 +117,12 @@ denotes the allocated class for decider \code{n}.}
 of the utility thresholds.
 Only relevant in the ordered model case (see details).}
 
+\item{model_type}{Either \code{"probit"} (default) to select the probit model, or
+\code{"logit"} to select the logit model.}
+
+\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
+\code{FALSE} (default) else.}
+
 \item{x}{A \code{\link{choice_parameters}} object.}
 
 \item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the choice model,
@@ -125,9 +131,6 @@ see details.}
 \item{re}{A \code{character}, the vector of names of covariates in \code{formula} that
 should have a random effect, see details.
 By default, \code{re = NULL}, i.e., no random effects.}
-
-\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
-\code{FALSE} (default) else.}
 
 \item{J}{An \code{integer}, the number of choice alternatives.
 Must be at least \code{2}.

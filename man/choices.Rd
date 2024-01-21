@@ -12,8 +12,8 @@
 choices(
   choices = list(),
   column_choice = column_choice,
-  column_decider = "id",
-  column_occasion = "idc",
+  column_decider = "deciderID",
+  column_occasion = "occasionID",
   ranked = FALSE,
   ordered = FALSE,
   delimiter = "_"
@@ -25,8 +25,8 @@ simulate_choices(
   choice_set,
   seed = NULL,
   column_choice = "choice",
-  column_decider = "id",
-  column_occasion = "idc"
+  column_decider = "deciderID",
+  column_occasion = "occasionID"
 )
 
 is.choices(x)

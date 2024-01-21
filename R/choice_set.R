@@ -10,7 +10,7 @@
 #' Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.
 #' @param delimiter
 #' A \code{character}, the delimiter between alternative names in the ranked
-#' case. By default, \code{delimiter = "_"}.
+#' case. By default, \code{delimiter = "_"}. Ignored if \code{ranked = FALSE}.
 #'
 #' @return
 #' A \code{\link{choice_set}} object. It is a \code{character}
@@ -38,21 +38,24 @@ choice_set <- function(
     choice_alternatives, ranked = FALSE, delimiter = "_"
   ) {
   checkmate::assert_class(choice_alternatives, "choice_alternatives")
+  alternatives <- choice_alternatives$alternatives
   checkmate::assert_flag(ranked)
-  checkmate::assert_string(delimiter, n.chars = 1)
-  choice_set <- if (ranked) {
-    sapply(
-      oeli::permutations(choice_alternatives$alternatives),
+  if (ranked) {
+    checkmate::assert_string(delimiter, n.chars = 1)
+    # TODO: check that delimiter is not part of alternatives
+    choice_set <- sapply(
+      oeli::permutations(alternatives),
       paste,
       collapse = delimiter
     )
   } else {
-    choice_alternatives$alternatives
+    delimiter <- NA_character_
+    choice_set <- alternatives
   }
   structure(
     choice_set,
-    alternatives = choice_alternatives,
     ranked = ranked,
+    delimiter = delimiter,
     class = c("choice_set", "list")
   )
 }
