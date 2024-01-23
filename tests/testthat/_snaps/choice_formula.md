@@ -2,14 +2,22 @@
 
     Code
       choice_formula(formula = choice ~ A | B, re = NULL, ordered = FALSE)
+    Message
+      
+      -- Choice model formula 
     Output
-      Model formula: choice ~ A | B
+      choice ~ A | B
 
 ---
 
     Code
       choice_formula(formula = choice ~ A + B, re = c("A+", "B"), ordered = TRUE)
+    Message
+      
+      -- Choice model formula 
     Output
-      Model formula: choice ~ A + B
-      Random effects: A+ B
+      choice ~ A + B
+      with random effects
+      * A+
+      * B
 

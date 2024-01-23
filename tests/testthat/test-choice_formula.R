@@ -24,23 +24,23 @@ test_that("choice_formula can be specified and validated", {
   re7 <- c("A", "A+")
   expect_error(
     choice_formula(),
-    "Please specify the input 'formula'."
+    "Please specify the input `formula`"
   )
   expect_error(
     choice_formula(formula = "not_a_formula", re = re1, ordered = FALSE),
-    "Assertion on 'formula' failed: Must be a formula, not character."
+    "Input `formula` is bad: Must be a formula, not character"
   )
   expect_error(
     choice_formula(formula = f1, re = 1, ordered = FALSE),
-    "Assertion on 're' failed: Must be of type 'character', not 'double'."
+    "Input `re` is bad"
   )
   expect_error(
     choice_formula(formula = f1, re = re1, ordered = "not_a_boolean"),
-    "Assertion on 'ordered' failed: Must be of type 'logical flag', not 'character'."
+    "Input `ordered` is bad"
   )
   expect_error(
     choice_formula(formula = f1, re = "bad_covariate", ordered = FALSE),
-    "'re' contains 'bad_covariate', but it's not on the right side of 'formula'."
+    "but it is not on the right side of `formula`"
   )
   expect_choice_formula(
     choice_formula(formula = f1, re = re1, ordered = FALSE),
@@ -84,7 +84,7 @@ test_that("choice_formula can be specified and validated", {
   )
   expect_error(
     choice_formula(formula = f3, re = character(), ordered = TRUE),
-    "Vertical bars in 'formula' are not allowed in the ordered case."
+    "Vertical bars in `formula` are not allowed in the ordered case"
   )
   expect_choice_formula(
     choice_formula(formula = f8, re = re5, ordered = FALSE),
@@ -93,7 +93,7 @@ test_that("choice_formula can be specified and validated", {
   )
   expect_error(
     choice_formula(formula = f5, re = re5, ordered = FALSE),
-    "'re' contains 'ASC', but it's not on the right side of 'formula'."
+    "but it is not on the right side of `formula`"
   )
   expect_choice_formula(
     choice_formula(formula = f8, re = re6, ordered = FALSE),
@@ -102,30 +102,30 @@ test_that("choice_formula can be specified and validated", {
   )
   expect_error(
     choice_formula(formula = f2, re = re7, ordered = FALSE),
-    "cannot include both"
+    "`re` cannot include both"
   )
   expect_error(
     choice_formula(formula = ~ bad),
-    "'formula' should be in the form '<choice> ~ <covariates>'."
+    "`formula` should be in the form"
   )
   expect_error(
     choice_formula(formula = A ~ B | C | D | too_much),
-    "'formula' should have no more than 2 of '|' separators."
+    "`formula` should have no more than two of '|' separators"
   )
   expect_error(
     choice_formula(formula = A ~ A),
-    "Variable 'A' cannot occur on both sides of 'formula'."
+    "cannot occur on both sides of `formula`"
   )
   expect_error(
     choice_formula(formula = A ~ B | B),
-    "'formula' contains covariate 'B' multiple times."
+    "`formula` contains covariate"
   )
 })
 
 test_that("choice_formula can be printed", {
   expect_error(
     print.choice_formula(1),
-    "Assertion on 'x' failed: Must inherit from class 'choice_formula', but has class 'numeric'."
+    "Input `x` must be an object of class"
   )
   expect_snapshot(
     choice_formula(formula = choice ~ A | B, re = NULL, ordered = FALSE)

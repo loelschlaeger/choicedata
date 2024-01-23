@@ -9,9 +9,10 @@
 #' see details.
 #' @param re
 #' A \code{character}, the vector of names of covariates in \code{formula} that
-#' should have a random effect, see details.
+#' have a random effect, see details.
 #' By default, \code{re = NULL}, i.e., no random effects.
 #' @inheritParams choice_alternatives
+#' @inheritParams doc-helper
 #'
 #' @return
 #' A \code{\link{choice_formula}} object.
@@ -72,26 +73,28 @@
 choice_formula <- function(formula, re = NULL, ordered = FALSE) {
 
   ### input checks
-  if (missing(formula)) {
-    stop("Please specify the input 'formula'.")
-  }
-  checkmate::assert_formula(formula)
-  if (is.null(re)) {
-    re <- character()
-  }
-  checkmate::assert_character(re, any.missing = FALSE, unique = TRUE)
-  checkmate::assert_flag(ordered)
+  check_missing(formula, error = TRUE)
+  check_formula(formula, error = TRUE)
+  check_re(re, error = TRUE)
+  if (is.null(re)) re <- character()
+  check_ordered(ordered, error = TRUE)
 
   ### read formula
   formula_parts <- as.character(formula)
   if (length(formula_parts) != 3) {
-    stop("'formula' should be in the form '<choice> ~ <covariates>'.")
+    cli::cli_abort(
+      "{.var formula} should be in the form {.val <choice> ~ <covariates>}",
+      call = NULL
+    )
   }
   var_types <- trimws(
     strsplit(formula_parts[3], split = "|", fixed = TRUE)[[1]]
   )
   if (length(var_types) > 3) {
-    stop("'formula' should have no more than 2 of '|' separators.")
+    cli::cli_abort(
+      "{.var formula} should have no more than two of '|' separators",
+      call = NULL
+    )
   }
   while (length(var_types) < 3) {
     var_types <- c(var_types, NA_character_)
@@ -102,30 +105,42 @@ choice_formula <- function(formula, re = NULL, ordered = FALSE) {
   if (ordered) {
     ### in the ordered case, 'var_types' has only variables in second position
     if (grepl("|", formula[3], fixed = TRUE)) {
-      stop("Vertical bars in 'formula' are not allowed in the ordered case.")
+      cli::cli_abort(
+        "Vertical bars in {.var formula} are not allowed in the ordered case",
+        call = NULL
+      )
     }
     var_types <- list(character(), unlist(var_types[1:3]), character())
   }
   if (any(duplicated(unlist(var_types)))) {
     dup_ind <- which(duplicated(unlist(var_types)))[1]
     cov_dup <- unlist(var_types)[dup_ind]
-    stop("'formula' contains covariate '", cov_dup, "' multiple times.")
+    cli::cli_abort(
+      "{.var formula} contains covariate {.val {cov_dup}} multiple times",
+      call = NULL
+    )
   }
   choice <- formula_parts[2]
   if (choice %in% unlist(var_types)) {
-    stop("Variable '", choice, "' cannot occur on both sides of 'formula'.")
+    cli::cli_abort(
+      "Variable {.val {choice}} cannot occur on both sides of {.var formula}",
+      call = NULL
+    )
   }
   re_n <- re[!endsWith(re, "+")]
   re_ln <- sub(".{1}$", "", re[endsWith(re, "+")])
   if (length(intersect(re_n, re_ln)) != 0) {
     re_double <- intersect(re_n, re_ln)[1]
-    stop("'re' cannot include both '", re_double, "' and '", re_double, "+'.")
+    cli::cli_abort(
+      "{.var re} cannot include both {.val {re_double}} and {.val {re_double}+}",
+      call = NULL
+    )
   }
   for (re_val in c(re_n, re_ln)) {
     if (!re_val %in% c(unlist(var_types), if(ASC) "ASC")) {
-      stop(
-        "'re' contains '", re_val,
-        "', but it's not on the right side of 'formula'."
+      cli::cli_abort(
+        "{.var re} contains {.val {re_val}}, but it is not on the right side of {.var formula}",
+        call = NULL
       )
     }
   }
@@ -147,25 +162,31 @@ choice_formula <- function(formula, re = NULL, ordered = FALSE) {
 }
 
 #' @rdname choice_formula
-#' @param x
-#' An \code{\link{choice_formula}} object.
 #' @export
 
-is.choice_formula <- function(x) {
-  inherits(x, "choice_formula")
+is.choice_formula <- function(x, error = TRUE) {
+  check <- inherits(x, "choice_formula")
+  if (isTRUE(error) && !isTRUE(check)) {
+    var_name <- oeli::variable_name(x)
+    cli::cli_abort(
+      "Input {.var {var_name}} must be an object of class {.cls choice_formula}",
+      call = NULL
+    )
+  } else {
+    isTRUE(check)
+  }
 }
 
 #' @rdname choice_formula
 #' @exportS3Method
-#' @param ...
-#' Currently not used.
 
 print.choice_formula <- function(x, ...) {
-  checkmate::assert_class(x, "choice_formula")
-  cat("Model formula:", deparse1(x$formula))
+  is.choice_formula(x, error = TRUE)
+  cli::cli_h3("Choice model formula")
+  cli::cat_line(deparse1(x$formula))
   if (length(x$re) > 0) {
-    cat("\nRandom effects:", x$re)
+    cli::cat_line("with random effects")
+    cli::cat_bullet(x$re)
   }
-  cat("\n")
 }
 

@@ -17,7 +17,7 @@ compute_P_r(formula, re, J, ordered = FALSE)
 see details.}
 
 \item{re}{A \code{character}, the vector of names of covariates in \code{formula} that
-should have a random effect, see details.
+have a random effect, see details.
 By default, \code{re = NULL}, i.e., no random effects.}
 
 \item{J}{An \code{integer}, the number of choice alternatives.

@@ -28,25 +28,14 @@ choice_parameters(
 is.choice_parameters(x)
 
 sample_choice_parameters(
-  x = choice_parameters(),
-  model_type = "probit",
-  formula,
-  re = NULL,
-  ordered = FALSE,
+  fixed_parameters = choice_parameters(model_type = "probit"),
+  choice_formula,
   J,
   N,
-  seed = NULL,
-  validate = TRUE
+  seed = NULL
 )
 
-validate_choice_parameters(
-  x = choice_parameters(),
-  formula,
-  re = NULL,
-  ordered = FALSE,
-  J,
-  N
-)
+validate_choice_parameters(choice_parameters, choice_formula, J, N)
 
 \method{print}{choice_parameters}(
   x,
@@ -124,13 +113,6 @@ Only relevant in the ordered model case (see details).}
 \code{FALSE} (default) else.}
 
 \item{x}{A \code{\link{choice_parameters}} object.}
-
-\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the choice model,
-see details.}
-
-\item{re}{A \code{character}, the vector of names of covariates in \code{formula} that
-should have a random effect, see details.
-By default, \code{re = NULL}, i.e., no random effects.}
 
 \item{J}{An \code{integer}, the number of choice alternatives.
 Must be at least \code{2}.

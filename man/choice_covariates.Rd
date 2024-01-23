@@ -29,8 +29,8 @@ sample_choice_covariates(
   covariate_correlation = 0,
   empirical = FALSE,
   delimiter = "_",
-  column_decider = "id",
-  column_occasion = "idc"
+  column_decider = "deciderID",
+  column_occasion = "occasionID"
 )
 
 validate_choice_covariates(
@@ -52,7 +52,7 @@ covariate_names(choice_formula, choice_alternatives, delimiter = "_")
 
 covariate_number(choice_formula, choice_alternatives)
 
-\method{print}{choice_covariates}(x, ...)
+\method{print}{choice_covariates}(x, ..., digits = 2)
 }
 \arguments{
 \item{choice_data}{A \code{\link{choice_data}} object.}

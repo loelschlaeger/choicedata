@@ -291,36 +291,28 @@ is.choice_parameters <- function(x) {
 #' @export
 
 sample_choice_parameters <- function(
-    x = choice_parameters(), model_type = "probit", formula, re  = NULL,
-    ordered = FALSE, J, N, seed = NULL, validate = TRUE
+    fixed_parameters = choice_parameters(model_type = "probit"),
+    choice_formula, J, N, seed = NULL
 ) {
 
   ### input checks
+  x <- fixed_parameters
   checkmate::assert_class(x, "choice_parameters")
-  checkmate::assert_choice(model_type, choices = c("probit", "logit"))
-  if (model_type == "logit") {
-    warning(
-      "Support for the logit model is currently under development.\n",
-      "Selecting the probit model instead.",
-      call. = FALSE
-    )
-    model_type <- "probit"
+  model_type <- attr(x, "model_type")
+  if (!is.choice_formula(choice_formula)) {
+    stop("'choice_formula' must be a choice_formula object.")
   }
-  if (missing(formula)) {
-    stop("Please specify the model 'formula'.")
-  }
-  if (missing(J)) {
-    stop("Please specify the number 'J' of choice alternatives.")
-  }
-  if (missing(N)) {
-    stop("Please specify the number of deciders 'N'.")
-  }
-  choice_formula <- choice_formula(formula = formula, re = re, ordered = ordered)
-  choice_alternatives <- choice_alternatives(J = J, ordered = ordered)
   formula <- choice_formula$formula
   re <- choice_formula$re
   ordered <- choice_formula$ordered
+  if (missing(J)) {
+    stop("Please specify the number 'J' of choice alternatives.")
+  }
+  choice_alternatives <- choice_alternatives(J = J, ordered = ordered)
   J <- choice_alternatives$J
+  if (missing(N)) {
+    stop("Please specify the number of deciders 'N'.")
+  }
   checkmate::assert_int(N, lower = 1)
 
   ### sample missing parameters
@@ -410,15 +402,9 @@ sample_choice_parameters <- function(
   } else {
     x$d <- NA_real_
   }
-  if (validate) {
-    validate_choice_parameters(
-      x = x, formula = formula, re = re, ordered = ordered, J = J, N = N
-    )
-  } else {
-    attr(x, "model_type") <- model_type
-    attr(x, "ordered") <- ordered
-    return(x)
-  }
+  validate_choice_parameters(
+    choice_parameters = x, choice_formula = choice_formula, J = J, N = N
+  )
 }
 
 #' @rdname choice_parameters
@@ -437,29 +423,22 @@ sample_choice_parameters <- function(
 #'
 #' @export
 
-validate_choice_parameters <- function(
-    x = choice_parameters(), formula, re  = NULL, ordered = FALSE, J, N
-) {
+validate_choice_parameters <- function(choice_parameters, choice_formula, J, N) {
 
   ### input checks
+  x <- choice_parameters
   checkmate::assert_class(x, "choice_parameters")
-  if (missing(formula)) {
-    stop("Please specify the input 'formula'.")
-  }
+  formula <- choice_formula$formula
+  re <- choice_formula$re
+  ordered <- choice_formula$ordered
   if (missing(J)) {
     stop("Please specify the number of choice alternatives 'J'.")
   }
+  choice_alternatives <- choice_alternatives(J = J, ordered = ordered)
+  J <- choice_alternatives$J
   if (missing(N)) {
     stop("Please specify the number of deciders 'N'.")
   }
-  choice_formula <- choice_formula(
-    formula = formula, re = re, ordered = ordered
-  )
-  choice_alternatives <- choice_alternatives(J = J, ordered = ordered)
-  formula <- choice_formula$formula
-  re <- choice_formula$re
-  J <- choice_alternatives$J
-  ordered <- choice_alternatives$ordered
 
   ### check C
   checkmate::assert_int(x$C, lower = 1)
@@ -470,12 +449,6 @@ validate_choice_parameters <- function(
   } else {
     checkmate::assert_int(x$diff_alt, lower = 1, upper = J)
   }
-
-  ### add missing parameters
-  x <- sample_choice_parameters(
-    x = x, formula = formula, re = re, ordered = ordered, J = J, N = N,
-    validate = FALSE
-  )
 
   ### validate parameters
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)

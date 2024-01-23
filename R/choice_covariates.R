@@ -123,6 +123,7 @@ is.choice_covariates <- function(x) {
 #' \code{covariate_correlation} specify the empirical mean, standard
 #' deviation and correlation. If \code{FALSE} (default), they specify the
 #' values for the population.
+#'
 #' @export
 
 sample_choice_covariates <- function(
@@ -134,8 +135,8 @@ sample_choice_covariates <- function(
   covariate_correlation = 0,
   empirical = FALSE,
   delimiter = "_",
-  column_decider = "id",
-  column_occasion = "idc"
+  column_decider = "deciderID",
+  column_occasion = "occasionID"
 ) {
 
   ### input checks
@@ -705,9 +706,9 @@ covariate_number <- function(choice_formula, choice_alternatives) {
 #' @rdname choice_covariates
 #' @exportS3Method
 
-print.choice_covariates <- function(x, ...) {
-  return(x)
+print.choice_covariates <- function(x, ..., digits = 2) {
   # TODO: abbreviated data.frame (or list)
+  print.data.frame(x, ..., digits = digits)
 }
 
 

@@ -4,10 +4,7 @@
 #' This function constructs an object of class \code{\link{choice_effects}},
 #' which defines the choice model effects.
 #'
-#' @param choice_formula
-#' A \code{\link{choice_formula}} object.
-#' @param choice_alternatives
-#' A \code{\link{choice_alternatives}} object.
+#' @inheritParams doc-helper
 #' @param delimiter
 #' A \code{character}, the delimiter between covariate and alternative name
 #' to build the effect name.
@@ -28,9 +25,8 @@
 #' 4. \code{"as_covariate"}, indicator whether the covariate is
 #'    alternative-specific,
 #' 5. \code{"as_effect"}, indicator whether the effect is alternative-specific,
-#' 6. \code{"random"}, indicator whether the effect is a random effect,
-#' 7. and \code{"log_normal"}, indicator whether the random effect is
-#'    log-normal.
+#' 6. \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
+#'    and \code{"log-normal"}, indicating the type (if any) of the mixing
 #'
 #' The effects are ordered as follows: Fixed effects come before random effects,
 #' and log-normal random effects are last random effects. Otherwise, the order
@@ -52,38 +48,44 @@ choice_effects <- function(
 ) {
 
   ### input checks
-  if (missing(choice_formula)) {
-    stop("Please specify the input 'choice_formula'.")
-  }
-  checkmate::assert_class(choice_formula, "choice_formula")
-  if (missing(choice_alternatives)) {
-    stop("Please specify the input 'choice_alternatives'.")
-  }
-  checkmate::assert_class(choice_alternatives, "choice_alternatives")
-  checkmate::assert_string(delimiter, n.chars = 1)
+  check_missing(choice_formula, error = TRUE)
+  is.choice_formula(choice_formula, error = TRUE)
+  check_missing(choice_alternatives, error = TRUE)
+  is.choice_alternatives(choice_alternatives, error = TRUE)
+  check_delimiter(delimiter, error = TRUE)
 
-  ### build choice model effects
+  ### extract information
   J <- choice_alternatives$J
   alt <- choice_alternatives$alternatives
   base <- choice_alternatives$base
   ordered <- choice_alternatives$ordered
   var_types <- choice_formula$var_types
-  re_n <- choice_formula$re_n
-  re_ln <- choice_formula$re_ln
-  re <- c(re_n, re_ln)
-  overview <- data.frame(matrix(ncol = 7, nrow = 0))
+
+  ### helper function to determine mixing type
+  mixing_type <- function(var) {
+    if (var %in% choice_formula$re_n) {
+      "normal"
+    } else if (var %in% choice_formula$re_ln) {
+      "log-normal"
+    } else {
+      "none"
+    }
+  }
+
+  ### build choice model effects
+  overview <- data.frame(matrix(ncol = 6, nrow = 0))
   if (ordered){
     for (var in var_types[[2]]) {
       overview <- rbind(
         overview,
-        c(var, var, NA_character_, FALSE, FALSE, var %in% re, var %in% re_ln)
+        c(var, var, NA_character_, FALSE, FALSE, mixing_type(var))
       )
     }
   } else {
     for (var in var_types[[1]]) {
       overview <- rbind(
         overview,
-        c(var, var, NA_character_, TRUE, FALSE, var %in% re, var %in% re_ln)
+        c(var, var, NA_character_, TRUE, FALSE, mixing_type(var))
       )
     }
     for (var in c(var_types[[2]], if (choice_formula$ASC) "ASC")) {
@@ -92,7 +94,7 @@ choice_effects <- function(
           overview,
           c(paste0(var, delimiter, alt[j]),
             if (var == "ASC") NA_character_ else var,
-            alt[j], FALSE, TRUE, var %in% re, var %in% re_ln)
+            alt[j], FALSE, TRUE, mixing_type(var))
         )
       }
     }
@@ -101,22 +103,23 @@ choice_effects <- function(
         overview <- rbind(
           overview,
           c(paste0(var, delimiter, alt[j]), var, alt[j],
-            TRUE, TRUE, var %in% re, var %in% re_ln)
+            TRUE, TRUE, mixing_type(var))
         )
       }
     }
   }
-  colnames(overview) <- c("name", "covariate", "alternative", "as_covariate",
-                          "as_effect", "random", "log_normal")
+  colnames(overview) <- c(
+    "name", "covariate", "alternative", "as_covariate", "as_effect", "mixing"
+  )
   overview$as_covariate <- as.logical(overview$as_covariate)
   overview$as_effect <- as.logical(overview$as_effect)
-  overview$random <- as.logical(overview$random)
-  overview$log_normal <- as.logical(overview$log_normal)
+  overview$mixing <- factor(
+    overview$mixing, levels = c("none", "normal", "log-normal"), ordered = TRUE
+  )
 
   ### sort effects
   effect_order <- order(
-    as.numeric(overview$random),     ### put random effects last
-    as.numeric(overview$log_normal), ### log-normal effects are last random
+    overview$mixing,                 ### re last, log-normal behind normal
     as.numeric(rownames(overview)),  ### otherwise sort by occurrence in formula
     decreasing = FALSE
   )
@@ -170,12 +173,10 @@ compute_P <- function(formula, re, J, ordered = FALSE) {
 
 compute_P_f <- function(formula, re, J, ordered = FALSE) {
   effects <- choice_effects(
-    choice_formula = choice_formula(
-      formula = formula, re = re, ordered = ordered
-    ),
+    choice_formula = choice_formula(formula = formula, re = re, ordered = ordered),
     choice_alternatives = choice_alternatives(J = J, ordered = ordered)
   )
-  as.integer(sum(!effects$random))
+  as.integer(sum(effects$mixing == "none"))
 }
 
 #' @rdname compute_P
@@ -183,10 +184,34 @@ compute_P_f <- function(formula, re, J, ordered = FALSE) {
 
 compute_P_r <- function(formula, re, J, ordered = FALSE) {
   effects <- choice_effects(
-    choice_formula = choice_formula(formula = formula, re = re,
-                                        ordered = ordered),
+    choice_formula = choice_formula(formula = formula, re = re, ordered = ordered),
     choice_alternatives = choice_alternatives(J = J, ordered = ordered)
   )
-  as.integer(sum(effects$random))
+  as.integer(sum(effects$mixing != "none"))
+}
+
+#' @rdname choice_formula
+#' @export
+
+is.choice_effects <- function(x, error = TRUE) {
+  check <- inherits(x, "choice_effects")
+  if (isTRUE(error) && !isTRUE(check)) {
+    var_name <- oeli::variable_name(x)
+    cli::cli_abort(
+      "Input {.var {var_name}} must be an object of class {.cls choice_effects}",
+      call = NULL
+    )
+  } else {
+    isTRUE(check)
+  }
+}
+
+#' @rdname choice_formula
+#' @exportS3Method
+
+print.choice_effects <- function(x, ...) {
+  is.choice_effects(x, error = TRUE)
+  cli::cli_h3("Choice effects")
+  print.data.frame(x)
 }
 

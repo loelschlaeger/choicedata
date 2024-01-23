@@ -1,22 +1,22 @@
 test_that("effect overview can be created", {
   expect_error(
     choice_effects(),
-    "Please specify the input 'choice_formula'."
+    "Please specify the input `choice_formula`"
   )
   expect_error(
     choice_effects(choice_formula = choice ~ A),
-    "Assertion on 'choice_formula' failed: Must inherit from class 'choice_formula', but has class 'formula'."
+    "Input `choice_formula` must be an object of class"
   )
   expect_error(
     choice_effects(choice_formula = choice_formula(formula = A ~ B)),
-    "Please specify the input 'choice_alternatives'."
+    "Please specify the input `choice_alternatives`"
   )
   expect_error(
     choice_effects(
       choice_formula = choice_formula(formula = A ~ B),
       choice_alternatives = 2
     ),
-    "Assertion on 'choice_alternatives' failed: Must inherit from class 'choice_alternatives', but has class 'numeric'."
+    "Input `choice_alternatives` must be an object of class"
   )
   expect_error(
     choice_effects(
@@ -24,7 +24,7 @@ test_that("effect overview can be created", {
       choice_alternatives = choice_alternatives(J = 3),
       delimiter = 1
     ),
-    "Assertion on 'delimiter' failed: Must be of type 'string', not 'double'."
+    "Input `delimiter` is bad: Must be of type 'string', not 'double'"
   )
   expect_equal(
     choice_effects(
@@ -45,8 +45,11 @@ test_that("effect overview can be created", {
         alternative = c(NA, "A", "C"),
         as_covariate = c(TRUE, FALSE, FALSE),
         as_effect = c(FALSE, TRUE, TRUE),
-        random = c(TRUE, TRUE, TRUE),
-        log_normal = c(TRUE, TRUE, TRUE)
+        mixing = structure(
+          c(3L, 3L, 3L),
+          levels = c("none", "normal", "log-normal"),
+          class = c("ordered", "factor")
+        )
       ),
       row.names = c(NA, -3L),
       class = c("choice_effects", "data.frame")
@@ -71,8 +74,11 @@ test_that("effect overview can be created", {
         alternative = c(NA, "B", "A", "B"),
         as_covariate = c(TRUE, FALSE, TRUE, TRUE),
         as_effect = c(FALSE, TRUE, TRUE, TRUE),
-        random = c(FALSE, FALSE, FALSE, FALSE),
-        log_normal = c(FALSE, FALSE, FALSE, FALSE)
+        mixing = structure(
+          c(1L, 1L, 1L, 1L),
+          levels = c("none", "normal", "log-normal"),
+          class = c("ordered", "factor")
+        )
       ),
       row.names = c(NA, -4L),
       class = c("choice_effects", "data.frame")
@@ -95,11 +101,27 @@ test_that("effect overview can be created", {
         alternative = c(NA_character_, NA_character_, NA_character_),
         as_covariate = c(FALSE, FALSE, FALSE),
         as_effect = c(FALSE, FALSE, FALSE),
-        random = c(FALSE, FALSE, TRUE),
-        log_normal = c(FALSE, FALSE, TRUE)
+        mixing = structure(
+          c(1L, 1L, 3L),
+          levels = c("none", "normal", "log-normal"),
+          class = c("ordered", "factor")
+        )
       ),
       row.names = c(NA, -3L),
       class = c("choice_effects", "data.frame")
+    )
+  )
+  expect_error(
+    is.choice_effects(1),
+    "must be an object of class"
+  )
+  expect_snapshot(
+    choice_effects(
+      choice_formula = choice_formula(
+        formula = choice ~ price | income | comfort,
+        re = c("price+", "income")
+      ),
+      choice_alternatives = choice_alternatives(J = 3)
     )
   )
 })

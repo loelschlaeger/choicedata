@@ -8,3 +8,4 @@
 ^codecov\.yml$
 ^ref\.bib$
 ^development_packages\.R$
+^demo\.R$

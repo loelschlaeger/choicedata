@@ -27,9 +27,8 @@ alternative-specific, i.e., varies across alternatives),
 \item \code{"as_covariate"}, indicator whether the covariate is
 alternative-specific,
 \item \code{"as_effect"}, indicator whether the effect is alternative-specific,
-\item \code{"random"}, indicator whether the effect is a random effect,
-\item and \code{"log_normal"}, indicator whether the random effect is
-log-normal.
+\item \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
+and \code{"log-normal"}, indicating the type (if any) of the mixing
 }
 
 The effects are ordered as follows: Fixed effects come before random effects,
@@ -88,7 +87,7 @@ To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
 The full collection of coefficients for covariates that are constant across
 alternatives (including alternative specific constants) is not identified.
 To achieve identifiability, the coefficient of one alternative \code{base}
-is typically fixed to \code{0}.
+is fixed to \code{0}.
 The other coefficients then have to be interpreted with respect to
 \code{base}.
 The base alternative is marked with a \code{*} when printing a

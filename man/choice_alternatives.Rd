@@ -13,7 +13,7 @@ choice_alternatives(
   ordered = FALSE
 )
 
-is.choice_alternatives(x)
+is.choice_alternatives(x, error = TRUE)
 
 \method{print}{choice_alternatives}(x, ...)
 }
@@ -36,7 +36,10 @@ By default, \code{base} is the first element of \code{alternatives}.}
 \item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 
-\item{x}{A \code{\link{choice_alternatives}} object.}
+\item{x}{An object of the corresponding class to be printed.}
+
+\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
+to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
 
 \item{...}{Currently not used.}
 }
@@ -60,7 +63,7 @@ This function constructs an object of class
 The full collection of coefficients for covariates that are constant across
 alternatives (including alternative specific constants) is not identified.
 To achieve identifiability, the coefficient of one alternative \code{base}
-is typically fixed to \code{0}.
+is fixed to \code{0}.
 The other coefficients then have to be interpreted with respect to
 \code{base}.
 The base alternative is marked with a \code{*} when printing a
