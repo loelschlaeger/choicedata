@@ -21,7 +21,6 @@ sample_choice_covariates(
   N,
   Tp = 1,
   choice_alternatives,
-  seed = NULL,
   covariate_levels = Inf,
   occasion_constant = character(),
   covariate_mean = 0,
@@ -69,10 +68,6 @@ choice occasions per decider.
 By default, \code{Tp = 1}.}
 
 \item{choice_alternatives}{A \code{\link{choice_alternatives}} object.}
-
-\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the sampling of
-covariates reproducible.
-By default, \code{seed = NULL}, i.e., no seed is set.}
 
 \item{covariate_levels}{Defines the number of levels for the covariates. Two formats are allowed:
 \itemize{

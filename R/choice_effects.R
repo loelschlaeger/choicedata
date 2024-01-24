@@ -48,9 +48,9 @@ choice_effects <- function(
 ) {
 
   ### input checks
-  check_missing(choice_formula, error = TRUE)
+  check_not_missing(choice_formula, error = TRUE)
   is.choice_formula(choice_formula, error = TRUE)
-  check_missing(choice_alternatives, error = TRUE)
+  check_not_missing(choice_alternatives, error = TRUE)
   is.choice_alternatives(choice_alternatives, error = TRUE)
   check_delimiter(delimiter, error = TRUE)
 

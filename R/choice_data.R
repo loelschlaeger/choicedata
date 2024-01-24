@@ -28,7 +28,7 @@
 #' A \code{character}, the column name of the \code{data.frame} with the
 #' identifiers for the choice occasions.
 #' @inheritParams choice_alternatives
-#' @inheritParams choice_set
+#' @inheritParams choices
 #'
 #' @return
 #' TODO
@@ -121,7 +121,7 @@ simulate_choice_data <- function(
       choice_formula, N, Tp = 1,
       choice_alternatives = choice_alternatives(J = 3)
     ),
-    choice_parameters = choice_parameters(), ranked = FALSE, seed = NULL,
+    choice_parameters = choice_parameters(), ranked = FALSE,
     column_choice = "choice"
 ) {
 
@@ -146,8 +146,7 @@ simulate_choice_data <- function(
   choices <- simulate_choices(
     choice_parameters = choice_parameters,
     choice_covariates = choice_covariates,
-    choice_set = choice_set,
-    seed = seed
+    choice_set = choice_set
   )
 
   ### create and return 'choice_data' object

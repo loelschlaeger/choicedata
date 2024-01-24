@@ -30,10 +30,6 @@
 #' @param choice_alternatives
 #' A \code{\link{choice_alternatives}} object.
 #' @inheritParams choice_effects
-#' @param seed
-#' An \code{integer}, passed to \code{set.seed()} to make the sampling of
-#' covariates reproducible.
-#' By default, \code{seed = NULL}, i.e., no seed is set.
 #' @param ...
 #' Currently not used.
 #'
@@ -127,7 +123,7 @@ is.choice_covariates <- function(x) {
 #' @export
 
 sample_choice_covariates <- function(
-  choice_formula, N, Tp = 1, choice_alternatives, seed = NULL,
+  choice_formula, N, Tp = 1, choice_alternatives,
   covariate_levels = Inf,
   occasion_constant = character(),
   covariate_mean = 0,
@@ -175,9 +171,6 @@ sample_choice_covariates <- function(
   )
 
   ### draw covariate values
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
   covariates <- as.data.frame(
     matrix(
       stats::rnorm(sum(Tp) * length(covariate_mean)),

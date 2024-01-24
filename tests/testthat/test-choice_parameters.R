@@ -54,7 +54,7 @@ test_that("probit parameter can be created", {
   J <- 3
   N <- 100
   x <- sample_choice_parameters(
-    x, formula = formula, re = re, J = J, N = N, seed = 1
+    x, formula = formula, re = re, J = J, N = N
   )
   expect_s3_class(x, "choice_parameters")
   expect_snapshot(print(x))
@@ -64,8 +64,7 @@ test_that("probit parameter can be created", {
     "Assertion on 'x' failed: Must inherit from class 'choice_parameters', but has class 'numeric'."
   )
   x <- sample_choice_parameters(
-    formula = choice ~ A + B, re = c("A", "B"), ordered = TRUE, J = 3, N = 10,
-    seed = 1
+    formula = choice ~ A + B, re = c("A", "B"), ordered = TRUE, J = 3, N = 10
   )
   expect_s3_class(x, "choice_parameters")
   expect_snapshot(print(x))

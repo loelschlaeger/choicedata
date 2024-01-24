@@ -15,10 +15,8 @@
 #' A \code{\link{choice_covariates}} object.
 #' @param choice_set
 #' A \code{\link{choice_set}} object.
-#' @param seed
-#' An \code{integer}, passed to \code{set.seed()} to make the simulation of
-#' choices reproducible.
-#' By default, \code{seed = NULL}, i.e., no seed is set.
+#' @param ranked
+#' Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.
 #' @inheritParams choice_data
 #'
 #' @return
@@ -35,6 +33,24 @@
 #'         \code{t}-th element is an element from \code{choice_set} that defines
 #'         the choice at their \code{t}-th choice occasion
 #' }
+#'
+#' @section Ranked choices:
+#' Ranked choices are yet another model variation: rather than recording only
+#' the single most preferred alternative, some surveys ask for a full ranking of
+#' all the alternatives, which reveals far more about the underlying
+#' preferences. Ranked choices can by analyzed by setting \code{ranked = TRUE}.
+#' The choice column of the data set must provide the full ranking for each
+#' choice occasion (from most preferred to least preferred), where the
+#' alternatives are separated by the \code{delimiter} string.
+#'
+#' The ranked probit model follows directly from the general unordered case
+#' noting that the ranking implies that the highest ranked alternative is chosen
+#' in any case, while the second highest ranked alternative is chosen, if the
+#' highest ranked alternative is not available and so forth. The only difference
+#' is that we take flexible utility differences such that the differenced
+#' utility vector is always negative, in contrast to the general case where we
+#' difference with respect to a fixed reference alternative. Thereby, we
+#' incorporate information of the full ranking.
 
 choices <- function(
     choices = list(), column_choice = column_choice,
@@ -59,7 +75,7 @@ choices <- function(
 #' @rdname choices
 
 simulate_choices <- function(
-  choice_parameters, choice_covariates, choice_set, seed = NULL,
+  choice_parameters, choice_covariates, choice_set,
   column_choice = "choice", column_decider = "deciderID",
   column_occasion = "occasionID"
 ) {
@@ -79,9 +95,6 @@ simulate_choices <- function(
   ranked <- attr(choice_set, "ranked")
 
   ### simulate choices
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
   choices <- lapply(seq_len(N), function(n) {
     coef <- get_coefficient_vector(
       choice_parameters = choice_parameters, decider_id = n

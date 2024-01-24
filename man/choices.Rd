@@ -23,7 +23,6 @@ simulate_choices(
   choice_parameters,
   choice_covariates,
   choice_set,
-  seed = NULL,
   column_choice = "choice",
   column_decider = "deciderID",
   column_occasion = "occasionID"
@@ -54,18 +53,11 @@ identifiers for the choice occasions.}
 
 \item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
 
-\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
-\code{FALSE} (default) else.}
-
 \item{choice_parameters}{A \code{\link{choice_parameters}} object.}
 
 \item{choice_covariates}{A \code{\link{choice_covariates}} object.}
 
 \item{choice_set}{A \code{\link{choice_set}} object.}
-
-\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the simulation of
-choices reproducible.
-By default, \code{seed = NULL}, i.e., no seed is set.}
 
 \item{x}{An \code{\link{choices}} object.}
 }
@@ -88,3 +80,23 @@ the choice at their \code{t}-th choice occasion
 These functions construct and validate an object of class
 \code{\link{choices}}, which defines the observed choices.
 }
+\section{Ranked choices}{
+
+Ranked choices are yet another model variation: rather than recording only
+the single most preferred alternative, some surveys ask for a full ranking of
+all the alternatives, which reveals far more about the underlying
+preferences. Ranked choices can by analyzed by setting \code{ranked = TRUE}.
+The choice column of the data set must provide the full ranking for each
+choice occasion (from most preferred to least preferred), where the
+alternatives are separated by the \code{delimiter} string.
+
+The ranked probit model follows directly from the general unordered case
+noting that the ranking implies that the highest ranked alternative is chosen
+in any case, while the second highest ranked alternative is chosen, if the
+highest ranked alternative is not available and so forth. The only difference
+is that we take flexible utility differences such that the differenced
+utility vector is always negative, in contrast to the general case where we
+difference with respect to a fixed reference alternative. Thereby, we
+incorporate information of the full ranking.
+}
+

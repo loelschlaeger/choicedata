@@ -3,39 +3,25 @@
 \name{choice_parameters}
 \alias{choice_parameters}
 \alias{is.choice_parameters}
+\alias{print.choice_parameters}
 \alias{sample_choice_parameters}
 \alias{validate_choice_parameters}
-\alias{print.choice_parameters}
-\alias{as.vector.choice_parameters}
+\alias{identify_choice_parameters}
 \title{Define choice model parameters}
 \usage{
 choice_parameters(
+  model_type = "probit",
+  latent_classes = "none",
   C = 1,
-  s = NA,
-  alpha = NA,
-  b = NA,
-  Omega = NA,
-  Sigma = NA,
-  Sigma_diff = NA,
-  diff_alt = 1,
-  beta = NA,
-  z = NA,
-  d = NA,
-  model_type = NA_character_,
-  ordered = NA
+  s = NULL,
+  alpha = NULL,
+  b = NULL,
+  Omega = NULL,
+  Sigma = NULL,
+  gamma = NULL
 )
 
-is.choice_parameters(x)
-
-sample_choice_parameters(
-  fixed_parameters = choice_parameters(model_type = "probit"),
-  choice_formula,
-  J,
-  N,
-  seed = NULL
-)
-
-validate_choice_parameters(choice_parameters, choice_formula, J, N)
+is.choice_parameters(x, error = TRUE)
 
 \method{print}{choice_parameters}(
   x,
@@ -47,85 +33,91 @@ validate_choice_parameters(choice_parameters, choice_formula, J, N)
   details = !simplify
 )
 
-\method{as.vector}{choice_parameters}(x, mode = "numeric")
+sample_choice_parameters(
+  fixed_parameters = choice_parameters(model_type = "probit", latent_classes = "none", C
+    = 1),
+  choice_formula,
+  J
+)
+
+validate_choice_parameters(
+  choice_parameters,
+  choice_formula,
+  J,
+  allow_missing = FALSE
+)
+
+identify_choice_parameters(x, scale = 1, level = 1, ...)
 }
 \arguments{
+\item{model_type}{Either \code{"probit"} (default) to select the probit model, or
+\code{"logit"} to select the logit model.}
+
+\item{latent_classes}{A \code{character}, which defines a latent class model, either:
+\itemize{
+\item \code{"none"} for no latent classes (which is equivalent to
+\code{C = 1}),
+\item \code{"fe"} for latent classes only for the fixed effects,
+\item \code{"re"} for latent classes only for the random effects,
+\item \code{"both"} for latent classes both for the fixed and random
+effects.
+}}
+
 \item{C}{An \code{integer}, the number (greater or equal 1) of latent classes of
 decision makers.
-By default, \code{C = 1}.}
+
+By default, \code{C = 1}, which is equivalent to
+\code{latent_classes = "none"}.}
 
 \item{s}{A \code{numeric} vector of length \code{C}, the vector of class weights.
-For identifiability, the vector elements must be decreasing.}
+Only relevant if \code{C > 1}.
+
+For identifiability of the classes, the vector elements must be decreasing.}
 
 \item{alpha}{A \code{numeric} vector of length \code{P_f}, the vector of fixed effect
-coefficients.
-If \code{C > 1}, a \code{matrix} of dimension \code{P_f} x \code{C},
-where column \code{c} contains the fixed effect coefficients for class
-\code{c}.}
+coefficients (i.e., coefficients not connected to random effects).
+
+If \code{C > 1} and \code{latent_classes = "fe"} or
+\code{latent_classes = "both"}, a \code{matrix} of dimension
+\code{P_f} x \code{C}, where column \code{c} contains the fixed effect
+coefficients for class \code{c}.}
 
 \item{b}{A \code{numeric} vector of length \code{P_r}, the vector of mean random
 effects.
-If \code{C > 1}, a \code{matrix} of dimension \code{P_r} x \code{C},
-where column \code{c} contains the mean random effects for class
-\code{c}.}
+
+If \code{C > 1} and \code{latent_classes = "re"} or
+\code{latent_classes = "both"}, a \code{matrix} of dimension
+\code{P_r} x \code{C}, where column \code{c} contains the mean random effects
+for class \code{c}.}
 
 \item{Omega}{A \code{matrix} of dimension \code{P_r} x \code{P_r}, the covariance matrix
 of random effects.
-If \code{C > 1}, a \code{matrix} of dimension \code{P_r^2} x \code{C},
-where column \code{c} contains the covariance matrix of random effects for
-class \code{c} in vector form.}
+
+If \code{C > 1} and \code{latent_classes = "re"} or
+\code{latent_classes = "both"}, a \code{matrix} of dimension
+\code{P_r^2} x \code{C}, where column \code{c} contains the covariance matrix
+of random effects for class \code{c} in vector form.}
 
 \item{Sigma}{A \code{matrix} of dimension \code{J} x \code{J}, the error term covariance
-matrix for a probit model.
+matrix for a probit model. It is ignored if \code{model_type = "logit"}.
+
 In the ordered probit model (see details), \code{Sigma} is a
 \code{matrix} of dimension \code{1} x \code{1} (or simply a single
 \code{numeric}).}
 
-\item{Sigma_diff}{A \code{matrix} of dimension \code{J-1} x \code{J-1}, the differenced error
-term covariance matrix for a probit model.
-\code{Sigma_diff} is assumed to be differenced with respect to alternative
-\code{diff_alt}, see details.
-\code{Sigma_diff} is ignored in case of the ordered probit model
-(see details) or if \code{Sigma} is specified.}
+\item{gamma}{A \code{numeric} of length \code{J - 1}, the vector of utility thresholds
+in the ordered model case (see details). Must be ascending.
 
-\item{diff_alt}{An \code{integer} from \code{1} to \code{J}, the reference alternative for
-utility differencing that maps \code{Sigma} to \code{Sigma_diff}, see
-details.
-By default, \code{diff_alt = 1}.}
+\code{gamma} corresponds to \eqn{\gamma_1, \dots, \gamma_{J-1}}, while the
+lower and upper bounds are \eqn{\gamma_0 = -\infty} and
+\eqn{\gamma_J = +\infty}.}
 
-\item{beta}{A \code{matrix} of dimension \code{P_r} x \code{N}, the matrix of the
-decider-specific coefficient vectors.
-The coefficient vector for decider \code{n} is stored in column \code{n}.}
+\item{x}{An object of the corresponding class to be printed.}
 
-\item{z}{A \code{numeric} vector of length \code{N}, the vector of the allocation
-variables.
-Entry \code{n} of \code{z} is an integer from \code{1} to \code{C} and
-denotes the allocated class for decider \code{n}.}
+\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
+to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
 
-\item{d}{A \code{numeric} of length \code{J - 2}, the vector of logarithmic increases
-of the utility thresholds.
-Only relevant in the ordered model case (see details).}
-
-\item{model_type}{Either \code{"probit"} (default) to select the probit model, or
-\code{"logit"} to select the logit model.}
-
-\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
-\code{FALSE} (default) else.}
-
-\item{x}{A \code{\link{choice_parameters}} object.}
-
-\item{J}{An \code{integer}, the number of choice alternatives.
-Must be at least \code{2}.
-If \code{ordered = TRUE}, must be at least \code{3}.}
-
-\item{N}{A positive \code{integer}, the number of deciders.}
-
-\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the sampling of
-missing choice parameters reproducible.
-By default, \code{seed = NULL}, i.e., no seed is set.}
-
-\item{...}{A \code{character} (vector), the names of model parameters to be printed.
-By default, all available parameters are printed.}
+\item{...}{Currently not used.}
 
 \item{rowdots}{An \code{integer}, the row number which is replaced by \code{...}.
 By default, \code{rowdots = 4}.}
@@ -143,24 +135,30 @@ By default, \code{simplify = FALSE}.}
 \item{details}{A \code{logical}, set to \code{TRUE} to print the type and
 dimension of \code{x}.
 By default, \code{details = !simplify}.}
+
+\item{J}{An \code{integer}, the number of choice alternatives.
+Must be at least \code{2}.
+If \code{ordered = TRUE}, must be at least \code{3}.}
+
+\item{scale}{TODO}
+
+\item{level}{TODO}
+
+\item{mode}{TODO}
 }
 \value{
-A \code{\link{choice_parameters}} object.
-
-It contains the elements:
+A \code{\link{choice_parameters}} object. It contains the elements:
 \describe{
-\item{\code{C}}{The number of latent classes.}
-\item{\code{s}}{The class weights.}
-\item{\code{alpha}}{The fixed coefficients.}
-\item{\code{b}}{The class means.}
-\item{\code{Omega}}{The class covariances.}
+\item{\code{s}}{The class weights (if any).}
+\item{\code{alpha}}{The fixed coefficients (if any).}
+\item{\code{b}}{The mean random effects (if any).}
+\item{\code{Omega}}{The random effect covariances (if any).}
 \item{\code{Sigma}}{The error term covariance matrix.}
-\item{\code{Sigma_diff}}{The differenced error term covariance matrix.}
-\item{\code{diff_alt}}{The reference alternative for utility differencing.}
-\item{\code{beta}}{The decider-specific coefficient vectors.}
-\item{\code{z}}{The class allocation variables.}
-\item{\code{d}}{The logarithmic increases of the utility thresholds.}
+\item{\code{gamma}}{The utility thresholds (if any).}
 }
+
+It further has the attributes \code{"model_type"}, \code{"latent_classes"},
+and \code{"C"}.
 }
 \description{
 These functions construct and validate an object of class
@@ -169,21 +167,12 @@ model, see details.
 
 \code{sample_choice_parameters()} draws (missing) choice model
 parameters at random, see details.
-}
-\section{Setting choice model parameters}{
 
-\enumerate{
-\item Use \code{choice_parameters()} to construct a
-\code{\link{choice_parameters}} object, where any model parameter can be
-specified (see below).
-\item Next, call \code{validate_choice_parameters()} with the
-\code{\link{choice_parameters}} object created in step 1. This will add
-unspecified parameters (see below for details) and validate all specified
-parameters.
+\code{identify_choice_parameters()} applies scale and level normalization
+and transforms a \code{list} of parameters to a \code{vector} of identified
+parameters to be passed to \code{choice_likelihood()}.
 }
-}
-
-\section{The probit model}{
+\section{The probit and logit model}{
 
 Assume that we know the choices of \eqn{N} deciders choosing between
 \eqn{J \geq 2} alternatives at each of \eqn{T} choice occasions.
@@ -196,9 +185,13 @@ Here, \eqn{X_{ntj}} is a (column) vector of \eqn{P} characteristics specific
 to alternative \eqn{j} as faced by decider \eqn{n} at choice occasion
 \eqn{t}, \eqn{\tilde{\beta}_n \in \mathbb{R}^{P}} is the coefficient vector
 encoding the preferences of \eqn{n}, and
-\eqn{(\epsilon_{nt:}) = (\epsilon_{nt1},\dots,\epsilon_{ntJ})' \sim
-\text{MVN}_{J} (0,\Sigma)} is the model's error term vector for \eqn{n} at
-\eqn{t}.
+\eqn{(\epsilon_{nt:}) = (\epsilon_{nt1},\dots,\epsilon_{ntJ})'} is the model's
+error term vector for \eqn{n} at \eqn{t}.
+
+In the probit model case, the error vector \eqn{(\epsilon_{nt:})} is normally
+distributed with covariance matrix \code{Sigma}. In the logit model case,
+the components \eqn{\epsilon_{ntj}} of the error vector are independently,
+identically distributed extreme value.
 
 The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
 alternative \code{j}.
@@ -220,7 +213,17 @@ The decider-specific coefficients are assumed to be realizations of an
 underlying mixing distribution and to be independent of the characteristics
 \eqn{X_{ntj}} and the errors \eqn{(\epsilon_{nt:})}.
 This distribution characterizes heterogeneity among the deciders and allows
-for individual sensitivities. As mixing distribution, we assume a mixture of
+for individual sensitivities. Typically, a normal or log-normal distribution
+is imposed.
+}
+
+\section{The latent class model}{
+
+The mixing distribution can be discrete, which results in a discrete latent
+class model where the fixed effects \eqn{\alpha} taking a fixed set of
+\code{C} distinct values \eqn{\alpha_c}.
+
+Alternatively, the mixing distribution can be a mixture of
 \eqn{P_r}-variate Gaussian densities \eqn{\phi_{P_r}} with mean vectors
 \eqn{b = (b_c)_{c}} and covariance matrices \eqn{\Omega = (\Omega_c)_{c}}
 using \eqn{C} components:
@@ -229,23 +232,25 @@ b_c,\Omega_c).}
 Here, \eqn{(s_c)_{c}} are weights satisfying \eqn{0 < s_c\leq 1} for
 \eqn{c=1,\dots,C} and \eqn{\sum_c s_c=1}.
 
-One interpretation of the latent class model is obtained by introducing
-variables \eqn{z=(z_n)_n}, allocating each decision maker \eqn{n} to class
-\eqn{c} with probability \eqn{s_c}, i.e.,
+One interpretation of the (discrete) latent class model is obtained by
+introducing variables \eqn{z=(z_n)_n}, allocating each decision maker
+\eqn{n} to class \eqn{c} with probability \eqn{s_c}, i.e.,
 \deqn{\text{Prob}(z_n=c)=s_c \land \beta_n \mid z,b,\Omega \sim
 \phi_{P_r}(\cdot \mid b_{z_n},\Omega_{z_n}).}
 }
 
-\section{Ordered probit model}{
+\section{Ordered choice model}{
 
-When the set of choice alternatives is ordered, the probit model has only a
+When the set of choice alternatives is ordered, the choice model has only a
 single utility
 \deqn{U_{nt} = X_{nt}' \tilde{\beta}_n + \epsilon_{nt},}
-\eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)},
-per decider \eqn{n} and choice occasion \eqn{t}. The utility can be
-interpreted as the level of association that \eqn{n} has with the choice
-question. It falls into discrete categories, which in turn are linked to the
-ordered alternatives \eqn{j=1,\dots,J}. Formally,
+where \eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)} in the probit model
+and logistic in the logit model, per decider \eqn{n} and choice
+occasion \eqn{t}.
+
+This utility can be interpreted as the level of association that \eqn{n} has
+with the choice question. It falls into discrete categories, which in turn
+are linked to the ordered alternatives \eqn{j=1,\dots,J}. Formally,
 \deqn{y_{nt} = \sum_{j = 1,\dots,J} j \cdot I(\gamma_{j-1} < U_{nt} \leq
 \gamma_{j}),}
 where \eqn{\gamma_0 = -\infty} and \eqn{\gamma_J = +\infty}. This implies
@@ -265,13 +270,14 @@ a transformation is required for identifiability.
 For level normalization, we take utility differences:
 \deqn{\tilde{U}_{ntj} = \tilde{X}_{ntj}' \tilde{\beta}_n +
 \tilde{\epsilon}_{ntj},}
-where (choosing some alternative \eqn{k \in \{1,\dots,J\}} as the reference,
-also denoted by \code{diff_alt})
+where (choosing some alternative \eqn{k \in \{1,\dots,J\}} as the reference)
 \eqn{\tilde{U}_{ntj} = U_{ntj} - U_{ntk}},
 \eqn{\tilde{X}_{ntj} = X_{ntj} - X_{ntk}}, and
 \eqn{\tilde{\epsilon}_{ntj} = \epsilon_{ntj} - \epsilon_{ntk}} for
 \eqn{j\neq k}.
-The error term differences \eqn{(\tilde{\epsilon}_{nt:})} again are
+
+In the probit model case, the error term differences
+\eqn{(\tilde{\epsilon}_{nt:})} again are
 multivariate normally distributed with mean \eqn{0} but transformed
 covariance matrix \eqn{\tilde{\Sigma}}, also denoted by \code{Sigma_diff}.
 See \code{\link[oeli]{diff_cov}} for computing \code{Sigma_diff} from
@@ -281,49 +287,39 @@ For level normalization in the ordered model case, we fix
 \eqn{\gamma_1 = 0}.
 
 For scale normalization, we fix the top left element of \code{Sigma_diff} to
-\eqn{1} (or fix \code{Sigma = 1} in the ordered probit case).
+\eqn{1} (or fix \code{Sigma = 1} in the ordered probit case). In the logit
+model case, the scale normalization is already implied by the assumption that
+the errors are independently distributed extreme value with variance
+\eqn{\pi^2/6}.
 }
 
 \section{Drawing missing choice model parameters}{
 
 
-Unspecified choice model parameters are drawn independently from the
-following distributions:
+Unspecified choice model parameters (if required for the model) are drawn
+independently from the following distributions:
 \describe{
-\item{\code{s}}{The class weights are drawn from a Dirichlet distribution
-with concentration 1.}
-\item{\code{alpha}}{The fixed coefficients are drawn from a
-multivariate normal distribution with zero mean and a diagonal covariance
-matrix with value 10 on the diagonal.}
-\item{\code{b}}{The class means are drawn from a
-multivariate normal distribution with zero mean and a diagonal covariance
-matrix with value 10 on the diagonal.}
-\item{\code{Omega}}{The class covariances are drawn from an Inverse-Wishart
-distribution with degrees of freedom equal to \code{P_r} + 2 and scale
-matrix equal to the identity matrix.}
-\item{\code{Sigma}}{The error term covariance matrix is drawn from an
-Inverse-Wishart distribution with degrees of freedom equal to \code{J} + 2
-and scale matrix equal to the identity matrix.}
-\item{\code{Sigma_diff}}{The differenced error term covariance matrix is
-derived from \code{Sigma}.}
-\item{\code{beta}}{The decider-specific coefficient vectors are drawn from
-a multivariate normal distribution with mean defined by \code{b} and
-covariance defined by \code{Omega}.
-}
-\item{\code{z}}{The class allocation variables are drawn from a discrete
-distribution over the class labels with probabilities defined by \code{s}.}
-\item{\code{d}}{The logarithmic increases of the utility thresholds are
-drawn from a multivariate normal distribution with zero mean and a diagonal
-covariance matrix with value 10 on the diagonal.}
+\item{\code{s}}{drawn from a Dirichlet distribution with concentration 1}
+\item{\code{alpha}}{drawn from a multivariate normal distribution with
+zero mean and a diagonal covariance matrix with value 10 on the diagonal}
+\item{\code{b}}{drawn from a multivariate normal distribution with zero
+mean and a diagonal covariance matrix with value 10 on the diagonal}
+\item{\code{Omega}}{drawn from an Inverse-Wishart distribution with degrees
+of freedom equal to \code{P_r} + 2 and scale matrix equal to the identity}
+\item{\code{Sigma}}{drawn from an Inverse-Wishart distribution with degrees
+of freedom equal to \code{J} + 2 and scale matrix equal to the identity}
+\item{\code{gamma}}{derived from the logarithmic increases of the utility
+thresholds \code{d}, which are drawn from a multivariate normal
+distribution with zero mean and covariance matrix equal to the identity}
 }
 }
 
 \examples{
-(x <- choice_parameters(C = 2))
-formula <- choice ~ A | B
-re <- "A"
-J <- 3
-N <- 100
-(x <- validate_choice_parameters(x, formula = formula, re = re, J = J, N = N))
-
+choice_formula <- choice_formula(formula = choice ~ A | B, re = "A")
+sample_choice_parameters(
+  fixed_parameters = choice_parameters(
+    model_type = "probit", latent_classes = "both", C = 2)
+  ),
+  choice_formula = choice_formula, J = 3
+)
 }

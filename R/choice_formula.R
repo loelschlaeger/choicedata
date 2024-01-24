@@ -73,7 +73,7 @@
 choice_formula <- function(formula, re = NULL, ordered = FALSE) {
 
   ### input checks
-  check_missing(formula, error = TRUE)
+  check_not_missing(formula, error = TRUE)
   check_formula(formula, error = TRUE)
   check_re(re, error = TRUE)
   if (is.null(re)) re <- character()
@@ -188,5 +188,6 @@ print.choice_formula <- function(x, ...) {
     cli::cat_line("with random effects")
     cli::cat_bullet(x$re)
   }
+  invisible(x)
 }
 

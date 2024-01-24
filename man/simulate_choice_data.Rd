@@ -9,7 +9,6 @@ simulate_choice_data(
     choice_alternatives = choice_alternatives(J = 3)),
   choice_parameters = choice_parameters(),
   ranked = FALSE,
-  seed = NULL,
   column_choice = "choice"
 )
 }
@@ -23,10 +22,6 @@ By default, \code{choice_parameters = choice_parameters()}, i.e. default
 parameters are used.}
 
 \item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
-
-\item{seed}{An \code{integer}, passed to \code{set.seed()} to make the sampling of
-covariates reproducible.
-By default, \code{seed = NULL}, i.e., no seed is set.}
 
 \item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
 choices.}

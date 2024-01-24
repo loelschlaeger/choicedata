@@ -97,5 +97,6 @@ print.choice_alternatives <- function(x, ...) {
     alt[alt == x$base] <- paste0(alt[alt == x$base], "*")
   }
   cli::cat_bullet(alt)
+  invisible(x)
 }
 
