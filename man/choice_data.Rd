@@ -2,13 +2,12 @@
 % Please edit documentation in R/choice_data.R
 \name{choice_data}
 \alias{choice_data}
+\alias{is.choice_data}
 \alias{validate_choice_data}
 \title{Define choice data}
 \usage{
 choice_data(
   data,
-  choice_covariates,
-  choices,
   column_choice = "choice",
   column_decider = "id",
   column_occasion = "idc",
@@ -16,24 +15,12 @@ choice_data(
   ordered = FALSE
 )
 
+is.choice_data(x, error = TRUE)
+
 validate_choice_data()
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
-
-\item{choice_covariates}{A \code{\link{choice_covariates}} object.}
-
-\item{choices}{The observed choices in one of two possible formats:
-\itemize{
-\item Can be a \code{data.frame} with three columns, named according to
-\code{column_choice}, \code{column_decider}, and \code{column_occasion},
-where the \code{column_choice} column contains the chosen alternative
-of the decider in the \code{column_decider} column at the choice occasion
-in \code{column_occasion}.
-\item Alternatively, it can be a \code{list}, where the \code{n}th element is a
-\code{list} that has the choice of decider \code{n} at choice occasion
-\code{t} as the \code{t}th element.
-}}
 
 \item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
 choices.}
@@ -44,10 +31,13 @@ decider identifiers.}
 \item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
 identifiers for the choice occasions.}
 
-\item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
-
 \item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
+
+\item{x}{An object of the corresponding class to be printed.}
+
+\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
+to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
 }
 \value{
 TODO

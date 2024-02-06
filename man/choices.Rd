@@ -22,13 +22,12 @@ choices(
 simulate_choices(
   choice_parameters,
   choice_covariates,
-  choice_set,
-  column_choice = "choice",
-  column_decider = "deciderID",
-  column_occasion = "occasionID"
+  choice_formula = NULL,
+  ordered = FALSE,
+  ranked = FALSE
 )
 
-is.choices(x)
+is.choices(x, error = TRUE)
 
 validate_choices()
 
@@ -50,16 +49,6 @@ decider identifiers.}
 
 \item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
 identifiers for the choice occasions.}
-
-\item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
-
-\item{choice_parameters}{A \code{\link{choice_parameters}} object.}
-
-\item{choice_covariates}{A \code{\link{choice_covariates}} object.}
-
-\item{choice_set}{A \code{\link{choice_set}} object.}
-
-\item{x}{An \code{\link{choices}} object.}
 }
 \value{
 A \code{\link{choices}} object. It can be in \code{data.frame} or \code{list}

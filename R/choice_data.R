@@ -6,18 +6,6 @@
 #'
 #' @param data
 #' A \code{data.frame}.
-#' @param choice_covariates
-#' A \code{\link{choice_covariates}} object.
-#' @param choices
-#' The observed choices in one of two possible formats:
-#' - Can be a \code{data.frame} with three columns, named according to
-#'   \code{column_choice}, \code{column_decider}, and \code{column_occasion},
-#'   where the \code{column_choice} column contains the chosen alternative
-#'   of the decider in the \code{column_decider} column at the choice occasion
-#'   in \code{column_occasion}.
-#' - Alternatively, it can be a \code{list}, where the \code{n}th element is a
-#'   \code{list} that has the choice of decider \code{n} at choice occasion
-#'   \code{t} as the \code{t}th element.
 #' @param column_choice
 #' A \code{character}, the column name of the \code{data.frame} with the
 #' choices.
@@ -34,9 +22,8 @@
 #' TODO
 
 choice_data <- function(
-  data, choice_covariates, choices,
-  column_choice = "choice", column_decider = "id", column_occasion = "idc",
-  ranked = FALSE, ordered = FALSE
+  data, column_choice = "choice", column_decider = "id",
+  column_occasion = "idc", ranked = FALSE, ordered = FALSE
 ) {
 
   ### merge choices and covariates
@@ -55,6 +42,23 @@ choice_data <- function(
 }
 
 #' @rdname choice_data
+#' @export
+
+is.choice_data <- function(x, error = TRUE) {
+  check_not_missing(x)
+  check <- inherits(x, "choice_data")
+  if (isTRUE(error) && !isTRUE(check)) {
+    var_name <- oeli::variable_name(x)
+    cli::cli_abort(
+      "Input {.var {var_name}} must be an object of class {.cls choice_data}",
+      call = NULL
+    )
+  } else {
+    isTRUE(check)
+  }
+}
+
+#' @rdname choice_data
 
 validate_choice_data <- function() {
 
@@ -67,6 +71,18 @@ validate_choice_data <- function() {
 #' \code{\link{choice_data}} object.
 #'
 #' @param choice_covariates
+#' A \code{\link{choice_covariates}} object.
+#' @param choices
+#' The observed choices in one of two possible formats:
+#' - Can be a \code{data.frame} with three columns, named according to
+#'   \code{column_choice}, \code{column_decider}, and \code{column_occasion},
+#'   where the \code{column_choice} column contains the chosen alternative
+#'   of the decider in the \code{column_decider} column at the choice occasion
+#'   in \code{column_occasion}.
+#' - Alternatively, it can be a \code{list}, where the \code{n}th element is a
+#'   \code{list} that has the choice of decider \code{n} at choice occasion
+#'   \code{t} as the \code{t}th element.
+#' @param choice_covariates
 #' An \code{\link{choice_covariates}} object, which contains the covariate
 #' matrices used for the choice data simulation.
 #' @param choice_parameters
@@ -74,8 +90,6 @@ validate_choice_data <- function() {
 #' parameters used for the choice data simulation.
 #' By default, \code{choice_parameters = choice_parameters()}, i.e. default
 #' parameters are used.
-#' @inheritParams choice_data
-#' @inheritParams choice_covariates
 #'
 #' @return
 #' An \code{\link{choice_data}} object.
@@ -117,36 +131,39 @@ validate_choice_data <- function() {
 #' }
 
 simulate_choice_data <- function(
-    choice_covariates = sample_choice_covariates(
-      choice_formula, N, Tp = 1,
-      choice_alternatives = choice_alternatives(J = 3)
-    ),
-    choice_parameters = choice_parameters(), ranked = FALSE,
-    column_choice = "choice"
-) {
+    choice_covariates = choice_covariates(),
+    choice_parameters = choice_parameters(),
+    choice_formula = NULL,
+    ranked = FALSE,
+    column_choice = "choice",
+    column_decider = "deciderID",
+    column_occasion = "occasionID"
+  ) {
 
   ### input checks
-  checkmate::assert_class(choice_covariates, "choice_covariates")
+  is.choice_covariates(choice_covariates, error = TRUE)
+  is.choice_parameters(choice_parameters, error = TRUE)
+  if (is.null(choice_formula)) {
+    choice_formula <- attr(choice_covariates, "choice_formula")
+  }
+  is.choice_formula(choice_formula, error = TRUE)
   Tp <- attr(choice_covariates, "Tp")
   N <- length(Tp)
   choice_alternatives <- attr(choice_covariates, "choice_alternatives")
-  choice_formula <- attr(choice_covariates, "choice_formula")
-  checkmate::assert_class(choice_parameters, "choice_parameters")
+  is.choice_parameters(choice_parameters, error = TRUE)
   choice_parameters <- validate_choice_parameters(
-    x = choice_parameters, formula = choice_formula$formula,
-    re = choice_formula$re, ordered = choice_alternatives$ordered,
-    J = choice_alternatives$J, N = N
+    choice_parameters = choice_parameters,
+    choice_formula = choice_formula,
+    J = choice_alternatives$J,
+    allow_missing = FALSE
   )
-  choice_set <- choice_set(
-    choice_alternatives = choice_alternatives, ranked = ranked
-  )
-  checkmate::assert_string(column_choice, min.chars = 1)
+  check_column_choice(column_choice)
 
   ### simulate choices
   choices <- simulate_choices(
     choice_parameters = choice_parameters,
     choice_covariates = choice_covariates,
-    choice_set = choice_set
+    choice_preferences = choice_preferences
   )
 
   ### create and return 'choice_data' object
@@ -154,8 +171,8 @@ simulate_choice_data <- function(
     choice_covariates = choice_covariates,
     choices = choices,
     column_choice = column_choice,
-    column_decider = "id",
-    column_occasion = "idc",
+    column_decider = column_decider,
+    column_occasion = column_occasion,
     ranked = ranked,
     ordered = FALSE
   )

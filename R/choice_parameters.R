@@ -19,7 +19,7 @@
 #' A \code{character}, which defines a latent class model, either:
 #' \itemize{
 #'   \item \code{"none"} for no latent classes (which is equivalent to
-#'         \code{C = 1}),
+#'         setting \code{C = 1}),
 #'   \item \code{"fe"} for latent classes only for the fixed effects,
 #'   \item \code{"re"} for latent classes only for the random effects,
 #'   \item \code{"both"} for latent classes both for the fixed and random
@@ -210,8 +210,9 @@ choice_parameters <- function(
     model_type = "probit", latent_classes = "none", C = 1,
     s = NULL, alpha = NULL, b = NULL, Omega = NULL, Sigma = NULL, gamma = NULL
   ) {
-  check_model_type(model_type, error = TRUE)
-  check_C(C, latent_classes, error = TRUE)
+  model_type <- check_model_type(model_type)
+  latent_classes <- check_latent_classes(latent_classes)
+  C <- check_C(C, latent_classes)
   parameters <- list(
     "s" = s,
     "alpha" = alpha,
@@ -221,6 +222,14 @@ choice_parameters <- function(
     "gamma" = gamma
   )
   parameters[sapply(parameters, is.null)] <- NULL
+  for (i in seq_along(parameters)) {
+    check <- checkmate::check_numeric(parameters[[i]], any.missing = FALSE)
+    if (!isTRUE(check)) {
+      cli::cli_abort(
+        "Input {.var {names(parameters)[i]}} is bad: {check}", call = NULL
+      )
+    }
+  }
   structure(
     parameters,
     model_type = model_type,
@@ -234,6 +243,7 @@ choice_parameters <- function(
 #' @export
 
 is.choice_parameters <- function(x, error = TRUE) {
+  check_not_missing(x)
   check <- inherits(x, "choice_parameters")
   if (isTRUE(error) && !isTRUE(check)) {
     var_name <- oeli::variable_name(x)
@@ -260,11 +270,12 @@ print.choice_parameters <- function(
     cli::cat_line(cli::style_italic("none specified yet"))
   } else {
     for (i in seq_along(x)) {
+      cat(cli::symbol[["bullet"]], " ", sep = "")
       oeli::print_matrix(
         x[[i]], rowdots = rowdots, coldots = coldots, digits = digits,
         label = names(x)[i], simplify = simplify, details = details
       )
-      cat("\n")
+      if (i < length(x)) cat("\n\n")
     }
   }
   invisible(x)
@@ -322,7 +333,7 @@ sample_choice_parameters <- function(
   ordered <- choice_formula$ordered
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
-  check_J(J, ordered, error = TRUE)
+  J <- check_J(J, ordered)
 
   ### validate fixed parameters
   x <- validate_choice_parameters(
@@ -404,19 +415,21 @@ validate_choice_parameters <- function(
   ) {
 
   ### input checks
+  check_not_missing(choice_parameters)
   is.choice_parameters(choice_parameters, error = TRUE)
   x <- choice_parameters
   model_type <- attr(x, "model_type")
   latent_classes <- attr(x, "latent_classes")
   C <- attr(x, "C")
+  check_not_missing(choice_formula)
   is.choice_formula(choice_formula, error = TRUE)
   formula <- choice_formula$formula
   re <- choice_formula$re
   ordered <- choice_formula$ordered
+  J <- check_J(J, ordered)
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
-  check_J(J, ordered, error = TRUE)
-  check_allow_missing(allow_missing, error = TRUE)
+  allow_missing <- check_allow_missing(allow_missing)
 
   ### check parameters
 
@@ -580,6 +593,9 @@ identify_choice_parameters <- function(
 
 
 }
+
+
+
 
 
 

@@ -10,11 +10,12 @@
 \alias{covariate_names}
 \alias{covariate_number}
 \alias{print.choice_covariates}
+\alias{head.choice_covariates}
 \title{Define choice covariates}
 \usage{
 choice_covariates(choice_data)
 
-is.choice_covariates(x)
+is.choice_covariates(x, error = TRUE)
 
 sample_choice_covariates(
   choice_formula,
@@ -52,11 +53,16 @@ covariate_names(choice_formula, choice_alternatives, delimiter = "_")
 covariate_number(choice_formula, choice_alternatives)
 
 \method{print}{choice_covariates}(x, ..., digits = 2)
+
+\method{head}{choice_covariates}(x, n = 6L, ...)
 }
 \arguments{
 \item{choice_data}{A \code{\link{choice_data}} object.}
 
-\item{x}{An \code{\link{choice_covariates}} object.}
+\item{x}{An object of the corresponding class to be printed.}
+
+\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
+to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
 
 \item{choice_formula}{A \code{\link{choice_formula}} object.}
 

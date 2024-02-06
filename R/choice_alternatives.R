@@ -50,10 +50,7 @@
 choice_alternatives <- function(
     J = 2, alternatives = LETTERS[1:J], base = alternatives[1], ordered = FALSE
 ) {
-  check_base(
-    base = base, alternatives = alternatives, J = J, ordered = ordered,
-    error = TRUE
-  )
+  check_base(base = base, alternatives = alternatives, J = J, ordered = ordered)
   if (ordered) {
     base <- NA_character_
   } else {
@@ -74,6 +71,7 @@ choice_alternatives <- function(
 #' @export
 
 is.choice_alternatives <- function(x, error = TRUE) {
+  check_not_missing(x)
   check <- inherits(x, "choice_alternatives")
   if (isTRUE(error) && !isTRUE(check)) {
     var_name <- oeli::variable_name(x)

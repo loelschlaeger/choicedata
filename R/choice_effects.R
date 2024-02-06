@@ -45,14 +45,12 @@
 
 choice_effects <- function(
     choice_formula, choice_alternatives, delimiter = "_"
-) {
+  ) {
 
   ### input checks
-  check_not_missing(choice_formula, error = TRUE)
   is.choice_formula(choice_formula, error = TRUE)
-  check_not_missing(choice_alternatives, error = TRUE)
   is.choice_alternatives(choice_alternatives, error = TRUE)
-  check_delimiter(delimiter, error = TRUE)
+  check_delimiter(delimiter)
 
   ### extract information
   J <- choice_alternatives$J
@@ -194,6 +192,7 @@ compute_P_r <- function(formula, re, J, ordered = FALSE) {
 #' @export
 
 is.choice_effects <- function(x, error = TRUE) {
+  check_not_missing(x)
   check <- inherits(x, "choice_effects")
   if (isTRUE(error) && !isTRUE(check)) {
     var_name <- oeli::variable_name(x)

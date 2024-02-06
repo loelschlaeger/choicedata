@@ -73,11 +73,9 @@
 choice_formula <- function(formula, re = NULL, ordered = FALSE) {
 
   ### input checks
-  check_not_missing(formula, error = TRUE)
-  check_formula(formula, error = TRUE)
-  check_re(re, error = TRUE)
-  if (is.null(re)) re <- character()
-  check_ordered(ordered, error = TRUE)
+  formula <- check_formula(formula)
+  re <- check_re(re)
+  ordered <- check_ordered(ordered)
 
   ### read formula
   formula_parts <- as.character(formula)
@@ -165,6 +163,7 @@ choice_formula <- function(formula, re = NULL, ordered = FALSE) {
 #' @export
 
 is.choice_formula <- function(x, error = TRUE) {
+  check_not_missing(x)
   check <- inherits(x, "choice_formula")
   if (isTRUE(error) && !isTRUE(check)) {
     var_name <- oeli::variable_name(x)

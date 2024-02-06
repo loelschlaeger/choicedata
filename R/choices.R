@@ -9,14 +9,6 @@
 #' the \code{n}-th decider, where the \code{t}-th element is an element from
 #' \code{choice_set} that defines the choice at their \code{t}-th choice
 #' occasion.
-#' @param choice_parameters
-#' A \code{\link{choice_parameters}} object.
-#' @param choice_covariates
-#' A \code{\link{choice_covariates}} object.
-#' @param choice_set
-#' A \code{\link{choice_set}} object.
-#' @param ranked
-#' Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.
 #' @inheritParams choice_data
 #'
 #' @return
@@ -53,11 +45,19 @@
 #' incorporate information of the full ranking.
 
 choices <- function(
-    choices = list(), column_choice = column_choice,
-    column_decider = "deciderID", column_occasion = "occasionID",
-    ranked = FALSE, ordered = FALSE, delimiter = "_"
+    choices = list(),
+    column_choice = column_choice,
+    column_decider = "deciderID",
+    column_occasion = "occasionID",
+    ranked = FALSE,
+    ordered = FALSE,
+    delimiter = "_"
 ) {
+
+  ### input checks
   oeli::assert_list_of_lists(choices)
+
+  ### build 'choices' object
   structure(
     choices,
     "Tp" = vapply(choices, length, integer(1)),
@@ -75,34 +75,46 @@ choices <- function(
 #' @rdname choices
 
 simulate_choices <- function(
-  choice_parameters, choice_covariates, choice_set,
-  column_choice = "choice", column_decider = "deciderID",
-  column_occasion = "occasionID"
+  choice_parameters,
+  choice_covariates,
+  choice_formula = NULL,
+  choice_preferences = NULL,
+  ordered = FALSE,
+  ranked = FALSE,
+  column_choice = "choice"
 ) {
 
   ### input checks
   is.choice_parameters(choice_parameters)
   is.choice_covariates(choice_covariates)
-  is.choice_set(choice_set)
-
-  ### transform choice covariates to list form
   choice_covariates <- as.list(choice_covariates)
-
-  ### extract information from objects
+  choice_alternatives <- attr(choice_covariates, "choice_alternatives")
   Tp <- attr(choice_covariates, "Tp")
   N <- length(Tp)
-  ordered <- attr(choice_set, "ordered")
-  ranked <- attr(choice_set, "ranked")
+  if (is.null(choice_formula)) {
+    choice_formula <- attr(choice_covariates, "choice_formula")
+  }
+  is.choice_formula(choice_formula)
+  if (is.null(choice_preferences)) {
+    choice_effects <- choice_effects(
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives,
+      delimiter = "_"
+    )
+    choice_preferences <- sample_choice_preferences(
+      choice_parameters = choice_parameters,
+      choice_effects = choice_effects,
+      N = N
+    )
+  }
 
   ### simulate choices
   choices <- lapply(seq_len(N), function(n) {
-    coef <- get_coefficient_vector(
-      choice_parameters = choice_parameters, decider_id = n
-    )
+    coef_n <- as.numeric(choice_preferences[n, ])
     lapply(seq_len(Tp[n]), function(t) {
       X_nt <- choice_covariates[[n]][[t]]
       U_nt <- oeli::rmvnorm(
-        mean = as.vector(X_nt %*% coef),
+        mean = as.vector(X_nt %*% coef_n),
         Sigma = choice_parameters$Sigma
       )
       if (ranked) {
@@ -110,7 +122,7 @@ simulate_choices <- function(
       } else if (ordered) {
         # TODO
       } else {
-        choice_set[which.max(U_nt)]
+        choice_alternatives$alternatives[which.max(U_nt)]
       }
     })
   })
@@ -121,25 +133,33 @@ simulate_choices <- function(
     column_choice = column_choice,
     column_decider = column_decider,
     column_occasion = column_occasion,
-    ranked = FALSE,
-    ordered = FALSE
+    ranked = ranked,
+    ordered = ordered
   )
 }
 
 #' @rdname choices
-#' @param x
-#' An \code{\link{choices}} object.
 #' @export
 
-is.choices <- function(x) {
-  inherits(x, "choices")
+is.choices <- function(x, error = TRUE) {
+  check_not_missing(x)
+  check <- inherits(x, "choices")
+  if (isTRUE(error) && !isTRUE(check)) {
+    var_name <- oeli::variable_name(x)
+    cli::cli_abort(
+      "Input {.var {var_name}} must be an object of class {.cls choices}",
+      call = NULL
+    )
+  } else {
+    isTRUE(check)
+  }
 }
 
 #' @rdname choices
 #' @export
 
 validate_choices <- function() {
-
+  # TODO
 }
 
 #' @rdname choices

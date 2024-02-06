@@ -5,11 +5,13 @@
 \title{Simulate choice data}
 \usage{
 simulate_choice_data(
-  choice_covariates = sample_choice_covariates(choice_formula, N, Tp = 1,
-    choice_alternatives = choice_alternatives(J = 3)),
+  choice_covariates = choice_covariates(),
   choice_parameters = choice_parameters(),
+  choice_formula = NULL,
   ranked = FALSE,
-  column_choice = "choice"
+  column_choice = "choice",
+  column_decider = "deciderID",
+  column_occasion = "occasionID"
 )
 }
 \arguments{
@@ -21,10 +23,17 @@ parameters used for the choice data simulation.
 By default, \code{choice_parameters = choice_parameters()}, i.e. default
 parameters are used.}
 
-\item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
-
-\item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
-choices.}
+\item{choices}{The observed choices in one of two possible formats:
+\itemize{
+\item Can be a \code{data.frame} with three columns, named according to
+\code{column_choice}, \code{column_decider}, and \code{column_occasion},
+where the \code{column_choice} column contains the chosen alternative
+of the decider in the \code{column_decider} column at the choice occasion
+in \code{column_occasion}.
+\item Alternatively, it can be a \code{list}, where the \code{n}th element is a
+\code{list} that has the choice of decider \code{n} at choice occasion
+\code{t} as the \code{t}th element.
+}}
 }
 \value{
 An \code{\link{choice_data}} object.
