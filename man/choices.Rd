@@ -10,12 +10,11 @@
 \title{Define choices}
 \usage{
 choices(
-  choices = list(),
-  column_choice = column_choice,
-  column_decider = "deciderID",
-  column_occasion = "occasionID",
+  choices,
+  choice_identifiers,
   ranked = FALSE,
   ordered = FALSE,
+  column_choice = "choice",
   delimiter = "_"
 )
 
@@ -23,8 +22,11 @@ simulate_choices(
   choice_parameters,
   choice_covariates,
   choice_formula = NULL,
+  choice_preferences = NULL,
   ordered = FALSE,
-  ranked = FALSE
+  ranked = FALSE,
+  column_choice = "choice",
+  delimiter = "_"
 )
 
 is.choices(x, error = TRUE)
@@ -36,38 +38,52 @@ validate_choices()
 \method{as.list}{choices}(x, ...)
 }
 \arguments{
-\item{choices}{A \code{list}, where the \code{n}-th element is a \code{list} of choices for
-the \code{n}-th decider, where the \code{t}-th element is an element from
-\code{choice_set} that defines the choice at their \code{t}-th choice
-occasion.}
+\item{choices}{A \code{list}, where the \code{n}-th element is a \code{vector} of choices
+for the \code{n}-th decider, where the \code{t}-th element is a
+\code{character} that defines the choice at their \code{t}-th occasion.}
 
 \item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
 choices.}
 
-\item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
-decider identifiers.}
+\item{choice_parameters}{An \code{\link{choice_parameters}} object, which contains the model
+parameters used for the choice data simulation.
+By default, \code{choice_parameters = choice_parameters()}, i.e. default
+parameters are used.}
 
-\item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
-identifiers for the choice occasions.}
+\item{choice_covariates}{An \code{\link{choice_covariates}} object, which contains the covariate
+matrices used for the choice data simulation.}
 }
 \value{
-A \code{\link{choices}} object. It can be in \code{data.frame} or \code{list}
-and can be transformed between these two formats via the functions
-\code{as.data.frame.choices()} or \code{as.list.choices()}.
+A \code{\link{choices}} object. It can be a \code{data.frame} or \code{list}
+object and can be transformed between these two formats via
+\code{as.data.frame.choices()} or \code{as.list.choices()}:
 \itemize{
 \item \code{data.frame} format: a \code{data.frame} with three columns
-named \code{column_choice} (the choices), \code{column_decider}
-(the decider identifiers), and \code{column_occasion} (the
-identifiers for the choice occasions)
+named, \code{column_decider} (the decider identifiers),
+\code{column_occasion} (the identifiers for the choice occasions),
+and \code{column_choice} (the choices)
 \item \code{list} format: a \code{list}, where the \code{n}-th element is
-a \code{list} of choices for the \code{n}-th decider, where the
-\code{t}-th element is an element from \code{choice_set} that defines
-the choice at their \code{t}-th choice occasion
+a \code{vector} of choices for the \code{n}-th decider, where the
+\code{t}-th element is the choice at their \code{t}-th occasion
+}
+The \code{\link{choices}} object has the following attributes:
+\itemize{
+\item TODO
 }
 }
 \description{
 These functions construct and validate an object of class
 \code{\link{choices}}, which defines the observed choices.
+
+\code{\link{simulate_choices}} simulates choices based on
+\code{\link{choice_parameters}} and \code{\link{choice_covariates}}:
+\itemize{
+\item If \code{\link{choice_formula}} is not specified, it is taken from
+\code{\link{choice_covariates}} (if available).
+\item If \code{\link{choice_preferences}} is not specified, it is sampled
+from \code{\link{choice_parameters}} and the implied
+\code{\link{choice_effects}}.
+}
 }
 \section{Ranked choices}{
 

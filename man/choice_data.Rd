@@ -4,13 +4,14 @@
 \alias{choice_data}
 \alias{is.choice_data}
 \alias{validate_choice_data}
+\alias{simulate_choice_data}
 \title{Define choice data}
 \usage{
 choice_data(
   data,
   column_choice = "choice",
-  column_decider = "id",
-  column_occasion = "idc",
+  column_decider = "deciderID",
+  column_occasion = "occasionID",
   ranked = FALSE,
   ordered = FALSE
 )
@@ -18,6 +19,14 @@ choice_data(
 is.choice_data(x, error = TRUE)
 
 validate_choice_data()
+
+simulate_choice_data(
+  choice_covariates,
+  choice_parameters,
+  choice_formula = NULL,
+  ranked = FALSE,
+  column_choice = "choice"
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -31,18 +40,103 @@ decider identifiers.}
 \item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
 identifiers for the choice occasions.}
 
-\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
+\item{ordered}{Either \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 
 \item{x}{An object of the corresponding class to be printed.}
 
 \item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
 to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
+
+\item{choice_covariates}{An \code{\link{choice_covariates}} object, which contains the covariate
+matrices used for the choice data simulation.}
+
+\item{choice_parameters}{An \code{\link{choice_parameters}} object, which contains the model
+parameters used for the choice data simulation.
+By default, \code{choice_parameters = choice_parameters()}, i.e. default
+parameters are used.}
 }
 \value{
-TODO
+An \code{\link{choice_data}} object.
 }
 \description{
 These functions construct and validate an object of class
 \code{\link{choice_data}}, which defines the choice model data.
+
+\code{\link{simulate_choice_data}} simulates choice data.
+}
+\section{Model formula}{
+
+The structure of \code{formula} should be
+\code{choice ~ A | B | C}, where
+\itemize{
+\item \code{choice} is the name of the dependent variable (the choices),
+\item \code{A} are names of \strong{alternative specific covariates} with
+\strong{a coefficient that is constant across alternatives},
+\item \code{B} are names of \strong{covariates that are constant across
+alternatives},
+\item and \code{C} are names of \strong{alternative specific covariates}
+with \strong{alternative specific coefficients}.
+}
+
+Multiple covariates of one type are separated by a \code{+} sign, i.e.,
+\code{choice ~ A1 + A2}.
+
+By default, alternative specific constants (ASCs) are added to the model.
+They can be removed by adding \code{+ 0} in the second spot, i.e.,
+\code{choice ~ A | B + 0 | C}. To not include any covariates of
+the second category but to estimate ASCs, add \code{1} in the second
+spot, e.g., \code{choice ~ A | 1 | C}. The expression
+\code{choice ~ A | 0 | C} is interpreted as no covariates of the second
+category and no ASCs.
+
+In the ordered model case (\code{ordered = TRUE}), covariates are not
+alternative specific, i.e., there exists only one type of covariate.
+Therefore, the \code{formula} object does not need the special
+separation form via \code{|}, and hence has the simple structure
+\code{choice ~ A + B + C}.
+ASCs cannot be estimated in the ordered case.
+}
+
+\section{Random effects}{
+
+Covariates can have random effects, i.e., their coefficients can follow a
+random distribution. Per default, the distribution is normal. The log-normal
+distribution (e.g., for sign-restriction) can be specified via appending
+\code{+} to the corresponding name in \code{re}.
+To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
+\code{re}.
+}
+
+\examples{
+# ### simulate data from a binary probit model with two latent classes
+# data <- simulate_choice_data(
+#   choice_covariates = sample_choice_covariates(
+#     choice_formula = choice_formula(
+#       formula = choice ~ cost | income | time, re = c("cost", "time")
+#     ),
+#     N = 10, Tp = 1:10,
+#     choice_alternatives = choice_alternatives(
+#       J = 2, alternatives = c("car", "bus")
+#     )
+#   )
+# )
+
+### simulate data from an ordered probit model
+# data <- simulate_choice_data(
+#   formula = opinion ~ age + gender, N = 50, J = 5,
+#   alternatives = c("very bad", "bad", "indifferent", "good", "very good"),
+#   ordered = TRUE
+# )
+
+### simulate data from a ranked probit model
+# data <- simulate_choice_data(
+#   formula = product ~ price, N = 10, J = 3, T = 1:10, ranked = TRUE
+# )
+
+}
+\seealso{
+\itemize{
+\item TODO
+}
 }

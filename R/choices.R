@@ -5,25 +5,27 @@
 #' \code{\link{choices}}, which defines the observed choices.
 #'
 #' @param choices
-#' A \code{list}, where the \code{n}-th element is a \code{list} of choices for
-#' the \code{n}-th decider, where the \code{t}-th element is an element from
-#' \code{choice_set} that defines the choice at their \code{t}-th choice
-#' occasion.
+#' A \code{list}, where the \code{n}-th element is a \code{vector} of choices
+#' for the \code{n}-th decider, where the \code{t}-th element is a
+#' \code{character} that defines the choice at their \code{t}-th occasion.
 #' @inheritParams choice_data
 #'
 #' @return
-#' A \code{\link{choices}} object. It can be in \code{data.frame} or \code{list}
-#' and can be transformed between these two formats via the functions
-#' \code{as.data.frame.choices()} or \code{as.list.choices()}.
+#' A \code{\link{choices}} object. It can be a \code{data.frame} or \code{list}
+#' object and can be transformed between these two formats via
+#' \code{as.data.frame.choices()} or \code{as.list.choices()}:
 #' \itemize{
 #'   \item \code{data.frame} format: a \code{data.frame} with three columns
-#'         named \code{column_choice} (the choices), \code{column_decider}
-#'         (the decider identifiers), and \code{column_occasion} (the
-#'         identifiers for the choice occasions)
+#'         named, \code{column_decider} (the decider identifiers),
+#'         \code{column_occasion} (the identifiers for the choice occasions),
+#'         and \code{column_choice} (the choices)
 #'   \item \code{list} format: a \code{list}, where the \code{n}-th element is
-#'         a \code{list} of choices for the \code{n}-th decider, where the
-#'         \code{t}-th element is an element from \code{choice_set} that defines
-#'         the choice at their \code{t}-th choice occasion
+#'         a \code{vector} of choices for the \code{n}-th decider, where the
+#'         \code{t}-th element is the choice at their \code{t}-th occasion
+#' }
+#' The \code{\link{choices}} object has the following attributes:
+#' \itemize{
+#'   \item TODO
 #' }
 #'
 #' @section Ranked choices:
@@ -45,33 +47,46 @@
 #' incorporate information of the full ranking.
 
 choices <- function(
-    choices = list(),
-    column_choice = column_choice,
-    column_decider = "deciderID",
-    column_occasion = "occasionID",
+    choices,
+    choice_identifiers,
     ranked = FALSE,
     ordered = FALSE,
+    column_choice = "choice",
     delimiter = "_"
-) {
+  ) {
 
   ### input checks
-  oeli::assert_list_of_lists(choices)
+  checkmate::assert_list(choices)
+  is.choice_identifiers(choice_identifiers, error = TRUE)
+  ranked <- check_ranked(ranked)
+  ordered <- check_ordered(ordered)
+  column_choice <- check_column_choice(column_choice)
+  delimiter <- check_delimiter(delimiter)
 
   ### build 'choices' object
   structure(
     choices,
-    "Tp" = vapply(choices, length, integer(1)),
-    "choice_formula" = choice_formula,
-    "column_choice" = column_choice,
-    "column_decider" = column_decider,
-    "column_occasion" = column_occasion,
+    "choice_identifiers" = choice_identifiers,
     "ranked" = ranked,
     "ordered" = ordered,
+    "column_choice" = column_choice,
     "delimiter" = delimiter,
-    class = "choices"
+    class = c("choices", "list")
   )
 }
 
+#' @description
+#' \code{\link{simulate_choices}} simulates choices based on
+#' \code{\link{choice_parameters}} and \code{\link{choice_covariates}}:
+#' \itemize{
+#'   \item If \code{\link{choice_formula}} is not specified, it is taken from
+#'         \code{\link{choice_covariates}} (if available).
+#'   \item If \code{\link{choice_preferences}} is not specified, it is sampled
+#'         from \code{\link{choice_parameters}} and the implied
+#'         \code{\link{choice_effects}}.
+#' }
+#'
+#'
 #' @rdname choices
 
 simulate_choices <- function(
@@ -81,7 +96,8 @@ simulate_choices <- function(
   choice_preferences = NULL,
   ordered = FALSE,
   ranked = FALSE,
-  column_choice = "choice"
+  column_choice = "choice",
+  delimiter = "_"
 ) {
 
   ### input checks
@@ -89,6 +105,7 @@ simulate_choices <- function(
   is.choice_covariates(choice_covariates)
   choice_covariates <- as.list(choice_covariates)
   choice_alternatives <- attr(choice_covariates, "choice_alternatives")
+  alt <- as.character(choice_alternatives)
   Tp <- attr(choice_covariates, "Tp")
   N <- length(Tp)
   if (is.null(choice_formula)) {
@@ -107,34 +124,44 @@ simulate_choices <- function(
       N = N
     )
   }
+  column_decider <- attr(choice_covariates, "column_decider")
+  column_occasion <- attr(choice_covariates, "column_occasion")
+  choice_identifiers <- generate_choice_identifiers(
+    N = N, Tp = Tp, column_decider = column_decider,
+    column_occasion = column_occasion
+  )
 
   ### simulate choices
   choices <- lapply(seq_len(N), function(n) {
     coef_n <- as.numeric(choice_preferences[n, ])
-    lapply(seq_len(Tp[n]), function(t) {
-      X_nt <- choice_covariates[[n]][[t]]
-      U_nt <- oeli::rmvnorm(
-        mean = as.vector(X_nt %*% coef_n),
-        Sigma = choice_parameters$Sigma
-      )
-      if (ranked) {
-        # TODO
-      } else if (ordered) {
-        # TODO
-      } else {
-        choice_alternatives$alternatives[which.max(U_nt)]
-      }
-    })
+    vapply(
+      seq_len(Tp[n]),
+      function(t) {
+        X_nt <- choice_covariates[[n]][[t]]
+        U_nt <- oeli::rmvnorm(
+          mean = as.vector(X_nt %*% coef_n),
+          Sigma = choice_parameters$Sigma
+        )
+        if (ranked) {
+          # TODO
+        } else if (ordered) {
+          # TODO
+        } else {
+          alt[which.max(U_nt)]
+        }
+      },
+      character(1)
+    )
   })
 
   ### create and return 'choices' object
   choices(
     choices = choices,
-    column_choice = column_choice,
-    column_decider = column_decider,
-    column_occasion = column_occasion,
+    choice_identifiers = choice_identifiers,
     ranked = ranked,
-    ordered = ordered
+    ordered = ordered,
+    column_choice = column_choice,
+    delimiter = delimiter
   )
 }
 
@@ -166,18 +193,30 @@ validate_choices <- function() {
 #' @exportS3Method
 
 as.data.frame.choices <- function(x, ...) {
-  stopifnot(is.choices(x))
-  if (is.data.frame(x)) {
+  is.choices(x, error = TRUE)
+  if (checkmate::test_data_frame(x)) {
     return(x)
   }
+  attributes <- attributes(x)
+  structure(
+    structure(
+      cbind(attributes$choice_identifiers, unlist(x)),
+      "names" = c(names(attributes$choice_identifiers), attributes$column_choice),
+      "class" = "data.frame"
+    ),
+    ranked = attributes$ranked,
+    ordered = attributes$ordered,
+    delimiter = attributes$delimiter,
+    class = c("choices", "data.frame")
+  )
 }
 
 #' @rdname choices
 #' @exportS3Method
 
 as.list.choices <- function(x, ...) {
-  stopifnot(is.choices(x))
-  if (is.list(x)) {
+  is.choices(x, error = TRUE)
+  if (checkmate::test_list(x)) {
     return(x)
   }
 }

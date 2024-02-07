@@ -24,7 +24,7 @@ By default, \code{re = NULL}, i.e., no random effects.}
 Must be at least \code{2}.
 If \code{ordered = TRUE}, must be at least \code{3}.}
 
-\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
+\item{ordered}{Either \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 }
 \value{

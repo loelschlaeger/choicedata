@@ -185,6 +185,15 @@ check_ordered <- function(ordered) {
   invisible(ordered)
 }
 
+check_ranked <- function(ranked) {
+  check_not_missing(ranked)
+  check <- checkmate::check_flag(ranked)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var ranked} is bad: {check}", call = NULL)
+  }
+  invisible(ranked)
+}
+
 check_re <- function(re) {
   check_not_missing(re)
   check <- checkmate::check_character(re, any.missing = FALSE, unique = TRUE, null.ok = TRUE)

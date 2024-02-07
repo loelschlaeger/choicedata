@@ -53,10 +53,10 @@ choice_effects <- function(
   check_delimiter(delimiter)
 
   ### extract information
-  J <- choice_alternatives$J
-  alt <- choice_alternatives$alternatives
-  base <- choice_alternatives$base
-  ordered <- choice_alternatives$ordered
+  alt <- as.character(choice_alternatives)
+  J <- attr(choice_alternatives, "J")
+  base <- attr(choice_alternatives, "base")
+  ordered <- attr(choice_alternatives, "ordered")
   var_types <- choice_formula$var_types
 
   ### helper function to determine mixing type

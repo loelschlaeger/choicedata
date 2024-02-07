@@ -19,11 +19,15 @@
 #' @inheritParams choices
 #'
 #' @return
-#' TODO
+#' An \code{\link{choice_data}} object.
 
 choice_data <- function(
-  data, column_choice = "choice", column_decider = "id",
-  column_occasion = "idc", ranked = FALSE, ordered = FALSE
+  data,
+  column_choice = "choice",
+  column_decider = "deciderID",
+  column_occasion = "occasionID",
+  ranked = FALSE,
+  ordered = FALSE
 ) {
 
   ### merge choices and covariates
@@ -34,10 +38,6 @@ choice_data <- function(
   ### validate list format
 
   ### transform to data.frame format
-
-  structure(
-    "simulated" = FALSE
-  )
 
 }
 
@@ -64,24 +64,13 @@ validate_choice_data <- function() {
 
 }
 
-#' Simulate choice data
+#' @rdname choice_data
 #'
 #' @description
-#' This function simulates choice data and creates a
-#' \code{\link{choice_data}} object.
+#' \code{\link{simulate_choice_data}} simulates choice data.
 #'
 #' @param choice_covariates
 #' A \code{\link{choice_covariates}} object.
-#' @param choices
-#' The observed choices in one of two possible formats:
-#' - Can be a \code{data.frame} with three columns, named according to
-#'   \code{column_choice}, \code{column_decider}, and \code{column_occasion},
-#'   where the \code{column_choice} column contains the chosen alternative
-#'   of the decider in the \code{column_decider} column at the choice occasion
-#'   in \code{column_occasion}.
-#' - Alternatively, it can be a \code{list}, where the \code{n}th element is a
-#'   \code{list} that has the choice of decider \code{n} at choice occasion
-#'   \code{t} as the \code{t}th element.
 #' @param choice_covariates
 #' An \code{\link{choice_covariates}} object, which contains the covariate
 #' matrices used for the choice data simulation.
@@ -90,9 +79,6 @@ validate_choice_data <- function() {
 #' parameters used for the choice data simulation.
 #' By default, \code{choice_parameters = choice_parameters()}, i.e. default
 #' parameters are used.
-#'
-#' @return
-#' An \code{\link{choice_data}} object.
 #'
 #' @inheritSection choice_formula Model formula
 #' @inheritSection choice_formula Random effects
@@ -131,13 +117,11 @@ validate_choice_data <- function() {
 #' }
 
 simulate_choice_data <- function(
-    choice_covariates = choice_covariates(),
-    choice_parameters = choice_parameters(),
+    choice_covariates,
+    choice_parameters,
     choice_formula = NULL,
     ranked = FALSE,
-    column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
+    column_choice = "choice"
   ) {
 
   ### input checks
@@ -145,6 +129,11 @@ simulate_choice_data <- function(
   is.choice_parameters(choice_parameters, error = TRUE)
   if (is.null(choice_formula)) {
     choice_formula <- attr(choice_covariates, "choice_formula")
+    if (getOption("verbose", default = TRUE)) {
+      cli::cli_alert_info(
+        "Retrieving {.cls choice_formula} from {.cls choice_covariates}"
+      )
+    }
   }
   is.choice_formula(choice_formula, error = TRUE)
   Tp <- attr(choice_covariates, "Tp")
@@ -154,27 +143,36 @@ simulate_choice_data <- function(
   choice_parameters <- validate_choice_parameters(
     choice_parameters = choice_parameters,
     choice_formula = choice_formula,
-    J = choice_alternatives$J,
+    J = attr(choice_alternatives, "J"),
     allow_missing = FALSE
   )
-  check_column_choice(column_choice)
+  column_choice <- check_column_choice(column_choice)
+  column_decider <- attr(choice_covariates, "column_decider")
+  column_occasion <- attr(choice_covariates, "column_occasion")
 
   ### simulate choices
   choices <- simulate_choices(
     choice_parameters = choice_parameters,
     choice_covariates = choice_covariates,
-    choice_preferences = choice_preferences
+    choice_preferences = NULL
   )
 
+  ### merge choices and covariates
+  data <- merge(
+    as.data.frame(choices), choice_covariates,
+    by = c(column_decider, column_occasion),
+    sort = FALSE
+  )
+
+  return(data)
   ### create and return 'choice_data' object
   choice_data(
-    choice_covariates = choice_covariates,
-    choices = choices,
+    data = data,
     column_choice = column_choice,
     column_decider = column_decider,
     column_occasion = column_occasion,
     ranked = ranked,
-    ordered = FALSE
+    ordered = ordered
   )
 }
 

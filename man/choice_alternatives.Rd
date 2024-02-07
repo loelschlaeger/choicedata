@@ -29,11 +29,11 @@ By default, \code{alternatives = LETTERS[1:J]}.}
 \item{base}{A \code{character}, the name of the base alternative for covariates that are
 not alternative specific, see details.
 \code{base} must be contained in \code{alternatives}.
-Ignored if the model has no alternative specific covariates (e.g., in the
-ordered case).
+Ignored if the model has no alternative specific covariates (in particular if
+\code{ordered = TRUE}).
 By default, \code{base} is the first element of \code{alternatives}.}
 
-\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
+\item{ordered}{Either \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 
 \item{x}{An object of the corresponding class to be printed.}
@@ -44,12 +44,10 @@ to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
 \item{...}{Currently not used.}
 }
 \value{
-A \code{\link{choice_alternatives}} object.
-
-It contains the elements:
+A \code{\link{choice_alternatives}} object. It is a vector of the choice
+alternatives and has the following attributes:
 \describe{
 \item{\code{J}}{The number of choice alternatives.}
-\item{\code{alternatives}}{The labels for the choice alternatives.}
 \item{\code{base}}{The name of the base alternative.}
 \item{\code{ordered}}{Are the choice alternatives ordered?}
 }

@@ -16,21 +16,19 @@
 #' A \code{character}, the name of the base alternative for covariates that are
 #' not alternative specific, see details.
 #' \code{base} must be contained in \code{alternatives}.
-#' Ignored if the model has no alternative specific covariates (e.g., in the
-#' ordered case).
+#' Ignored if the model has no alternative specific covariates (in particular if
+#' \code{ordered = TRUE}).
 #' By default, \code{base} is the first element of \code{alternatives}.
 #' @param ordered
-#' A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
+#' Either \code{TRUE} if the choice alternatives are ordered and
 #' \code{FALSE} (default) else.
 #' @inheritParams doc-helper
 #'
 #' @return
-#' A \code{\link{choice_alternatives}} object.
-#'
-#' It contains the elements:
+#' A \code{\link{choice_alternatives}} object. It is a vector of the choice
+#' alternatives and has the following attributes:
 #' \describe{
 #'   \item{\code{J}}{The number of choice alternatives.}
-#'   \item{\code{alternatives}}{The labels for the choice alternatives.}
 #'   \item{\code{base}}{The name of the base alternative.}
 #'   \item{\code{ordered}}{Are the choice alternatives ordered?}
 #' }
@@ -57,13 +55,11 @@ choice_alternatives <- function(
     alternatives <- sort(alternatives)
   }
   structure(
-    list(
-      J = as.integer(J),
-      alternatives = alternatives,
-      base = base,
-      ordered = ordered
-    ),
-    class = c("choice_alternatives", "list")
+    alternatives,
+    "J" = as.integer(J),
+    "base" = base,
+    "ordered" = ordered,
+    class = c("choice_alternatives", "character")
   )
 }
 
@@ -89,10 +85,12 @@ is.choice_alternatives <- function(x, error = TRUE) {
 
 print.choice_alternatives <- function(x, ...) {
   is.choice_alternatives(x, error = TRUE)
-  cli::cli_h3(paste("Choice alternatives", if (x$ordered) "(ordered)"))
-  alt <- x$alternatives
-  if (!x$ordered) {
-    alt[alt == x$base] <- paste0(alt[alt == x$base], "*")
+  base <- attr(x, "base")
+  ordered <- attr(x, "ordered")
+  cli::cli_h3(paste("Choice alternatives", if (ordered) "(ordered)"))
+  alt <- x
+  if (!ordered) {
+    alt[alt == base] <- paste0(alt[alt == base], "*")
   }
   cli::cat_bullet(alt)
   invisible(x)

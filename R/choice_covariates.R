@@ -55,7 +55,7 @@
 #'
 #' @keywords object
 
-choice_covariates <- function(choice_data) {
+choice_covariates <- function(covariates) {
 
   ### transform 'choice_data' to 'choice_covariates'
   # TODO
@@ -324,7 +324,7 @@ as.list.choice_covariates <- function(x, ...) {
   column_occasion <- attr(x, "column_occasion")
   choice_formula <- attr(x, "choice_formula")
   choice_alternatives <- attr(x, "choice_alternatives")
-  J <- choice_alternatives$J
+  J <- attr(choice_alternatives, "J")
   delimiter <- attr(x, "delimiter")
   effects <- choice_effects(
     choice_formula = choice_formula,
@@ -339,7 +339,7 @@ as.list.choice_covariates <- function(x, ...) {
       ### build covariate matrix for decider n at choice occasion t
       covariates_nt <- x[x[[column_decider]] == n & x[[column_occasion]] == t, ]
       X_nt <- matrix(0, nrow = J, ncol = nrow(effects))
-      rownames(X_nt) <- choice_alternatives$alternatives
+      rownames(X_nt) <- as.character(choice_alternatives)
       colnames(X_nt) <- effects$name
       for (e in seq_len(nrow(effects))) {
 
@@ -365,7 +365,7 @@ as.list.choice_covariates <- function(x, ...) {
           }
 
         } else {
-          for (alt in choice_alternatives$alternatives) {
+          for (alt in as.character(choice_alternatives)) {
             X_nt[alt, effects[e, "name"]] <-
               covariates_nt[[paste(effects[e, "name"], alt, sep = delimiter)]]
           }
@@ -397,13 +397,15 @@ as.list.choice_covariates <- function(x, ...) {
 as.data.frame.choice_covariates <- function(x, row.names, optional, ...) {
 
   ### input checks
-  checkmate::assert_list(x)
-  checkmate::assert_class(x, "choice_covariates")
+  is.choice_covariates(x, error = TRUE)
+  if (checkmate::test_data_frame(x)) {
+    return(x)
+  }
   Tp <- attr(x, "Tp")
   N <- length(Tp)
   choice_formula <- attr(x, "choice_formula")
   choice_alternatives <- attr(x, "choice_alternatives")
-  J <- choice_alternatives$J
+  J <- attr(choice_alternatives, "J")
   delimiter <- attr(x, "delimiter")
   effects <- choice_effects(
     choice_formula = choice_formula, choice_alternatives = choice_alternatives,
@@ -442,7 +444,7 @@ as.data.frame.choice_covariates <- function(x, row.names, optional, ...) {
               X_nt[effects[e, "alternative"], effects[e, "name"]]
           } else {
             cov_names <- paste(
-              effects[e, "covariate"], choice_alternatives$alternatives,
+              effects[e, "covariate"], as.character(choice_alternatives),
               sep = delimiter
             )
             covariates_df[cov_row, cov_names] <- X_nt[, effects[e, "covariate"]]
@@ -484,7 +486,7 @@ covariate_names <- function(
       if (effects[e, "as_covariate"]) {
         covariate_names <- c(
           covariate_names,
-          paste(cov, choice_alternatives$alternatives, sep = delimiter)
+          paste(cov, as.character(choice_alternatives), sep = delimiter)
         )
       } else {
         covariate_names <- c(covariate_names, cov)

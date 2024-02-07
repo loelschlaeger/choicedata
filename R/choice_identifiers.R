@@ -33,9 +33,6 @@
 #' two columns, one named \code{column_decider} and containing the decider ids,
 #' and the other one either named \code{column_occasion} or \code{"occasionID"} by
 #' default, containing the choice occasion ids.
-#'
-#' @keywords
-#' object
 
 choice_identifiers <- function(
   data_frame = data.frame(), column_decider = "deciderID",
@@ -111,6 +108,23 @@ choice_identifiers <- function(
 }
 
 #' @rdname choice_identifiers
+#' @export
+
+is.choice_identifiers <- function(x, error = TRUE) {
+  check_not_missing(x)
+  check <- inherits(x, "choice_identifiers")
+  if (isTRUE(error) && !isTRUE(check)) {
+    var_name <- oeli::variable_name(x)
+    cli::cli_abort(
+      "Input {.var {var_name}} must be an object of class {.cls choice_identifiers}",
+      call = NULL
+    )
+  } else {
+    isTRUE(check)
+  }
+}
+
+#' @rdname choice_identifiers
 #' @inheritParams expand_Tp
 
 generate_choice_identifiers <- function(
@@ -141,8 +155,10 @@ generate_choice_identifiers <- function(
     "names" = c(column_decider, column_occasion)
   )
   choice_identifiers(
-    data_frame = data_frame, column_decider = column_decider,
-    column_occasion = column_occasion, as_cs = FALSE
+    data_frame = data_frame,
+    column_decider = column_decider,
+    column_occasion = column_occasion,
+    as_cs = FALSE
   )
 }
 

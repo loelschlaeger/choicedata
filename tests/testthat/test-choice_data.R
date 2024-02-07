@@ -31,7 +31,7 @@ test_that("probit data can be simulated", {
   )
 
 
-  simulate_choice_data(
+  xx <- simulate_choice_data(
     choice_covariates = choice_covariates,
     choice_parameters = choice_parameters
   )

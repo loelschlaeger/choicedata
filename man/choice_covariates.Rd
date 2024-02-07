@@ -13,7 +13,7 @@
 \alias{head.choice_covariates}
 \title{Define choice covariates}
 \usage{
-choice_covariates(choice_data)
+choice_covariates(covariates)
 
 is.choice_covariates(x, error = TRUE)
 
@@ -57,8 +57,6 @@ covariate_number(choice_formula, choice_alternatives)
 \method{head}{choice_covariates}(x, n = 6L, ...)
 }
 \arguments{
-\item{choice_data}{A \code{\link{choice_data}} object.}
-
 \item{x}{An object of the corresponding class to be printed.}
 
 \item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
@@ -138,6 +136,8 @@ identifiers for the choice occasions.}
 \item{...}{Currently not used.}
 
 \item{row.names, optional}{Currently not used.}
+
+\item{choice_data}{A \code{\link{choice_data}} object.}
 }
 \value{
 A \code{data.frame}.

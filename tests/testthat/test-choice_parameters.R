@@ -1,6 +1,10 @@
 test_that("input checks for probit parameter work", {
   expect_error(
-    choice_parameters(C = 3.1),
+    choice_parameters(C = 2),
+    "Input `C` is bad: Must be equal to 1"
+  )
+  expect_error(
+    choice_parameters(latent_classes = "both", C = 3.1),
     "Input `C` is bad: Must be of type 'single integerish value', not 'double'"
   )
   expect_error(
@@ -36,6 +40,7 @@ test_that("probit parameter can be created", {
   choice_formula <- choice_formula(
     formula = choice ~ A | 0 + B, re = "B"
   )
+  set.seed(1)
   x <- sample_choice_parameters(x, choice_formula = choice_formula, J = 3)
   expect_s3_class(x, "choice_parameters")
   expect_snapshot(print(x))

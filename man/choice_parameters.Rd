@@ -154,6 +154,11 @@ By default, \code{details = !simplify}.}
 Must be at least \code{2}.
 If \code{ordered = TRUE}, must be at least \code{3}.}
 
+\item{choice_parameters}{An \code{\link{choice_parameters}} object, which contains the model
+parameters used for the choice data simulation.
+By default, \code{choice_parameters = choice_parameters()}, i.e. default
+parameters are used.}
+
 \item{mode}{\itemize{
 \item \code{"vector_identified"}: return numeric and named vector of identified parameters
 \item \code{"list_identified"}: return list of identified parameters

@@ -2,6 +2,7 @@
 % Please edit documentation in R/choice_identifiers.R
 \name{choice_identifiers}
 \alias{choice_identifiers}
+\alias{is.choice_identifiers}
 \alias{generate_choice_identifiers}
 \alias{read_choice_identifiers}
 \title{Define identifiers}
@@ -12,6 +13,8 @@ choice_identifiers(
   column_occasion = NULL,
   as_cs = FALSE
 )
+
+is.choice_identifiers(x, error = TRUE)
 
 generate_choice_identifiers(
   N,
@@ -68,4 +71,3 @@ which defines identifiers for the deciders and the choice occasions.
 \code{\link{read_choice_identifiers}} reads choice identifiers from a
 \code{data.frame}.
 }
-\keyword{object}

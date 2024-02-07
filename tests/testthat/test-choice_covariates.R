@@ -30,11 +30,6 @@ test_that("customization for covariates works", {
     ),
     "empirical means, standard deviations, and correlations cannot be enforced for covariates"
   )
-
-  #round(cor(x[,-c(1:2)]), 2)
-  #round(apply(x[,-c(1:2)], 2, mean), 2)
-  #round(apply(x[,-c(1:2)], 2, sd), 2)
-
   expect_s3_class(x, "choice_covariates")
   expect_true(is.choice_covariates(x))
   expect_true(is.list(x))

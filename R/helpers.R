@@ -58,7 +58,7 @@ covariate_spec_sugar <- function(
 
         ### extend covariate name by all alternative labels
         cov_name_i_extended <- paste(
-          cov_name_i, choice_alternatives$alternatives, sep = delimiter
+          cov_name_i, as.character(choice_alternatives), sep = delimiter
         )
 
         if (named_vector) {

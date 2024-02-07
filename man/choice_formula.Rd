@@ -33,7 +33,7 @@ see details.}
 have a random effect, see details.
 By default, \code{re = NULL}, i.e., no random effects.}
 
-\item{ordered}{A \code{logical}, \code{TRUE} if the choice alternatives are ordered and
+\item{ordered}{Either \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 }
 \value{
