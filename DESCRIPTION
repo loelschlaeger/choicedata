@@ -19,9 +19,14 @@ BugReports: https://github.com/loelschlaeger/choicedata/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
     checkmate,
     cli,
-    oeli (>= 0.2.0)
+    oeli (>= 0.2.0),
+    Rdpack
+VignetteBuilder: knitr
+RdMacros: Rdpack

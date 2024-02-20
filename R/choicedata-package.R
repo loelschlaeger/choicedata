@@ -10,5 +10,6 @@
 #' @importFrom cli cli_h3
 #' @importFrom cli style_italic
 #' @importFrom oeli print_matrix
+#' @importFrom Rdpack reprompt
 ## usethis namespace: end
 NULL

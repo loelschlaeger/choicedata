@@ -1,0 +1,143 @@
+---
+title: "Working with {choicedata} in R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Working with {choicedata} in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: ../inst/REFERENCES.bib
+link-citations: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+devtools::load_all()
+```
+
+The `{choicedata}` package makes it easy to work with choice data in `R` and helps with the following tasks:
+
+1. Interpreting choice data and building covariate matrices for modeling
+
+2. Simulating choice data from different types of choice models
+
+3. Visualizing choice data
+
+This vignette explains the package functionality.
+
+## Characteristics of choice data
+
+Choice data refers to data sets that contain information about choices of deciders (at possibly multiple occasions) and associated attributes of the alternatives and / or the deciders. If provided as a `data.frame`, it usually has the following columns:
+
+1. A column that identifies the deciders
+
+2. A column that identifies the choice occasion of the deciders
+
+3. A column that provides the discrete-valued choices
+
+4. Multiple columns (possibly alternative-specific) attributes
+
+An example constitutes the following data set from the `{mlogit}` package, which consists of 2929 stated choices by 235 Dutch individuals deciding between two virtual train trip options "A" and "B" based on the price, the travel time, the number of rail-to-rail transfers (changes), and the level of comfort:
+
+```{r, overview Train}
+data(Train, package = "mlogit")
+tibble::as_tibble(Train)
+```
+
+In such a setting, one is interested in how the attributes influence the choice, for example how much money is the average decider willing to pay for a faster train trip. For that, one fits a choice model to the data.
+
+## Choice models
+
+Choice models are typically stated in the random utility framework, where a latent utility $U_{ntj}$ is modeled for each decider $n = 1,\dots, N$ at each of their choice occasions $t = 1,\dots, T$ for each of their choice alternatives $j = 1,\dots,J$. Assuming rational choice behavior of the deciders, their choices $y_{nt}$ are linked to their highest utility:
+
+$$\quad y_{nt} = \arg \max_j U_{ntj}$$
+
+The latent utilities $U_{ntj}$ are modeled as a linear combination of the choice attributes:
+
+$$U_{ntj} = X_{ntj} \beta + \epsilon_{ntj}$$
+
+Here,
+
+- $X_{ntj} \in \mathbb{R}^P$ is a row vector of $P$ characteristics dependent on decider $n$, choice occasion $t$, and alternative $j$
+
+- $\beta \in \mathbb{R}^P$ is a coefficient vector that encodes how the characteristics influence the latent utilities
+
+- $\epsilon_{ntj} \in \mathbb{R}$ is an error term
+
+Two distributional assumptions on the error term are popular:
+
+- an independent extreme value distribution for each alternative $\epsilon_{ntj} \sim EV$, in which case the model is called logit (more details provides @Train2009)
+
+- a multivariate Gaussian distribution across all alternatives $(\epsilon_{nt1}, \dots, \epsilon_{ntJ}) \sim N_J(0, \Sigma)$, in which case the model is called probit (see @Bhat2011)
+
+Logit and probit models are named as follows in specific situations:
+
+- If $J = 2$, this model is a *binary* choice model. 
+
+- If $J > 2$, it is called *multinomial* choice model. 
+
+- If the choice set $\{1, \dots, J\}$ has a logical ordering (for example items on a Likert scale), it is called *ordered* choice model. 
+
+- If deciders provide a full ranking of the choice alternatives, it is a *ranked* choice model. 
+
+- To model choice behavior heterogeneity across deciders, we can include random effects by letting (a part of) the coefficient vector follow a (typically normal or log-normal) distribution. This model is called *mixed* choice model. 
+
+- If the distribution is a latent mixture of distributions, or the population of deciders is separated into subgroups, the model becomes a *latent class* model.
+
+## Design matrix
+
+The matrix of choice covariates $X_{nt}$ (also called *design matrix*) is of dimension $J \times P$, where $P$ equals the length of $\beta$ and is the number of model effects. Choice covariates can either vary across alternatives (for example the alternative's price) or be constant across alternatives (for example the decider's age). Each choice covariate can either be connected to multiple, alternative-specific coefficients or to just a single, alternative-constant coefficient (but only if the covariate varies across alternatives). So the $j$-th row of the utility system above can be written more explicit as
+
+$$
+U_{ntj} = X_{ntj}^{(1)} \beta^{(1)} + X_{nt}^{(2)} \beta_j^{(2)} + X_{ntj}^{(3)} \beta_j^{(3)} + \epsilon_{ntj}
+$$
+and we can (and should) distinguish between type-1, type-2, and type-3 covariates.
+
+
+
+## Package design
+
+What should have become clear from the above is that choice models consist of multiple parts (like the choice set, different types of covariates, the model formula etc.) that must be combined to work with this model class in `R`. This is the goal of the `{choicedata`} package. It provides the following S3 objects to represent these parts:
+
+| S3 object             | Part                                            |
+|-----------------------|-------------------------------------------------|
+| `choice_formula`      | defines the formula for a choice model          |
+| `choice_alternatives` | defines the choice alternatives                 |
+| `choice_set`          | defines the choice set                          |
+| `choice_effects`      | defines the choice model effects                |
+| `choice_covariates`   | defines the model covariates                    |
+| `choice_parameters`   | defines the parameters of a choice model        |
+| `choices`             | defines the decider's choices                   |
+| `choice_data`         | defines the model data (covariates and choices) |
+
+These objects can be created via eponymous constructors, but for specific tasks the package provides the following user-friendly helper functions and methods:
+
+| Task                                              | Function / S3 method                                                  |
+|---------------------------------------------------|-----------------------------------------------------------------------|
+| Read choice data from a `data.frame`              | `read_choice_data()` (creates a `choice_data` object)                 |
+| Simulate choice data from a choice model          | `simulate_choice_data()` (creates a `choice_data` object)             |
+| Sample covariates (with custom correlations etc.) | `sample_choice_covariates()` (creates a `choice_covariates` object)   |
+| Compute the number of model effects               | `compute_P()` (and `choice_effects()` provides an overview            | 
+| Transform choice data to design matrix form       | `as.list.choice_data()` (creates a `list` of design matrices)         |
+| Visualize choice data                             | `plot.choice_data()` (creates a `ggplot` object)                      |
+| Sample parameters for a choice model              | `sample_choice_parameters()` (creates a `choice_parameters` object)    |
+| Compute the choice model likelihood               | `choice_likelihood()`                                                 |
+| Create a `vector` of identified model parameters  | `as.vector.choice_parameters()` (required for likelihood optimization) |
+
+## Examples
+
+### Binary probit model
+
+### Multinomial probit model
+
+### Ordered probit model
+
+### Ranked probit model
+
+### Mixed probit model
+
+### Latent class probit model
+
+## References
