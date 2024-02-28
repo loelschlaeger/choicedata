@@ -165,7 +165,7 @@ generate_choice_identifiers <- function(
 #' @rdname choice_identifiers
 
 read_choice_identifiers <- function(
-  data_frame = data.frame(), column_decider = "deciderID", column_occasion = NULL,
+  data = data.frame(), column_decider = "deciderID", column_occasion = NULL,
   as_cs = FALSE
 ) {
   choice_identifiers(

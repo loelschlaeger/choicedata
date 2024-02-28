@@ -1,5 +1,7 @@
 choice_likelihood <- function(
-  choice_parameters, choice_data, model_type = "probit"
+  choice_parameters,
+  choice_data,
+  model_type = "probit"
 ) {
 
   probs <- choice_probabilities(

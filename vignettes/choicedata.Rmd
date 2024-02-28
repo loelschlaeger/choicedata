@@ -1,8 +1,8 @@
 ---
-title: "Working with {choicedata} in R"
+title: "Working with {choicedata}"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Working with {choicedata} in R}
+  %\VignetteIndexEntry{Working with {choicedata}}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: ../inst/REFERENCES.bib
@@ -37,7 +37,9 @@ Choice data refers to data sets that contain information about choices of decide
 
 3. A column that provides the discrete-valued choices
 
-4. Multiple columns (possibly alternative-specific) attributes
+4. Multiple columns of (possibly alternative-specific) attributes
+
+### Wide format
 
 An example constitutes the following data set from the `{mlogit}` package, which consists of 2929 stated choices by 235 Dutch individuals deciding between two virtual train trip options "A" and "B" based on the price, the travel time, the number of rail-to-rail transfers (changes), and the level of comfort:
 
@@ -47,6 +49,13 @@ tibble::as_tibble(Train)
 ```
 
 In such a setting, one is interested in how the attributes influence the choice, for example how much money is the average decider willing to pay for a faster train trip. For that, one fits a choice model to the data.
+
+### Long format
+
+```{r, overview RiskyTransport}
+data("RiskyTransport", package = "mlogit")
+tibble::as_tibble(RiskyTransport)
+```
 
 ## Choice models
 
@@ -114,16 +123,16 @@ What should have become clear from the above is that choice models consist of mu
 
 These objects can be created via eponymous constructors, but for specific tasks the package provides the following user-friendly helper functions and methods:
 
-| Task                                              | Function / S3 method                                                  |
-|---------------------------------------------------|-----------------------------------------------------------------------|
-| Read choice data from a `data.frame`              | `read_choice_data()` (creates a `choice_data` object)                 |
-| Simulate choice data from a choice model          | `simulate_choice_data()` (creates a `choice_data` object)             |
-| Sample covariates (with custom correlations etc.) | `sample_choice_covariates()` (creates a `choice_covariates` object)   |
-| Compute the number of model effects               | `compute_P()` (and `choice_effects()` provides an overview            | 
-| Transform choice data to design matrix form       | `as.list.choice_data()` (creates a `list` of design matrices)         |
-| Visualize choice data                             | `plot.choice_data()` (creates a `ggplot` object)                      |
-| Sample parameters for a choice model              | `sample_choice_parameters()` (creates a `choice_parameters` object)    |
-| Compute the choice model likelihood               | `choice_likelihood()`                                                 |
+| Task                                              | Function / S3 method                                                   |
+|---------------------------------------------------|------------------------------------------------------------------------|
+| Read choice data from a `data.frame`              | `read_choice_data()`                                                   |
+| Simulate choice data from a choice model          | `simulate_choice_data()`                                               |
+| Sample covariates                                 | `sample_choice_covariates()`                                           |
+| Compute the number of model effects               | `compute_P()` (and `choice_effects()` provides an overview)            | 
+| Transform choice data to design matrix form       | `as.list.choice_data()` (creates a `list` of design matrices)          |
+| Visualize choice data                             | `plot.choice_data()` (creates a `ggplot` object)                       |
+| Sample parameters for a choice model              | `sample_choice_parameters()`                                           |
+| Compute the choice model likelihood               | `choice_likelihood()`                                                  |
 | Create a `vector` of identified model parameters  | `as.vector.choice_parameters()` (required for likelihood optimization) |
 
 ## Examples

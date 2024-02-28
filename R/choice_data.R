@@ -19,26 +19,51 @@
 #' @inheritParams choices
 #'
 #' @return
-#' An \code{\link{choice_data}} object.
+#' A \code{\link{choice_data}} object.
 
 choice_data <- function(
-  data,
+  data = Train,
+  format = "wide",
   column_choice = "choice",
   column_decider = "deciderID",
   column_occasion = "occasionID",
+  column_covariates = NULL,
+  alternatives = NULL,
+  ordered = FALSE,
   ranked = FALSE,
-  ordered = FALSE
+  delimiter = "_"
 ) {
 
-  ### merge choices and covariates
+  ### input checks
+  check_data(data)
+  check_format(format)
+  check_column_choice(column_choice)
+  check_column_decider(column_decider)
+  check_column_occasion(column_occasion)
+  check_column_covariates(column_covariates)
+  check_alternatives(alternatives)
+  check_ordered(ordered)
+  check_ranked(ranked)
+  check_delimiter(delimiter)
 
-
-
-
-  ### validate list format
-
-  ### transform to data.frame format
-
+  ### build and return object
+  structure(
+    data,
+    class = c(
+      "choice_data",
+      switch(format, wide = "choice_data_wide", long = "choice_data_long"),
+      "data.frame"
+    ),
+    column_choice = column_choice,
+    column_decider = column_decider,
+    column_occasion = column_occasion,
+    column_covariates = column_covariates,
+    alternatives = alternatives,
+    ordered = ordered,
+    ranked = ranked,
+    delimiter = delimiter,
+    validated = FALSE
+  )
 }
 
 #' @rdname choice_data
@@ -61,6 +86,14 @@ is.choice_data <- function(x, error = TRUE) {
 #' @rdname choice_data
 
 validate_choice_data <- function() {
+
+}
+
+validate_choice_data_long <- function() {
+
+}
+
+validate_choice_data_wide <- function() {
 
 }
 
@@ -120,6 +153,7 @@ simulate_choice_data <- function(
     choice_covariates,
     choice_parameters,
     choice_formula = NULL,
+    format = "wide",
     ranked = FALSE,
     column_choice = "choice"
   ) {
@@ -176,24 +210,43 @@ simulate_choice_data <- function(
   )
 }
 
-read_choice_data <- function() {
-
-}
 
 
 as.list.choice_data <- function() {
 
 }
 
-as.data.frame.choice_data <- function() {
+as.list_choice_data_long <- function() {
+
+}
+
+as.list_choice_data_wide <- function() {
+
+}
+
+as.data.frame.choice_data <- function(format) {
+
+}
+
+as.data.frame.choice_data_long <- function(format) {
+
+}
+
+as.data.frame.choice_data_wide <- function(format) {
 
 }
 
 plot.choice_data <- function() {
 
+}
+
+plot.choice_data_long <- function() {
 
 }
 
+plot.choice_data_wide <- function() {
+
+}
 
 
 

@@ -1,4 +1,4 @@
-### The following are helper functions that check inputs.
+### The following functions are helper functions for input checks.
 ### The first argument is always the argument to be checked, potentially
 ### followed but additional arguments required for the check.
 ### Each check function throws an error if the check failed, otherwise it
@@ -54,13 +54,22 @@ check_C <- function(C, latent_classes) {
   invisible(C)
 }
 
-check_column_choice <- function(column_choice) {
+check_column_choice <- function(column_choice, len = NULL) {
   check_not_missing(column_choice)
-  check <- checkmate::check_string(column_choice, min.chars = 1)
+  check <- checkmate::check_character(column_choice, len = len)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var column_choice} is bad: {check}", call = NULL)
   }
   invisible(column_choice)
+}
+
+check_column_covariates <- function(column_covariates, len = NULL) {
+  check_not_missing(column_covariates)
+  check <- checkmate::check_character(column_covariates, len = len)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var column_covariates} is bad: {check}", call = NULL)
+  }
+  invisible(column_covariates)
 }
 
 check_column_decider <- function(column_decider) {
@@ -72,9 +81,9 @@ check_column_decider <- function(column_decider) {
   invisible(column_decider)
 }
 
-check_column_occasion <- function(column_occasion) {
+check_column_occasion <- function(column_occasion, null.ok = TRUE) {
   check_not_missing(column_occasion)
-  check <- checkmate::check_string(column_occasion, min.chars = 1)
+  check <- checkmate::check_string(column_occasion, min.chars = 1, null.ok = null.ok)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var column_occasion} is bad: {check}", call = NULL)
   }
@@ -112,6 +121,15 @@ check_consistency_effects_parameters <- function(choice_effects, choice_paramete
   invisible(TRUE)
 }
 
+check_data <- function(data) {
+  check_not_missing(data)
+  check <- checkmate::check_data_frame(data)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var data} must be a {.cls data.frame}", call = NULL)
+  }
+  invisible(formula)
+}
+
 check_delimiter <- function(delimiter) {
   check_not_missing(delimiter)
   check <- checkmate::check_string(delimiter, n.chars = 1)
@@ -119,6 +137,15 @@ check_delimiter <- function(delimiter) {
     cli::cli_abort("Input {.var delimiter} is bad: {check}", call = NULL)
   }
   invisible(delimiter)
+}
+
+check_format <- function(format, choices = c("wide", "long")) {
+  check_not_missing(format)
+  check <- checkmate::check_choice(x, choices = choices)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var data} must be a {.cls data.frame}", call = NULL)
+  }
+  invisible(formula)
 }
 
 check_formula <- function(formula) {
