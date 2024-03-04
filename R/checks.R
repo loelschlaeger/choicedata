@@ -1,9 +1,11 @@
-### The following functions are helper functions for input checks.
-### The first argument is always the argument to be checked, potentially
-### followed but additional arguments required for the check.
-### Each check function throws an error if the check failed, otherwise it
-### returns invisibly the first argument
-### (the `check_consistency_*` functions return invisibly TRUE).
+# The following functions are helper functions for input checks.
+
+# The first argument is always the argument to be checked, potentially
+# followed but additional arguments required for the check.
+
+# Each check function throws an error if the check failed, otherwise it
+# returns invisibly the first argument
+# (except the `check_consistency_*` functions return invisibly TRUE).
 
 check_allow_missing <- function(allow_missing) {
   check_not_missing(allow_missing)
