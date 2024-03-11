@@ -23,8 +23,6 @@
 #' \code{\link{covariate_names}} and \code{\link{covariate_number}} provide the
 #' names and number of covariates for a given model specification.
 #'
-#' @param choice_data
-#' A \code{\link{choice_data}} object.
 #' @param choice_formula
 #' A \code{\link{choice_formula}} object.
 #' @param choice_alternatives
@@ -32,6 +30,8 @@
 #' @inheritParams choice_effects
 #' @param ...
 #' Currently not used.
+#' @param covariates
+#' TODO
 #'
 #' @section Covariate matrices:
 #' A covariate matrix contains the choice covariates of a decider at some choice
@@ -508,31 +508,6 @@ covariate_number <- function(choice_formula, choice_alternatives) {
   )
 }
 
-#' @rdname choice_covariates
-#' @exportS3Method
-
-print.choice_covariates <- function(x, ..., digits = 2) {
-  is.choice_covariates(x, error = TRUE)
-  cli::cli_h3("Choice covariates")
-  # TODO details about N, T
-  print(head(x), ..., digits = digits)
-  # TODO details about abbreviation
-}
-
-#' @rdname choice_covariates
-#' @exportS3Method
-
-head.choice_covariates <- function(x, n = 6L, ...) {
-  is.choice_covariates(x, error = TRUE)
-  if (is.data.frame(x)) {
-    class(x) <- "data.frame"
-    return(x[1:n, ])
-  }
-  if (is.list(x)) {
-    class(x) <- "list"
-    return(x[1:n])
-  }
-}
 
 
 

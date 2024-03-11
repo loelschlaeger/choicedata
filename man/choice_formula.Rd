@@ -4,7 +4,6 @@
 \alias{is.choice_effects}
 \alias{print.choice_effects}
 \alias{choice_formula}
-\alias{is.choice_formula}
 \alias{print.choice_formula}
 \title{Define choice model formula}
 \usage{
@@ -13,8 +12,6 @@ is.choice_effects(x, error = TRUE)
 \method{print}{choice_effects}(x, ...)
 
 choice_formula(formula, re = NULL, ordered = FALSE)
-
-is.choice_formula(x, error = TRUE)
 
 \method{print}{choice_formula}(x, ...)
 }

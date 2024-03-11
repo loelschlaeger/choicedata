@@ -63,14 +63,12 @@ choice_alternatives <- function(
   )
 }
 
-#' @rdname choice_alternatives
-#' @export
+#' @noRd
 
-is.choice_alternatives <- function(x, error = TRUE) {
-  check_not_missing(x)
+is.choice_alternatives <- function(x, error = TRUE, var_name = oeli::variable_name(x)) {
+  check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_alternatives")
   if (isTRUE(error) && !isTRUE(check)) {
-    var_name <- oeli::variable_name(x)
     cli::cli_abort(
       "Input {.var {var_name}} must be an object of class {.cls choice_alternatives}",
       call = NULL

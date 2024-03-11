@@ -9,8 +9,6 @@
 \alias{as.data.frame.choice_covariates}
 \alias{covariate_names}
 \alias{covariate_number}
-\alias{print.choice_covariates}
-\alias{head.choice_covariates}
 \title{Define choice covariates}
 \usage{
 choice_covariates(covariates)
@@ -51,12 +49,10 @@ validate_choice_covariates(
 covariate_names(choice_formula, choice_alternatives, delimiter = "_")
 
 covariate_number(choice_formula, choice_alternatives)
-
-\method{print}{choice_covariates}(x, ..., digits = 2)
-
-\method{head}{choice_covariates}(x, n = 6L, ...)
 }
 \arguments{
+\item{covariates}{TODO}
+
 \item{x}{An object of the corresponding class to be printed.}
 
 \item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
@@ -136,8 +132,6 @@ identifiers for the choice occasions.}
 \item{...}{Currently not used.}
 
 \item{row.names, optional}{Currently not used.}
-
-\item{choice_data}{A \code{\link{choice_data}} object.}
 }
 \value{
 A \code{data.frame}.

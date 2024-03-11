@@ -16,8 +16,11 @@ check_allow_missing <- function(allow_missing) {
   invisible(allow_missing)
 }
 
-check_alternatives <- function(alternatives, J, ordered) {
+check_alternatives <- function(alternatives, J, ordered, null.ok = TRUE) {
   check_not_missing(alternatives)
+  if (isTRUE(null.ok) && is.null(alternatives)) {
+    return(invisible(NULL))
+  }
   check_J(J, ordered)
   check <- checkmate::check_character(
     alternatives, any.missing = FALSE, len = J, unique = TRUE
@@ -56,17 +59,47 @@ check_C <- function(C, latent_classes) {
   invisible(C)
 }
 
-check_column_choice <- function(column_choice, len = NULL) {
+check_column_alternatives <- function(column_alternatives, na.ok = TRUE) {
+  check_not_missing(column_alternatives)
+  check <- checkmate::check_string(column_alternatives, min.chars = 1, na.ok = na.ok, null.ok = FALSE)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var column_alternatives} is bad: {check}", call = NULL)
+  }
+  invisible(column_alternatives)
+}
+
+check_column_choice <- function(column_choice, null.ok = TRUE) {
   check_not_missing(column_choice)
-  check <- checkmate::check_character(column_choice, len = len)
+  check <- checkmate::check_string(column_choice, min.chars = 1, null.ok = null.ok)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var column_choice} is bad: {check}", call = NULL)
   }
   invisible(column_choice)
 }
 
-check_column_covariates <- function(column_covariates, len = NULL) {
+check_column_covariates_alternative_constant <- function(column_covariates_alternative_constant) {
+  check_not_missing(column_covariates_alternative_constant)
+  check <- checkmate::check_character(column_covariates_alternative_constant, any.missing = FALSE)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var column_covariates_alternative_constant} is bad: {check}", call = NULL)
+  }
+  invisible(column_covariates_alternative_constant)
+}
+
+check_column_covariates_alternative_varying <- function(column_covariates_alternative_varying) {
+  check_not_missing(column_covariates_alternative_varying)
+  check <- checkmate::check_character(column_covariates_alternative_varying, any.missing = FALSE)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var column_covariates_alternative_varying} is bad: {check}", call = NULL)
+  }
+  invisible(column_covariates_alternative_varying)
+}
+
+check_column_covariates <- function(column_covariates, len = NULL, null.ok = TRUE) {
   check_not_missing(column_covariates)
+  if (isTRUE(null.ok) && is.null(column_covariates)) {
+    return(invisible(NULL))
+  }
   check <- checkmate::check_character(column_covariates, len = len)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var column_covariates} is bad: {check}", call = NULL)
@@ -74,9 +107,9 @@ check_column_covariates <- function(column_covariates, len = NULL) {
   invisible(column_covariates)
 }
 
-check_column_decider <- function(column_decider) {
+check_column_decider <- function(column_decider, null.ok = TRUE) {
   check_not_missing(column_decider)
-  check <- checkmate::check_string(column_decider, min.chars = 1)
+  check <- checkmate::check_string(column_decider, min.chars = 1, null.ok = null.ok)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var column_decider} is bad: {check}", call = NULL)
   }
@@ -123,13 +156,16 @@ check_consistency_effects_parameters <- function(choice_effects, choice_paramete
   invisible(TRUE)
 }
 
-check_data <- function(data) {
+check_data <- function(data, force_data_frame = TRUE) {
   check_not_missing(data)
   check <- checkmate::check_data_frame(data)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var data} must be a {.cls data.frame}", call = NULL)
   }
-  invisible(formula)
+  if (isTRUE(force_data_frame)) {
+    data <- as.data.frame(data)
+  }
+  invisible(data)
 }
 
 check_delimiter <- function(delimiter) {
@@ -143,11 +179,11 @@ check_delimiter <- function(delimiter) {
 
 check_format <- function(format, choices = c("wide", "long")) {
   check_not_missing(format)
-  check <- checkmate::check_choice(x, choices = choices)
+  check <- checkmate::check_choice(format, choices = choices)
   if (!isTRUE(check)) {
-    cli::cli_abort("Input {.var data} must be a {.cls data.frame}", call = NULL)
+    cli::cli_abort("Input {.var format} is bad: {check}", call = NULL)
   }
-  invisible(formula)
+  invisible(format)
 }
 
 check_formula <- function(formula) {
@@ -196,10 +232,9 @@ check_N <- function(N) {
   invisible(N)
 }
 
-check_not_missing <- function(x) {
+check_not_missing <- function(x, var_name = oeli::variable_name(x)) {
   check <- !missing(x)
   if (!isTRUE(check)) {
-    var_name <- oeli::variable_name(x)
     cli::cli_abort("Please specify the input {.var {var_name}}", call = NULL)
   }
   invisible(x)

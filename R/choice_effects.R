@@ -48,8 +48,8 @@ choice_effects <- function(
   ) {
 
   ### input checks
-  is.choice_formula(choice_formula, error = TRUE)
-  is.choice_alternatives(choice_alternatives, error = TRUE)
+  is.choice_formula(choice_formula, error = TRUE, var_name = "choice_formula")
+  is.choice_alternatives(choice_alternatives, error = TRUE, var_name = "choice_alternatives")
   check_delimiter(delimiter)
 
   ### extract information

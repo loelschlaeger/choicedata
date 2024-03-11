@@ -150,6 +150,10 @@ By default, \code{simplify = FALSE}.}
 dimension of \code{x}.
 By default, \code{details = !simplify}.}
 
+\item{fixed_parameters}{TODO}
+
+\item{choice_formula}{TODO}
+
 \item{J}{An \code{integer}, the number of choice alternatives.
 Must be at least \code{2}.
 If \code{ordered = TRUE}, must be at least \code{3}.}
@@ -158,6 +162,8 @@ If \code{ordered = TRUE}, must be at least \code{3}.}
 parameters used for the choice data simulation.
 By default, \code{choice_parameters = choice_parameters()}, i.e. default
 parameters are used.}
+
+\item{allow_missing}{TODO}
 
 \item{mode}{\itemize{
 \item \code{"vector_identified"}: return numeric and named vector of identified parameters
@@ -168,6 +174,10 @@ parameters are used.}
 \item{scale}{TODO}
 
 \item{level}{TODO}
+
+\item{preferences}{TODO}
+
+\item{choice_identifiers}{TODO}
 }
 \value{
 A \code{\link{choice_parameters}} object. It contains the elements:
@@ -338,11 +348,11 @@ distribution with zero mean and covariance matrix equal to the identity}
 }
 
 \examples{
-choice_formula <- choice_formula(formula = choice ~ A | B, re = "A")
-sample_choice_parameters(
-  fixed_parameters = choice_parameters(
-    model_type = "probit", latent_classes = "both", C = 2)
-  ),
-  choice_formula = choice_formula, J = 3
-)
+# choice_formula <- choice_formula(formula = choice ~ A | B, re = "A")
+# sample_choice_parameters(
+#   fixed_parameters = choice_parameters(
+#     model_type = "probit", latent_classes = "both", C = 2
+#   ),
+#   choice_formula = choice_formula, J = 3
+# )
 }

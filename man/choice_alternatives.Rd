@@ -2,7 +2,6 @@
 % Please edit documentation in R/choice_alternatives.R
 \name{choice_alternatives}
 \alias{choice_alternatives}
-\alias{is.choice_alternatives}
 \alias{print.choice_alternatives}
 \title{Define choice alternatives}
 \usage{
@@ -12,8 +11,6 @@ choice_alternatives(
   base = alternatives[1],
   ordered = FALSE
 )
-
-is.choice_alternatives(x, error = TRUE)
 
 \method{print}{choice_alternatives}(x, ...)
 }
@@ -37,9 +34,6 @@ By default, \code{base} is the first element of \code{alternatives}.}
 \code{FALSE} (default) else.}
 
 \item{x}{An object of the corresponding class to be printed.}
-
-\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
-to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
 
 \item{...}{Currently not used.}
 }

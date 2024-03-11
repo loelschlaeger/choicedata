@@ -5,15 +5,25 @@
 \alias{is.choice_data}
 \alias{validate_choice_data}
 \alias{simulate_choice_data}
+\alias{as.list.choice_data}
+\alias{as.data.frame.choice_data}
+\alias{plot.choice_data}
+\alias{print.choice_data}
 \title{Define choice data}
 \usage{
 choice_data(
   data,
+  format = "wide",
   column_choice = "choice",
+  column_alternative = NA,
   column_decider = "deciderID",
-  column_occasion = "occasionID",
+  column_occasion = NA,
+  column_covariates_alternative_constant = character(),
+  column_covariates_alternative_varying = character(),
+  alternatives = character(),
+  ordered = FALSE,
   ranked = FALSE,
-  ordered = FALSE
+  delimiter = "_"
 )
 
 is.choice_data(x, error = TRUE)
@@ -24,15 +34,28 @@ simulate_choice_data(
   choice_covariates,
   choice_parameters,
   choice_formula = NULL,
+  format = "wide",
   ranked = FALSE,
   column_choice = "choice"
 )
+
+\method{as.list}{choice_data}()
+
+\method{as.data.frame}{choice_data}(x, row.names = NULL, optional = FALSE, format, ...)
+
+\method{plot}{choice_data}(x, ...)
+
+\method{print}{choice_data}(x, ...)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
 
+\item{format}{TODO}
+
 \item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
 choices.}
+
+\item{column_alternative}{TODO}
 
 \item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
 decider identifiers.}
@@ -40,13 +63,24 @@ decider identifiers.}
 \item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
 identifiers for the choice occasions.}
 
+\item{column_covariates_alternative_constant}{TODO}
+
+\item{column_covariates_alternative_varying}{TODO}
+
+\item{alternatives}{A \code{character} vector, labels for the choice alternatives.
+Its length must be \code{J}.
+By default, \code{alternatives = LETTERS[1:J]}.}
+
 \item{ordered}{Either \code{TRUE} if the choice alternatives are ordered and
 \code{FALSE} (default) else.}
 
+\item{ranked}{TODO}
+
+\item{delimiter}{TODO}
+
 \item{x}{An object of the corresponding class to be printed.}
 
-\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
-to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
+\item{error}{TODO}
 
 \item{choice_covariates}{An \code{\link{choice_covariates}} object, which contains the covariate
 matrices used for the choice data simulation.}
@@ -55,9 +89,15 @@ matrices used for the choice data simulation.}
 parameters used for the choice data simulation.
 By default, \code{choice_parameters = choice_parameters()}, i.e. default
 parameters are used.}
+
+\item{choice_formula}{TODO}
+
+\item{row.names, optional}{Currently not used.}
+
+\item{...}{Currently not used.}
 }
 \value{
-An \code{\link{choice_data}} object.
+A \code{\link{choice_data}} object.
 }
 \description{
 These functions construct and validate an object of class
@@ -65,49 +105,6 @@ These functions construct and validate an object of class
 
 \code{\link{simulate_choice_data}} simulates choice data.
 }
-\section{Model formula}{
-
-The structure of \code{formula} should be
-\code{choice ~ A | B | C}, where
-\itemize{
-\item \code{choice} is the name of the dependent variable (the choices),
-\item \code{A} are names of \strong{alternative specific covariates} with
-\strong{a coefficient that is constant across alternatives},
-\item \code{B} are names of \strong{covariates that are constant across
-alternatives},
-\item and \code{C} are names of \strong{alternative specific covariates}
-with \strong{alternative specific coefficients}.
-}
-
-Multiple covariates of one type are separated by a \code{+} sign, i.e.,
-\code{choice ~ A1 + A2}.
-
-By default, alternative specific constants (ASCs) are added to the model.
-They can be removed by adding \code{+ 0} in the second spot, i.e.,
-\code{choice ~ A | B + 0 | C}. To not include any covariates of
-the second category but to estimate ASCs, add \code{1} in the second
-spot, e.g., \code{choice ~ A | 1 | C}. The expression
-\code{choice ~ A | 0 | C} is interpreted as no covariates of the second
-category and no ASCs.
-
-In the ordered model case (\code{ordered = TRUE}), covariates are not
-alternative specific, i.e., there exists only one type of covariate.
-Therefore, the \code{formula} object does not need the special
-separation form via \code{|}, and hence has the simple structure
-\code{choice ~ A + B + C}.
-ASCs cannot be estimated in the ordered case.
-}
-
-\section{Random effects}{
-
-Covariates can have random effects, i.e., their coefficients can follow a
-random distribution. Per default, the distribution is normal. The log-normal
-distribution (e.g., for sign-restriction) can be specified via appending
-\code{+} to the corresponding name in \code{re}.
-To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
-\code{re}.
-}
-
 \examples{
 # ### simulate data from a binary probit model with two latent classes
 # data <- simulate_choice_data(

@@ -77,6 +77,17 @@
 #' @inheritParams choice_alternatives
 #' @inheritParams expand_Tp
 #'
+#' @param fixed_parameters
+#' TODO
+#' @param choice_formula
+#' TODO
+#' @param allow_missing
+#' TODO
+#' @param preferences
+#' TODO
+#' @param choice_identifiers
+#' TODO
+#'
 #' @return
 #' A \code{\link{choice_parameters}} object. It contains the elements:
 #' \describe{
@@ -307,13 +318,13 @@ print.choice_parameters <- function(
 #' @export
 #'
 #' @examples
-#' choice_formula <- choice_formula(formula = choice ~ A | B, re = "A")
-#' sample_choice_parameters(
-#'   fixed_parameters = choice_parameters(
-#'     model_type = "probit", latent_classes = "both", C = 2)
-#'   ),
-#'   choice_formula = choice_formula, J = 3
-#' )
+#' # choice_formula <- choice_formula(formula = choice ~ A | B, re = "A")
+#' # sample_choice_parameters(
+#' #   fixed_parameters = choice_parameters(
+#' #     model_type = "probit", latent_classes = "both", C = 2
+#' #   ),
+#' #   choice_formula = choice_formula, J = 3
+#' # )
 
 sample_choice_parameters <- function(
   fixed_parameters = choice_parameters(

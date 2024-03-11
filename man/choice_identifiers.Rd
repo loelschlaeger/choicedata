@@ -8,7 +8,7 @@
 \title{Define identifiers}
 \usage{
 choice_identifiers(
-  data_frame = data.frame(),
+  data = data.frame(),
   column_decider = "deciderID",
   column_occasion = NULL,
   as_cs = FALSE
@@ -24,30 +24,34 @@ generate_choice_identifiers(
 )
 
 read_choice_identifiers(
-  data_frame = data.frame(),
+  data = data.frame(),
   column_decider = "deciderID",
   column_occasion = NULL,
   as_cs = FALSE
 )
 }
 \arguments{
-\item{data_frame}{A \code{data.frame}.}
-
-\item{column_decider}{A \code{character}, the name of the \code{data.frame} column with identifier
-for the deciders. The default is \code{"deciderID"}.}
-
-\item{column_occasion}{A \code{character}, different from \code{column_decider}, the name of the
-\code{data.frame} column with identifier for the choice occasions. These
-identifiers must be unique for a given decider.
+\item{data}{TODO
 
 It can also be \code{NULL} (default), in which case data is treated as
 cross-sectional. The decider ids must be unique in this case. A column for
 the (trivial) choice occasion identifiers is generated anyways with the
 default name \code{"occasionID"}.}
 
+\item{column_decider}{A \code{character}, the name of the \code{data.frame} column with identifier
+for the deciders. The default is \code{"deciderID"}.}
+
+\item{column_occasion}{A \code{character}, different from \code{column_decider}, the name of the
+\code{data.frame} column with identifier for the choice occasions. These
+identifiers must be unique for a given decider.}
+
 \item{as_cs}{Either \code{TRUE} to treat the data as cross-sectional (i.e., dropping the
 information of multiple choices by the same decider), or \code{FALSE}
 (default), else.}
+
+\item{x}{TODO}
+
+\item{error}{TODO}
 
 \item{N}{A positive \code{integer}, the number of deciders.}
 

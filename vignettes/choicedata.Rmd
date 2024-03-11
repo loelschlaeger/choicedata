@@ -14,7 +14,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-devtools::load_all()
+library(choicedata)
+# devtools::load_all()
 ```
 
 The `{choicedata}` package makes it easy to work with choice data in `R` and helps with the following tasks:

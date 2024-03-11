@@ -9,6 +9,24 @@
 #' for the \code{n}-th decider, where the \code{t}-th element is a
 #' \code{character} that defines the choice at their \code{t}-th occasion.
 #' @inheritParams choice_data
+#' @param choice_identifiers
+#' TODO
+#' @param ranked
+#' TODO
+#' @param ordered
+#' TODO
+#' @param delimiter
+#' TODO
+#' @param choice_formula
+#' TODO
+#' @param choice_preferences
+#' TODO
+#' @param x
+#' TODO
+#' @param error
+#' TODO
+#' @param ...
+#' TODO
 #'
 #' @return
 #' A \code{\link{choices}} object. It can be a \code{data.frame} or \code{list}

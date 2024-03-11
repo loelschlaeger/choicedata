@@ -9,7 +9,7 @@
 #' \code{\link{read_choice_identifiers}} reads choice identifiers from a
 #' \code{data.frame}.
 #'
-#' @param data_frame
+#' @param data
 #' A \code{data.frame}.
 #' @param column_decider
 #' A \code{character}, the name of the \code{data.frame} column with identifier
@@ -18,6 +18,12 @@
 #' A \code{character}, different from \code{column_decider}, the name of the
 #' \code{data.frame} column with identifier for the choice occasions. These
 #' identifiers must be unique for a given decider.
+#' @param x
+#' TODO
+#' @param error
+#' TODO
+#' @param data
+#' TODO
 #'
 #' It can also be \code{NULL} (default), in which case data is treated as
 #' cross-sectional. The decider ids must be unique in this case. A column for
@@ -35,10 +41,10 @@
 #' default, containing the choice occasion ids.
 
 choice_identifiers <- function(
-  data_frame = data.frame(), column_decider = "deciderID",
+  data = data.frame(), column_decider = "deciderID",
   column_occasion = NULL, as_cs = FALSE
 ) {
-  checkmate::assert_data_frame(data_frame)
+  checkmate::assert_data_frame(data)
   checkmate::assert_string(column_decider)
   checkmate::assert_string(column_occasion, null.ok = TRUE)
   if (identical(column_decider, column_occasion)) {
@@ -48,21 +54,21 @@ choice_identifiers <- function(
     )
   }
   checkmate::assert_flag(as_cs)
-  if (!column_decider %in% colnames(data_frame)) {
+  if (!column_decider %in% colnames(data)) {
     cli::cli_abort(
-      "Column {.val {column_decider}} not found in {.var data_frame}."
+      "Column {.val {column_decider}} not found in {.var data}."
     )
   }
-  decider_ids <- as.character(data_frame[[column_decider]])
+  decider_ids <- as.character(data[[column_decider]])
   if (anyNA(decider_ids)) {
     cli::cli_abort(
-      "Column {.val {column_decider}} of {.var data_frame} must not have NAs."
+      "Column {.val {column_decider}} of {.var data} must not have NAs."
     )
   }
   if (is.null(column_occasion)) {
     if (anyDuplicated(decider_ids)) {
       cli::cli_abort(
-        "Column {.val {column_decider}} of {.var data_frame} must not have
+        "Column {.val {column_decider}} of {.var data} must not have
         duplicated values if there are no identifiers for the choice occasions."
       )
     }
@@ -73,21 +79,21 @@ choice_identifiers <- function(
         "{.var column_decider} must not equal {.val occasionID}."
       )
     }
-  } else if (!column_occasion %in% colnames(data_frame)) {
+  } else if (!column_occasion %in% colnames(data)) {
     cli::cli_abort(
-      "Column {.val {column_occasion}} not found in {.var data_frame}."
+      "Column {.val {column_occasion}} not found in {.var data}."
     )
   } else {
-    occasion_ids <- as.character(data_frame[[column_occasion]])
+    occasion_ids <- as.character(data[[column_occasion]])
     if (anyNA(occasion_ids)) {
       cli::cli_abort(
-        "Column {.val {column_occasion}} of {.var data_frame} must not have NAs."
+        "Column {.val {column_occasion}} of {.var data} must not have NAs."
       )
     }
     for (decider_id in unique(decider_ids)) {
       if (anyDuplicated(occasion_ids[which(decider_ids == decider_id)])) {
         cli::cli_abort(
-          "Column {.val {column_occasion}} of {.var data_frame} must have unique
+          "Column {.val {column_occasion}} of {.var data} must have unique
           values for a given decider, but decider {.val decider_id} has
           duplicates for their occasion id."
         )
@@ -147,7 +153,7 @@ generate_choice_identifiers <- function(
       different."
     )
   }
-  data_frame <- structure(
+  data <- structure(
     data.frame(
       rep(1:N, times = Tp),                          # decider ids
       unlist(sapply(Tp, seq.int, simplify = FALSE))  # choice occasion ids
@@ -155,7 +161,7 @@ generate_choice_identifiers <- function(
     "names" = c(column_decider, column_occasion)
   )
   choice_identifiers(
-    data_frame = data_frame,
+    data = data,
     column_decider = column_decider,
     column_occasion = column_occasion,
     as_cs = FALSE
@@ -169,7 +175,7 @@ read_choice_identifiers <- function(
   as_cs = FALSE
 ) {
   choice_identifiers(
-    data_frame = data_frame, column_decider = column_decider,
+    data = data, column_decider = column_decider,
     column_occasion = column_occasion, as_cs = as_cs
   )
 }

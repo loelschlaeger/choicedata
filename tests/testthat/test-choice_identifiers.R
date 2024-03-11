@@ -9,7 +9,7 @@ test_that("checks for choice identifiers work", {
     choice_identifiers(
       data.frame("id" = 1:3, "idc" = 1), column_decider = "bad"
     ),
-    "not found in `data_frame`."
+    "not found in `data`."
   )
   expect_error(
     choice_identifiers(
@@ -33,13 +33,13 @@ test_that("checks for choice identifiers work", {
     choice_identifiers(
       data.frame("id" = c(1, 2, 3)), column_decider = "id", column_occasion = "idc"
     ),
-    "not found in `data_frame`."
+    "not found in `data`."
   )
   expect_error(
     choice_identifiers(
       data.frame("id" = c(1, 2, 3), "idc" = c(1, NA, 1)), column_decider = "id", column_occasion = "idc"
     ),
-    "of `data_frame` must not have NAs."
+    "of `data` must not have NAs."
   )
   expect_error(
     choice_identifiers(
@@ -82,13 +82,13 @@ test_that("choice identifiers can be generated", {
 })
 
 test_that("choice identifiers can be read", {
-  data_frame <- data.frame(
+  data <- data.frame(
     "decider" = c("A", "B", "A"),
     "occasion" = 1:3
   )
   expect_equal(
     read_choice_identifiers(
-      data_frame = data_frame, column_decider = "decider",
+      data = data, column_decider = "decider",
       column_occasion = "occasion"
     ),
     structure(
@@ -109,7 +109,7 @@ test_that("choice identifiers can be read", {
   )
   expect_equal(
     read_choice_identifiers(
-      data_frame = data_frame, column_decider = "decider",
+      data = data, column_decider = "decider",
       column_occasion = "occasion", as_cs = TRUE
     ),
     structure(

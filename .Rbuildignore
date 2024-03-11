@@ -9,3 +9,5 @@
 ^ref\.bib$
 ^development_packages\.R$
 ^demo\.R$
+^TODO\.md$
+^todo\.R$

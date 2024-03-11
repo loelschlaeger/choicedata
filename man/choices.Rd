@@ -42,8 +42,16 @@ validate_choices()
 for the \code{n}-th decider, where the \code{t}-th element is a
 \code{character} that defines the choice at their \code{t}-th occasion.}
 
+\item{choice_identifiers}{TODO}
+
+\item{ranked}{TODO}
+
+\item{ordered}{TODO}
+
 \item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
 choices.}
+
+\item{delimiter}{TODO}
 
 \item{choice_parameters}{An \code{\link{choice_parameters}} object, which contains the model
 parameters used for the choice data simulation.
@@ -52,6 +60,16 @@ parameters are used.}
 
 \item{choice_covariates}{An \code{\link{choice_covariates}} object, which contains the covariate
 matrices used for the choice data simulation.}
+
+\item{choice_formula}{TODO}
+
+\item{choice_preferences}{TODO}
+
+\item{x}{TODO}
+
+\item{error}{TODO}
+
+\item{...}{TODO}
 }
 \value{
 A \code{\link{choices}} object. It can be a \code{data.frame} or \code{list}
