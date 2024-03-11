@@ -36,6 +36,8 @@
 #'
 #' @return
 #' A \code{\link{choice_data}} object.
+#'
+#' @export
 
 choice_data <- function(
   data,
