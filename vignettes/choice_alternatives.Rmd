@@ -1,0 +1,61 @@
+---
+title: "Choice alternatives"
+description: >
+  How to define choice alternatives?
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Choice alternatives}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: ../inst/REFERENCES.bib
+link-citations: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("choicedata")
+```
+
+The choice alternatives form the choice set from which the decision makers select [@Train2009]. In the `{choicedata}` package, these alternatives are represented as an `choice_alternatives` S3 object [@Chambers1992].  
+
+For instance, consider households choosing between different heating fuels, a topic extensively studied for energy use forecasting and climate change analysis. The choice alternatives in this scenario could include gas, electricity, and oil. The corresponding `choice_alternatives` object can be constructed as follows:
+
+```{r}
+choice_alternatives(
+  J = 3,
+  alternatives = c("gas", "electricity", "oil"),
+  base = "gas",
+  ordered = FALSE
+)
+```
+
+Here, 
+
+- `J` denotes the total number of alternatives.
+
+- The `alternatives` argument can optionally be used to label the alternatives. Internally, they will be sorted alphabetically.
+
+<!-- TODO: link for "choice formula" -->
+
+- The `base` argument indicates the base alternative for covariates that are not alternative-specific, as detailed in the vignette on the choice formula. When printing the `choice_alternatives` object, the base alternative is marked with a `*`.
+
+- The `ordered` argument indicates whether the alternatives should be considered as ordinal. This is not the case here, as heating fuels do not possess a clear ordering.
+
+A related application where the choice alternatives can be considered as ordered is the question of how many heating fuels a household possesses. In this case, a possible specification is:
+
+```{r}
+choice_alternatives(
+  J = 4,
+  alternatives = c("0", "1", "2", ">=3"),
+  ordered = TRUE
+)
+```
+
+<!-- TODO: links for "choice data" and "choice probabilities" -->
+
+Once a `choice_alternatives` object has been specified, it can be used to simulate choice data or compute choice probabilities.
+
+## References
