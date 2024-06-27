@@ -1,8 +1,8 @@
-#' Define choices
+#' Define choice response
 #'
 #' @description
 #' These functions construct and validate an object of class
-#' \code{\link{choices}}, which defines the observed choices.
+#' \code{\link{choice_response}}, which defines the observed choices.
 #'
 #' @param choices
 #' A \code{list}, where the \code{n}-th element is a \code{vector} of choices
@@ -29,8 +29,8 @@
 #' TODO
 #'
 #' @return
-#' A \code{\link{choices}} object. It can be a \code{data.frame} or \code{list}
-#' object and can be transformed between these two formats via
+#' A \code{\link{choice_response}} object. It can be a \code{data.frame} or
+#' \code{list} object and can be transformed between these two formats via
 #' \code{as.data.frame.choices()} or \code{as.list.choices()}:
 #' \itemize{
 #'   \item \code{data.frame} format: a \code{data.frame} with three columns
@@ -41,7 +41,7 @@
 #'         a \code{vector} of choices for the \code{n}-th decider, where the
 #'         \code{t}-th element is the choice at their \code{t}-th occasion
 #' }
-#' The \code{\link{choices}} object has the following attributes:
+#' The \code{\link{choice_response}} object has the following attributes:
 #' \itemize{
 #'   \item TODO
 #' }
@@ -64,7 +64,7 @@
 #' difference with respect to a fixed reference alternative. Thereby, we
 #' incorporate information of the full ranking.
 
-choices <- function(
+choice_response <- function(
     choices,
     choice_identifiers,
     ranked = FALSE,
@@ -89,7 +89,7 @@ choices <- function(
     "ordered" = ordered,
     "column_choice" = column_choice,
     "delimiter" = delimiter,
-    class = c("choices", "list")
+    class = c("choice_response", "list")
   )
 }
 
@@ -105,7 +105,7 @@ choices <- function(
 #' }
 #'
 #'
-#' @rdname choices
+#' @rdname choice_response
 
 simulate_choices <- function(
   choice_parameters,
@@ -173,7 +173,7 @@ simulate_choices <- function(
   })
 
   ### create and return 'choices' object
-  choices(
+  choice_response(
     choices = choices,
     choice_identifiers = choice_identifiers,
     ranked = ranked,
@@ -183,16 +183,16 @@ simulate_choices <- function(
   )
 }
 
-#' @rdname choices
+#' @rdname choice_response
 #' @export
 
-is.choices <- function(x, error = TRUE) {
+is.choice_response <- function(x, error = TRUE) {
   check_not_missing(x)
-  check <- inherits(x, "choices")
+  check <- inherits(x, "choice_response")
   if (isTRUE(error) && !isTRUE(check)) {
     var_name <- oeli::variable_name(x)
     cli::cli_abort(
-      "Input {.var {var_name}} must be an object of class {.cls choices}",
+      "Input {.var {var_name}} must be an object of class {.cls choice_response}",
       call = NULL
     )
   } else {
@@ -200,18 +200,18 @@ is.choices <- function(x, error = TRUE) {
   }
 }
 
-#' @rdname choices
+#' @rdname choice_response
 #' @export
 
-validate_choices <- function() {
+validate_choice_response <- function() {
   # TODO
 }
 
-#' @rdname choices
+#' @rdname choice_response
 #' @exportS3Method
 
-as.data.frame.choices <- function(x, ...) {
-  is.choices(x, error = TRUE)
+as.data.frame.choice_response <- function(x, ...) {
+  is.choice_response(x, error = TRUE)
   if (checkmate::test_data_frame(x)) {
     return(x)
   }
@@ -229,11 +229,11 @@ as.data.frame.choices <- function(x, ...) {
   )
 }
 
-#' @rdname choices
+#' @rdname choice_response
 #' @exportS3Method
 
-as.list.choices <- function(x, ...) {
-  is.choices(x, error = TRUE)
+as.list.choice_response <- function(x, ...) {
+  is.choice_response(x, error = TRUE)
   if (checkmate::test_list(x)) {
     return(x)
   }
