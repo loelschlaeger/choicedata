@@ -40,7 +40,7 @@ test_that("choice_formula can be specified and validated", {
   )
   expect_error(
     choice_formula(formula = f1, re = "bad_covariate", ordered = FALSE),
-    "but it is not on the right side of `formula`"
+    "but it is not on the right hand side of `formula`"
   )
   expect_choice_formula(
     choice_formula(formula = f1, re = re1, ordered = FALSE),
@@ -93,7 +93,7 @@ test_that("choice_formula can be specified and validated", {
   )
   expect_error(
     choice_formula(formula = f5, re = re5, ordered = FALSE),
-    "but it is not on the right side of `formula`"
+    "but it is not on the right hand side of `formula`"
   )
   expect_choice_formula(
     choice_formula(formula = f8, re = re6, ordered = FALSE),
@@ -106,7 +106,7 @@ test_that("choice_formula can be specified and validated", {
   )
   expect_error(
     choice_formula(formula = ~ bad),
-    "`formula` should be in the form"
+    "`formula` should be of the form"
   )
   expect_error(
     choice_formula(formula = A ~ B | C | D | too_much),

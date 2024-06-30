@@ -41,10 +41,10 @@ which defines the choice model effects.
 }
 \section{Model formula}{
 
-The structure of \code{formula} should be
+The structure of \code{formula} is
 \code{choice ~ A | B | C}, where
 \itemize{
-\item \code{choice} is the name of the dependent variable (the choices),
+\item \code{choice} is the name of the discrete response variable,
 \item \code{A} are names of \strong{alternative specific covariates} with
 \strong{a coefficient that is constant across alternatives},
 \item \code{B} are names of \strong{covariates that are constant across
@@ -84,14 +84,12 @@ To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
 
 \section{Base alternative}{
 
-The full collection of coefficients for covariates that are constant across
+The full set of coefficients for covariates that are constant across
 alternatives (including alternative specific constants) is not identified.
-To achieve identifiability, the coefficient of one alternative \code{base}
-is fixed to \code{0}.
-The other coefficients then have to be interpreted with respect to
-\code{base}.
-The base alternative is marked with a \code{*} when printing a
-\code{\link{choice_alternatives}} object.
+To achieve identifiability, the coefficient of alternative \code{base}
+is fixed to \code{0}. The other coefficients then have to be interpreted with
+respect to \code{base}. The base alternative is marked with a \code{*} when
+printing a \code{\link{choice_alternatives}} object.
 }
 
 \examples{

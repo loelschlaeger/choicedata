@@ -12,9 +12,6 @@
 
 \item{choice_parameters}{A \code{\link{choice_parameters}} object.}
 
-\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
-to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
-
 \item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
 
 \item{x}{An object of the corresponding class to be printed.}

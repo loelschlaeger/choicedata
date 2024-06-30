@@ -55,8 +55,7 @@ covariate_number(choice_formula, choice_alternatives)
 
 \item{x}{An object of the corresponding class to be printed.}
 
-\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
-to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
+\item{error}{TODO}
 
 \item{choice_formula}{A \code{\link{choice_formula}} object.}
 

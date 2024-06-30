@@ -5,7 +5,7 @@
 
 # Each check function throws an error if the check failed, otherwise it
 # returns invisibly the first argument
-# (except the `check_consistency_*` functions return invisibly TRUE).
+# (except for the `check_consistency_*` functions, they return invisibly TRUE).
 
 check_allow_missing <- function(allow_missing) {
   check_not_missing(allow_missing)
@@ -16,12 +16,9 @@ check_allow_missing <- function(allow_missing) {
   invisible(allow_missing)
 }
 
-check_alternatives <- function(alternatives, J, ordered, null.ok = TRUE) {
+check_alternatives <- function(alternatives, J) {
   check_not_missing(alternatives)
-  if (isTRUE(null.ok) && is.null(alternatives)) {
-    return(invisible(NULL))
-  }
-  check_J(J, ordered)
+  check_J(J)
   check <- checkmate::check_character(
     alternatives, any.missing = FALSE, len = J, unique = TRUE
   )
@@ -31,9 +28,9 @@ check_alternatives <- function(alternatives, J, ordered, null.ok = TRUE) {
   invisible(alternatives)
 }
 
-check_base <- function(base, alternatives, J, ordered) {
+check_base <- function(base, alternatives, J) {
   check_not_missing(base)
-  check_alternatives(alternatives = alternatives, J = J, ordered = ordered)
+  check_alternatives(alternatives = alternatives, J = J)
   check <- checkmate::check_choice(base, choices = alternatives)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var base} is bad: {check}", call = NULL)
@@ -195,10 +192,9 @@ check_formula <- function(formula) {
   invisible(formula)
 }
 
-check_J <- function(J, ordered) {
+check_J <- function(J) {
   check_not_missing(J)
-  check_ordered(ordered)
-  check <- checkmate::check_int(J, lower = 2 + ordered)
+  check <- checkmate::check_int(J, lower = 2)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var J} is bad: {check}", call = NULL)
   }
@@ -233,8 +229,10 @@ check_N <- function(N) {
 }
 
 check_not_missing <- function(x, var_name = oeli::variable_name(x)) {
-  check <- !missing(x)
-  if (!isTRUE(check)) {
+  if (missing(x)) {
+    if (!isTRUE(checkmate::check_string(var_name, min.chars = 1))) {
+      var_name <- "x"
+    }
     cli::cli_abort("Please specify the input {.var {var_name}}", call = NULL)
   }
   invisible(x)

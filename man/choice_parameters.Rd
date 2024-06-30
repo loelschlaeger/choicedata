@@ -128,8 +128,7 @@ lower and upper bounds are \eqn{\gamma_0 = -\infty} and
 \item{x}{Either a \code{\link{choice_parameters}} object or a \code{numeric}
 \code{vector}.}
 
-\item{error}{Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
-to return the check result as \code{TRUE} or \code{FALSE}, respectively.}
+\item{error}{TODO}
 
 \item{...}{Currently not used.}
 
@@ -154,9 +153,10 @@ By default, \code{details = !simplify}.}
 
 \item{choice_formula}{TODO}
 
-\item{J}{An \code{integer}, the number of choice alternatives.
-Must be at least \code{2}.
-If \code{ordered = TRUE}, must be at least \code{3}.}
+\item{J}{(\code{integer(1)})\cr
+The number of choice alternatives.
+
+Must be at least \code{2}.}
 
 \item{choice_parameters}{An \code{\link{choice_parameters}} object, which contains the model
 parameters used for the choice data simulation.

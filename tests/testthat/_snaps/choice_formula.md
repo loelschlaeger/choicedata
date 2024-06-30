@@ -4,7 +4,7 @@
       choice_formula(formula = choice ~ A | B, re = NULL, ordered = FALSE)
     Message
       
-      -- Choice model formula 
+      -- Choice formula 
     Output
       choice ~ A | B
 
@@ -14,7 +14,7 @@
       choice_formula(formula = choice ~ A + B, re = c("A+", "B"), ordered = TRUE)
     Message
       
-      -- Choice model formula 
+      -- Choice formula 
     Output
       choice ~ A + B
       with random effects

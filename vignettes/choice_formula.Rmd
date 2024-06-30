@@ -1,0 +1,22 @@
+---
+title: "Choice formula"
+description: >
+  How to define a choice formula?
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Choice formula}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: ../inst/REFERENCES.bib
+link-citations: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("choicedata")
+```
+
+## References

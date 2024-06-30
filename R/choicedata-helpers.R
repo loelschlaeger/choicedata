@@ -10,9 +10,6 @@
 #' A \code{\link{choice_formula}} object.
 #' @param choice_parameters
 #' A \code{\link{choice_parameters}} object.
-#' @param error
-#' Either \code{TRUE} to throw an error if the check failed, or \code{FALSE}
-#' to return the check result as \code{TRUE} or \code{FALSE}, respectively.
 #' @param ranked
 #' Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.
 #' @param x

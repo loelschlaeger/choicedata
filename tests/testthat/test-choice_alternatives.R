@@ -49,10 +49,6 @@ test_that("choice_alternatives can be specified and validated", {
   expect_true(
     is.choice_alternatives(choice_alternatives(J = 3, ordered = TRUE))
   )
-  expect_error(
-    choice_alternatives(J = 2, ordered = TRUE),
-    "Input `J` is bad: Element 1 is not >= 3"
-  )
   expect_s3_class(
     choice_alternatives(J = 3, alternatives = c("la", "le", "lu")),
     "choice_alternatives"

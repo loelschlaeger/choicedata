@@ -15,31 +15,36 @@ choice_alternatives(
 \method{print}{choice_alternatives}(x, ...)
 }
 \arguments{
-\item{J}{An \code{integer}, the number of choice alternatives.
-Must be at least \code{2}.
-If \code{ordered = TRUE}, must be at least \code{3}.}
+\item{J}{(\code{integer(1)})\cr
+The number of choice alternatives.
 
-\item{alternatives}{A \code{character} vector, labels for the choice alternatives.
-Its length must be \code{J}.
-By default, \code{alternatives = LETTERS[1:J]}.}
+Must be at least \code{2}.}
 
-\item{base}{A \code{character}, the name of the base alternative for covariates that are
+\item{alternatives}{(\code{character(J)})\cr
+Labels for the choice alternatives.}
+
+\item{base}{(\code{character(1)})\cr
+The name of the base alternative for covariates that are
 not alternative specific, see details.
+
 \code{base} must be contained in \code{alternatives}.
+
 Ignored if the model has no alternative specific covariates (in particular if
 \code{ordered = TRUE}).
+
 By default, \code{base} is the first element of \code{alternatives}.}
 
-\item{ordered}{Either \code{TRUE} if the choice alternatives are ordered and
-\code{FALSE} (default) else.}
+\item{ordered}{(\code{logical(1)})\cr
+Are the choice alternatives ordered?}
 
 \item{x}{An object of the corresponding class to be printed.}
 
 \item{...}{Currently not used.}
 }
 \value{
-A \code{\link{choice_alternatives}} object. It is a vector of the choice
-alternatives and has the following attributes:
+An object of class \code{\link{choice_alternatives}}, which is a
+\code{character} vector of the choice alternatives and has the following
+attributes:
 \describe{
 \item{\code{J}}{The number of choice alternatives.}
 \item{\code{base}}{The name of the base alternative.}
@@ -48,17 +53,16 @@ alternatives and has the following attributes:
 }
 \description{
 This function constructs an object of class
-\code{\link{choice_alternatives}}, which defines the choice alternatives.
+\code{\link{choice_alternatives}}, which defines the set of choice
+alternatives.
 }
 \section{Base alternative}{
 
-The full collection of coefficients for covariates that are constant across
+The full set of coefficients for covariates that are constant across
 alternatives (including alternative specific constants) is not identified.
-To achieve identifiability, the coefficient of one alternative \code{base}
-is fixed to \code{0}.
-The other coefficients then have to be interpreted with respect to
-\code{base}.
-The base alternative is marked with a \code{*} when printing a
-\code{\link{choice_alternatives}} object.
+To achieve identifiability, the coefficient of alternative \code{base}
+is fixed to \code{0}. The other coefficients then have to be interpreted with
+respect to \code{base}. The base alternative is marked with a \code{*} when
+printing a \code{\link{choice_alternatives}} object.
 }
 

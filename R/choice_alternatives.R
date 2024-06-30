@@ -2,31 +2,35 @@
 #'
 #' @description
 #' This function constructs an object of class
-#' \code{\link{choice_alternatives}}, which defines the choice alternatives.
+#' \code{\link{choice_alternatives}}, which defines the set of choice
+#' alternatives.
 #'
-#' @param J
-#' An \code{integer}, the number of choice alternatives.
+#' @param J (`integer(1)`)\cr
+#' The number of choice alternatives.
+#'
 #' Must be at least \code{2}.
-#' If \code{ordered = TRUE}, must be at least \code{3}.
-#' @param alternatives
-#' A \code{character} vector, labels for the choice alternatives.
-#' Its length must be \code{J}.
-#' By default, \code{alternatives = LETTERS[1:J]}.
-#' @param base
-#' A \code{character}, the name of the base alternative for covariates that are
+#'
+#' @param alternatives (`character(J)`)\cr
+#' Labels for the choice alternatives.
+#'
+#' @param base (`character(1)`)\cr
+#' The name of the base alternative for covariates that are
 #' not alternative specific, see details.
+#'
 #' \code{base} must be contained in \code{alternatives}.
+#'
 #' Ignored if the model has no alternative specific covariates (in particular if
 #' \code{ordered = TRUE}).
+#'
 #' By default, \code{base} is the first element of \code{alternatives}.
-#' @param ordered
-#' Either \code{TRUE} if the choice alternatives are ordered and
-#' \code{FALSE} (default) else.
-#' @inheritParams doc-helper
+#'
+#' @param ordered (`logical(1)`)\cr
+#' Are the choice alternatives ordered?
 #'
 #' @return
-#' A \code{\link{choice_alternatives}} object. It is a vector of the choice
-#' alternatives and has the following attributes:
+#' An object of class \code{\link{choice_alternatives}}, which is a
+#' \code{character} vector of the choice alternatives and has the following
+#' attributes:
 #' \describe{
 #'   \item{\code{J}}{The number of choice alternatives.}
 #'   \item{\code{base}}{The name of the base alternative.}
@@ -34,21 +38,20 @@
 #' }
 #'
 #' @section Base alternative:
-#' The full collection of coefficients for covariates that are constant across
+#' The full set of coefficients for covariates that are constant across
 #' alternatives (including alternative specific constants) is not identified.
-#' To achieve identifiability, the coefficient of one alternative \code{base}
-#' is fixed to \code{0}.
-#' The other coefficients then have to be interpreted with respect to
-#' \code{base}.
-#' The base alternative is marked with a \code{*} when printing a
-#' \code{\link{choice_alternatives}} object.
+#' To achieve identifiability, the coefficient of alternative \code{base}
+#' is fixed to \code{0}. The other coefficients then have to be interpreted with
+#' respect to \code{base}. The base alternative is marked with a \code{*} when
+#' printing a \code{\link{choice_alternatives}} object.
 #'
 #' @export
 
 choice_alternatives <- function(
     J = 2, alternatives = LETTERS[1:J], base = alternatives[1], ordered = FALSE
 ) {
-  check_base(base = base, alternatives = alternatives, J = J, ordered = ordered)
+  check_base(base = base, alternatives = alternatives, J = J)
+  check_ordered(ordered)
   if (ordered) {
     base <- NA_character_
   } else {
@@ -65,12 +68,15 @@ choice_alternatives <- function(
 
 #' @noRd
 
-is.choice_alternatives <- function(x, error = TRUE, var_name = oeli::variable_name(x)) {
+is.choice_alternatives <- function(
+    x, error = FALSE, var_name = oeli::variable_name(x)
+  ) {
   check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_alternatives")
   if (isTRUE(error) && !isTRUE(check)) {
     cli::cli_abort(
-      "Input {.var {var_name}} must be an object of class {.cls choice_alternatives}",
+      "Input {.var {var_name}} must be an object of class
+      {.cls choice_alternatives}",
       call = NULL
     )
   } else {
@@ -79,6 +85,7 @@ is.choice_alternatives <- function(x, error = TRUE, var_name = oeli::variable_na
 }
 
 #' @rdname choice_alternatives
+#' @inheritParams doc-helper
 #' @exportS3Method
 
 print.choice_alternatives <- function(x, ...) {
@@ -86,7 +93,7 @@ print.choice_alternatives <- function(x, ...) {
   base <- attr(x, "base")
   ordered <- attr(x, "ordered")
   cli::cli_h3(paste("Choice alternatives", if (ordered) "(ordered)"))
-  alt <- x
+  alt <- as.character(x)
   if (!ordered) {
     alt[alt == base] <- paste0(alt[alt == base], "*")
   }

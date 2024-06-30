@@ -344,7 +344,7 @@ sample_choice_parameters <- function(
   ordered <- choice_formula$ordered
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
-  J <- check_J(J, ordered)
+  J <- check_J(J)
 
   ### validate fixed parameters
   x <- validate_choice_parameters(
@@ -437,7 +437,7 @@ validate_choice_parameters <- function(
   formula <- choice_formula$formula
   re <- choice_formula$re
   ordered <- choice_formula$ordered
-  J <- check_J(J, ordered)
+  J <- check_J(J)
   P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
   P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
   allow_missing <- check_allow_missing(allow_missing)

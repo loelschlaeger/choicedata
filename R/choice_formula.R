@@ -1,23 +1,21 @@
-#' Define choice model formula
+#' Define choice formula
 #'
 #' @description
 #' This function constructs an object of class \code{\link{choice_formula}},
 #' which defines the formula for a choice model.
 #'
-#' @param formula
-#' A \code{\link[stats]{formula}}, a symbolic description of the choice model,
+#' @param formula (`formula`)\cr
+#' A symbolic description of the choice model, see details.
+#'
+#' @param re (`character()`)\cr
+#' The names of covariates in \code{formula} that have a random effect,
 #' see details.
-#' @param re
-#' A \code{character}, the vector of names of covariates in \code{formula} that
-#' have a random effect, see details.
-#' By default, \code{re = NULL}, i.e., no random effects.
+#'
 #' @inheritParams choice_alternatives
-#' @inheritParams doc-helper
 #'
 #' @return
-#' A \code{\link{choice_formula}} object.
-#'
-#' It contains the elements:
+#' An object of class \code{\link{choice_formula}}, which is a \code{list} with
+#' the following elements:
 #' \describe{
 #'   \item{\code{formula}}{The model formula.}
 #'   \item{\code{re}}{The names of covariates with random effects.}
@@ -30,10 +28,10 @@
 #' }
 #'
 #' @section Model formula:
-#' The structure of \code{formula} should be
+#' The structure of \code{formula} is
 #' \code{choice ~ A | B | C}, where
 #' \itemize{
-#'   \item \code{choice} is the name of the dependent variable (the choices),
+#'   \item \code{choice} is the name of the discrete response variable,
 #'   \item \code{A} are names of \strong{alternative specific covariates} with
 #'   \strong{a coefficient that is constant across alternatives},
 #'   \item \code{B} are names of \strong{covariates that are constant across
@@ -81,7 +79,7 @@ choice_formula <- function(formula, re = NULL, ordered = FALSE) {
   formula_parts <- as.character(formula)
   if (length(formula_parts) != 3) {
     cli::cli_abort(
-      "{.var formula} should be in the form {.val <choice> ~ <covariates>}",
+      "Input {.var formula} should be of the form {.val <choice> ~ <covariates>}",
       call = NULL
     )
   }
@@ -90,7 +88,7 @@ choice_formula <- function(formula, re = NULL, ordered = FALSE) {
   )
   if (length(var_types) > 3) {
     cli::cli_abort(
-      "{.var formula} should have no more than two of '|' separators",
+      "Input {.var formula} should have no more than two '|' separators",
       call = NULL
     )
   }
@@ -114,7 +112,7 @@ choice_formula <- function(formula, re = NULL, ordered = FALSE) {
     dup_ind <- which(duplicated(unlist(var_types)))[1]
     cov_dup <- unlist(var_types)[dup_ind]
     cli::cli_abort(
-      "{.var formula} contains covariate {.val {cov_dup}} multiple times",
+      "Input {.var formula} contains covariate {.val {cov_dup}} multiple times",
       call = NULL
     )
   }
@@ -130,14 +128,15 @@ choice_formula <- function(formula, re = NULL, ordered = FALSE) {
   if (length(intersect(re_n, re_ln)) != 0) {
     re_double <- intersect(re_n, re_ln)[1]
     cli::cli_abort(
-      "{.var re} cannot include both {.val {re_double}} and {.val {re_double}+}",
+      "Input {.var re} cannot include both {.val {re_double}} and {.val {re_double}+}",
       call = NULL
     )
   }
   for (re_val in c(re_n, re_ln)) {
     if (!re_val %in% c(unlist(var_types), if(ASC) "ASC")) {
       cli::cli_abort(
-        "{.var re} contains {.val {re_val}}, but it is not on the right side of {.var formula}",
+        "Input {.var re} contains {.val {re_val}}, but it is not on the right
+        hand side of {.var formula}",
         call = NULL
       )
     }
@@ -161,7 +160,9 @@ choice_formula <- function(formula, re = NULL, ordered = FALSE) {
 
 #' @noRd
 
-is.choice_formula <- function(x, error = TRUE, var_name = oeli::variable_name(x)) {
+is.choice_formula <- function(
+    x, error = TRUE, var_name = oeli::variable_name(x)
+  ) {
   check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_formula")
   if (isTRUE(error) && !isTRUE(check)) {
@@ -175,11 +176,12 @@ is.choice_formula <- function(x, error = TRUE, var_name = oeli::variable_name(x)
 }
 
 #' @rdname choice_formula
+#' @inheritParams doc-helper
 #' @exportS3Method
 
 print.choice_formula <- function(x, ...) {
   is.choice_formula(x, error = TRUE)
-  cli::cli_h3("Choice model formula")
+  cli::cli_h3("Choice formula")
   cli::cat_line(deparse1(x$formula))
   if (length(x$re) > 0) {
     cli::cat_line("with random effects")

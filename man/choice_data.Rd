@@ -67,12 +67,11 @@ identifiers for the choice occasions.}
 
 \item{column_covariates_alternative_varying}{TODO}
 
-\item{alternatives}{A \code{character} vector, labels for the choice alternatives.
-Its length must be \code{J}.
-By default, \code{alternatives = LETTERS[1:J]}.}
+\item{alternatives}{(\code{character(J)})\cr
+Labels for the choice alternatives.}
 
-\item{ordered}{Either \code{TRUE} if the choice alternatives are ordered and
-\code{FALSE} (default) else.}
+\item{ordered}{(\code{logical(1)})\cr
+Are the choice alternatives ordered?}
 
 \item{ranked}{TODO}
 

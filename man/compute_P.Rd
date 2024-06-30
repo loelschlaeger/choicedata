@@ -13,19 +13,20 @@ compute_P_f(formula, re, J, ordered = FALSE)
 compute_P_r(formula, re, J, ordered = FALSE)
 }
 \arguments{
-\item{formula}{A \code{\link[stats]{formula}}, a symbolic description of the choice model,
+\item{formula}{(\code{formula})\cr
+A symbolic description of the choice model, see details.}
+
+\item{re}{(\code{character()})\cr
+The names of covariates in \code{formula} that have a random effect,
 see details.}
 
-\item{re}{A \code{character}, the vector of names of covariates in \code{formula} that
-have a random effect, see details.
-By default, \code{re = NULL}, i.e., no random effects.}
+\item{J}{(\code{integer(1)})\cr
+The number of choice alternatives.
 
-\item{J}{An \code{integer}, the number of choice alternatives.
-Must be at least \code{2}.
-If \code{ordered = TRUE}, must be at least \code{3}.}
+Must be at least \code{2}.}
 
-\item{ordered}{Either \code{TRUE} if the choice alternatives are ordered and
-\code{FALSE} (default) else.}
+\item{ordered}{(\code{logical(1)})\cr
+Are the choice alternatives ordered?}
 }
 \value{
 An \code{integer}, the number of model effects.
@@ -39,10 +40,10 @@ These functions compute the number of fixed and random model effects.
 }
 \section{Model formula}{
 
-The structure of \code{formula} should be
+The structure of \code{formula} is
 \code{choice ~ A | B | C}, where
 \itemize{
-\item \code{choice} is the name of the dependent variable (the choices),
+\item \code{choice} is the name of the discrete response variable,
 \item \code{A} are names of \strong{alternative specific covariates} with
 \strong{a coefficient that is constant across alternatives},
 \item \code{B} are names of \strong{covariates that are constant across
