@@ -7,6 +7,9 @@
 #' @param formula (`formula`)\cr
 #' A symbolic description of the choice model, see details.
 #'
+#' @param error
+#' TODO
+#'
 #' @param re (`character()`)\cr
 #' The names of covariates in \code{formula} that have a random effect,
 #' see details.
@@ -68,7 +71,9 @@
 #'
 #' @export
 
-choice_formula <- function(formula, re = NULL, ordered = FALSE) {
+choice_formula <- function(
+    formula, error = "probit", re = NULL, ordered = FALSE
+  ) {
 
   ### input checks
   formula <- check_formula(formula)

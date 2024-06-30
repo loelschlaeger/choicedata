@@ -218,8 +218,15 @@
 #' @export
 
 choice_parameters <- function(
-    model_type = "probit", latent_classes = "none", C = 1,
-    s = NULL, alpha = NULL, b = NULL, Omega = NULL, Sigma = NULL, gamma = NULL
+    model_type = "probit",
+    latent_classes = "none",
+    C = 1,
+    s = NULL,
+    alpha = NULL,
+    b = NULL,
+    Omega = NULL,
+    Sigma = NULL,
+    gamma = NULL
   ) {
   model_type <- check_model_type(model_type)
   latent_classes <- check_latent_classes(latent_classes)
@@ -329,7 +336,9 @@ print.choice_parameters <- function(
 sample_choice_parameters <- function(
   fixed_parameters = choice_parameters(
     model_type = "probit", latent_classes = "none", C = 1
-  ), choice_formula, J
+  ),
+  choice_formula,
+  J
 ) {
 
   ### input checks
