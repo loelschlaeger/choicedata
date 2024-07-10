@@ -1,10 +1,9 @@
 test_that("choice_formula can be specified and validated", {
-  expect_choice_formula <- function(object, var_types, ASC, re_n, re_ln) {
+  expect_choice_formula <- function(object, var_types, ASC, mixing_types) {
     expect(is.choice_formula(object), "bad class")
     expect(identical(object$var_types, var_types), "bad variable types")
     expect(identical(object$ASC, ASC), "bad ASC")
-    expect(identical(object$re_n, re_n), "bad normal random effects")
-    expect(identical(object$re_ln, re_ln), "bad log-normal random effects")
+    expect(identical(object$mixing_types, mixing_types), "bad random effects")
   }
   f1 <- choice ~ A
   f2 <- choice ~ A | B
@@ -27,82 +26,73 @@ test_that("choice_formula can be specified and validated", {
     "Please specify the input `formula`"
   )
   expect_error(
-    choice_formula(formula = "not_a_formula", re = re1, ordered = FALSE),
+    choice_formula(formula = "not_a_formula", re = re1),
     "Input `formula` is bad: Must be a formula, not character"
   )
   expect_error(
-    choice_formula(formula = f1, re = 1, ordered = FALSE),
+    choice_formula(formula = f1, re = 1),
     "Input `re` is bad"
   )
   expect_error(
-    choice_formula(formula = f1, re = re1, ordered = "not_a_boolean"),
-    "Input `ordered` is bad"
-  )
-  expect_error(
-    choice_formula(formula = f1, re = "bad_covariate", ordered = FALSE),
+    choice_formula(formula = f1, re = "bad_covariate"),
     "but it is not on the right hand side of `formula`"
   )
+  expect_error(
+    choice_formula(formula = choice ~ ASC),
+    "are not allowed"
+  )
   expect_choice_formula(
-    choice_formula(formula = f1, re = re1, ordered = FALSE),
+    choice_formula(formula = f1, re = re1),
     var_types = list("A", character(), character()), ASC = TRUE,
-    re_n = character(), re_ln = character()
+    mixing_types = character()
   )
   expect_choice_formula(
-    choice_formula(formula = f2, re = re2, ordered = FALSE),
+    choice_formula(formula = f2, re = re2),
     var_types = list("A", "B", character()), ASC = TRUE,
-    re_n = "A", re_ln = character()
+    mixing_types = c("A" = "normal")
   )
   expect_choice_formula(
-    choice_formula(formula = f2, re = re3, ordered = FALSE),
+    choice_formula(formula = f2, re = re3),
     var_types = list("A", "B", character()), ASC = TRUE,
-    re_n = character(), re_ln = "A"
+    mixing_types = c("A" = "log-normal")
   )
   expect_choice_formula(
-    choice_formula(formula = f2, re = re4, ordered = FALSE),
+    choice_formula(formula = f2, re = re4),
     var_types = list("A", "B", character()), ASC = TRUE,
-    re_n = "B", re_ln = "A"
+    mixing_types = c("A" = "log-normal", "B" = "normal")
   )
   expect_choice_formula(
-    choice_formula(formula = f6, re = character(), ordered = FALSE),
+    choice_formula(formula = f6, re = character()),
     var_types = list(character(), character(), "C"), ASC = FALSE,
-    re_n = character(), re_ln = character()
+    mixing_types = character()
   )
   expect_choice_formula(
-    choice_formula(formula = f7, re = character(), ordered = FALSE),
+    choice_formula(formula = f7, re = character()),
     var_types = list(character(), character(), "C"), ASC = TRUE,
-    re_n = character(), re_ln = character()
+    mixing_types = character()
   )
   expect_choice_formula(
-    choice_formula(formula = f8, re = character(), ordered = FALSE),
+    choice_formula(formula = f8, re = character()),
     var_types = list(c("A", "B"), character(), character()), ASC = TRUE,
-    re_n = character(), re_ln = character()
+    mixing_types = character()
   )
   expect_choice_formula(
-    choice_formula(formula = f9, re = re4, ordered = TRUE),
-    var_types = list(character(), c("A", "B"), character()), ASC = FALSE,
-    re_n = "B", re_ln = "A"
+    choice_formula(formula = f8, re = re5),
+    var_types = list(c("A", "B"), character(), character()), ASC = TRUE,
+    mixing_types = c("B" = "normal", "ASC" = "normal")
   )
   expect_error(
-    choice_formula(formula = f3, re = character(), ordered = TRUE),
-    "Vertical bars in `formula` are not allowed in the ordered case"
-  )
-  expect_choice_formula(
-    choice_formula(formula = f8, re = re5, ordered = FALSE),
-    var_types = list(c("A", "B"), character(), character()), ASC = TRUE,
-    re_n = c("B", "ASC"), re_ln = character()
-  )
-  expect_error(
-    choice_formula(formula = f5, re = re5, ordered = FALSE),
+    choice_formula(formula = f5, re = re5),
     "but it is not on the right hand side of `formula`"
   )
   expect_choice_formula(
-    choice_formula(formula = f8, re = re6, ordered = FALSE),
+    choice_formula(formula = f8, re = re6),
     var_types = list(c("A", "B"), character(), character()), ASC = TRUE,
-    re_n = "B", re_ln = "ASC"
+    mixing_types = c("B" = "normal", "ASC" = "log-normal")
   )
   expect_error(
-    choice_formula(formula = f2, re = re7, ordered = FALSE),
-    "`re` cannot include both"
+    choice_formula(formula = f2, re = re7),
+    "Multiple random effects specifications"
   )
   expect_error(
     choice_formula(formula = ~ bad),
@@ -128,10 +118,10 @@ test_that("choice_formula can be printed", {
     "Input `x` must be an object of class"
   )
   expect_snapshot(
-    choice_formula(formula = choice ~ A | B, re = NULL, ordered = FALSE)
+    choice_formula(formula = choice ~ A | B, re = NULL)
   )
   expect_snapshot(
-    choice_formula(formula = choice ~ A + B, re = c("A+", "B"), ordered = TRUE)
+    choice_formula(formula = choice ~ A + B, re = c("A+", "B"))
   )
 })
 

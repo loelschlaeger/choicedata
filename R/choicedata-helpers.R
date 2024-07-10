@@ -13,7 +13,7 @@
 #' @param ranked
 #' Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.
 #' @param x
-#' An object of the corresponding class to be printed.
+#' An object of the corresponding class.
 #' @param ...
 #' Currently not used.
 #'

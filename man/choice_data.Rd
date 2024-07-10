@@ -77,7 +77,7 @@ Are the choice alternatives ordered?}
 
 \item{delimiter}{TODO}
 
-\item{x}{An object of the corresponding class to be printed.}
+\item{x}{An object of the corresponding class.}
 
 \item{error}{TODO}
 

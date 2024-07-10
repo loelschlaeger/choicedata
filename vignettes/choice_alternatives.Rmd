@@ -19,11 +19,11 @@ knitr::opts_chunk$set(
 library("choicedata")
 ```
 
-The choice alternatives form the choice set from which the decision makers select [@Train2009]. In the `{choicedata}` package, these alternatives are represented as an `choice_alternatives` S3 object [@Chambers1992].  
+The choice alternatives form the choice set from which the decision makers select [@Train2009]. In the `{choicedata}` package, these alternatives are represented as a `choice_alternatives` S3 object [@Chambers1992].  
 
 For instance, consider households choosing between different heating fuels, a topic extensively studied for energy use forecasting and climate change analysis. The choice alternatives in this scenario could include gas, electricity, and oil. The corresponding `choice_alternatives` object can be constructed as follows:
 
-```{r}
+```{r, choice alternatives example 1}
 choice_alternatives(
   J = 3,
   alternatives = c("gas", "electricity", "oil"),
@@ -46,7 +46,7 @@ Here,
 
 A related application where the choice alternatives can be considered as ordered is the question of how many heating fuels a household possesses. In this case, a possible specification is:
 
-```{r}
+```{r, choice alternatives example 2}
 choice_alternatives(
   J = 4,
   alternatives = c("0", "1", "2", ">=3"),
@@ -57,5 +57,7 @@ choice_alternatives(
 <!-- TODO: links for "choice data" and "choice probabilities" -->
 
 Once a `choice_alternatives` object has been specified, it can be used to simulate choice data or compute choice probabilities.
+
+<!-- TODO: general example -->
 
 ## References

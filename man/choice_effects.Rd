@@ -2,42 +2,51 @@
 % Please edit documentation in R/choice_effects.R
 \name{choice_effects}
 \alias{choice_effects}
+\alias{print.choice_effects}
 \title{Define choice model effects}
 \usage{
 choice_effects(choice_formula, choice_alternatives, delimiter = "_")
+
+\method{print}{choice_effects}(x, ...)
 }
 \arguments{
 \item{choice_formula}{A \code{\link{choice_formula}} object.}
 
 \item{choice_alternatives}{A \code{\link{choice_alternatives}} object.}
 
-\item{delimiter}{A \code{character}, the delimiter between covariate and alternative name
-to build the effect name.
-By default, \code{delimiter = "_"}.}
+\item{delimiter}{(\code{character(1)})\cr
+A delimiter between covariate and alternative label to build the effect name.}
+
+\item{x}{An object of the corresponding class.}
+
+\item{...}{Currently not used.}
 }
 \value{
-A \code{\link{choice_effects}} object, which is a \code{data.frame}, where
-each row is an effect, and columns are
+A \code{choice_effects} object, which is a \code{data.frame}, where each row
+is a model effect, and columns are
 \enumerate{
 \item \code{"name"}, the effect name (composed of covariate and alternative
 name),
-\item \code{"covariate"}, the covariate name,
-\item \code{"alternative"}, the alternative name (only if the effect is
-alternative-specific, i.e., varies across alternatives),
+\item \code{"covariate"}, the covariate name connected to the effect,
+\item \code{"alternative"}, the alternative name connected to the effect (only
+if the effect is alternative-specific, i.e., varies across alternatives),
 \item \code{"as_covariate"}, indicator whether the covariate is
 alternative-specific,
 \item \code{"as_effect"}, indicator whether the effect is alternative-specific,
 \item \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
-and \code{"log-normal"}, indicating the type (if any) of the mixing
+and \code{"log-normal"}, indicating the type of random effect
 }
 
-The effects are ordered as follows: Fixed effects come before random effects,
-and log-normal random effects are last random effects. Otherwise, the order
-is determined by occurrence in \code{formula}.
+The effects are ordered as follows:
+\itemize{
+\item Non-random effects come before random effects.
+\item Normal random effects come before log-normal random effects.
+\item Otherwise, the order is determined by occurrence in \code{formula}.
+}
 }
 \description{
-This function constructs an object of class \code{\link{choice_effects}},
-which defines the choice model effects.
+This function constructs an object of class \code{choice_effects}, which
+defines the choice model effects.
 }
 \section{Model formula}{
 
@@ -45,37 +54,38 @@ The structure of \code{formula} is
 \code{choice ~ A | B | C}, where
 \itemize{
 \item \code{choice} is the name of the discrete response variable,
-\item \code{A} are names of \strong{alternative specific covariates} with
+\item \code{A} are names of \strong{alternative-specific covariates} with
 \strong{a coefficient that is constant across alternatives},
 \item \code{B} are names of \strong{covariates that are constant across
 alternatives},
-\item and \code{C} are names of \strong{alternative specific covariates}
-with \strong{alternative specific coefficients}.
+\item and \code{C} are names of \strong{alternative-specific covariates}
+with \strong{alternative-specific coefficients}.
 }
 
-Multiple covariates of one type are separated by a \code{+} sign, i.e.,
+Multiple covariates of one type are separated by a \code{+} sign, e.g.,
 \code{choice ~ A1 + A2}.
 
-By default, alternative specific constants (ASCs) are added to the model.
-They can be removed by adding \code{+ 0} in the second spot, i.e.,
+By default, alternative-specific constants (ASCs) are added to the model.
+They can be removed by adding \code{+ 0} in the second spot, e.g.,
 \code{choice ~ A | B + 0 | C}. To not include any covariates of
-the second category but to estimate ASCs, add \code{1} in the second
+the second type but to estimate ASCs, add \code{1} in the second
 spot, e.g., \code{choice ~ A | 1 | C}. The expression
 \code{choice ~ A | 0 | C} is interpreted as no covariates of the second
-category and no ASCs.
+type and no ASCs.
 
-In the ordered model case (\code{ordered = TRUE}), covariates are not
-alternative specific, i.e., there exists only one type of covariate.
-Therefore, the \code{formula} object does not need the special
-separation form via \code{|}, and hence has the simple structure
-\code{choice ~ A + B + C}.
-ASCs cannot be estimated in the ordered case.
+Some parts of the formula can be omitted when there is no ambiguity. For
+example, \code{choice ~ A} is equivalent to \code{choice ~ A | 1 | 0}.
+
+In the ordered case, since only a single utility is modeled, no ASCs and no
+alternative-specific covariates can be included. Hence, in the ordered case,
+\code{formula} must be of the form, e.g.,  \code{choice ~ 0 | A + B + 0}.
 }
 
 \section{Random effects}{
 
 Covariates can have random effects, i.e., their coefficients can follow a
-random distribution. Per default, the distribution is normal. The log-normal
+random distribution (a so-called mixing distribution).
+Per default, the mixing distribution is normal. In addition, the log-normal
 distribution (e.g., for sign-restriction) can be specified via appending
 \code{+} to the corresponding name in \code{re}.
 To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
@@ -85,11 +95,11 @@ To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
 \section{Base alternative}{
 
 The full set of coefficients for covariates that are constant across
-alternatives (including alternative specific constants) is not identified.
+alternatives (including alternative-specific constants) is not identified.
 To achieve identifiability, the coefficient of alternative \code{base}
 is fixed to \code{0}. The other coefficients then have to be interpreted with
 respect to \code{base}. The base alternative is marked with a \code{*} when
-printing a \code{\link{choice_alternatives}} object.
+printing a \code{choice_alternatives} object.
 }
 
 \examples{

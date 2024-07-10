@@ -30,7 +30,7 @@ test_that("effect overview can be created", {
     choice_effects(
       choice_formula = choice_formula(
         formula = choice ~ cov,
-        re = c("cov+", "ASC+")
+        re = c("cov", "ASC+")
       ),
       choice_alternatives = choice_alternatives(
         J = 3,
@@ -46,8 +46,8 @@ test_that("effect overview can be created", {
         as_covariate = c(TRUE, FALSE, FALSE),
         as_effect = c(FALSE, TRUE, TRUE),
         mixing = structure(
-          c(3L, 3L, 3L),
-          levels = c("none", "normal", "log-normal"),
+          c(1L, 2L, 2L),
+          levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
         )
       ),
@@ -75,8 +75,8 @@ test_that("effect overview can be created", {
         as_covariate = c(TRUE, FALSE, TRUE, TRUE),
         as_effect = c(FALSE, TRUE, TRUE, TRUE),
         mixing = structure(
-          c(1L, 1L, 1L, 1L),
-          levels = c("none", "normal", "log-normal"),
+          c(NA_integer_, NA_integer_, NA_integer_, NA_integer_),
+          levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
         )
       ),
@@ -87,8 +87,8 @@ test_that("effect overview can be created", {
   expect_equal(
     choice_effects(
       choice_formula = choice_formula(
-        formula = choice ~ A + B + C,
-        re = "A+", ordered = TRUE
+        formula = choice ~ 0 | A + B + C + 0,
+        re = "A+"
       ),
       choice_alternatives = choice_alternatives(
         J = 3, ordered = TRUE
@@ -102,8 +102,8 @@ test_that("effect overview can be created", {
         as_covariate = c(FALSE, FALSE, FALSE),
         as_effect = c(FALSE, FALSE, FALSE),
         mixing = structure(
-          c(1L, 1L, 3L),
-          levels = c("none", "normal", "log-normal"),
+          c(NA_integer_, NA_integer_, 2L),
+          levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
         )
       ),

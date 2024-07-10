@@ -19,4 +19,82 @@ knitr::opts_chunk$set(
 library("choicedata")
 ```
 
+The choice formula describes the choice model to be fitted to choice data. In the `{choicedata}` package, the choice formula is represented as a `choice_formula` S3 object [@Chambers1992]. 
+
+Choice models are typically defined in the random utility model (RUM) framework by specifying a formula for the latent utilities. These utilities are linked to the observed discrete choices based on the assumption of utility-maximizing behavior by the decision-makers [@Train2009]. A general equation for the latent utilities is: $$U = f(V, \varepsilon),$$ where
+
+- $U$ is a vector of latent utilities for each alternative,
+
+- $V$ is a vector of representative utilities for each alternative (also known as the deterministic, observed, or explained utility component),
+
+- $\varepsilon$ is a random error term,
+
+- and $f$ is a function that links the representative utilities and the error terms to the latent utilities. 
+
+Two simplifying assumptions are usually made:
+
+1. The function $f$ is additive, i.e., $f(V, \varepsilon) = V + \varepsilon$.
+
+2. The representative utilities $V$ are linear combinations of covariates $X$ and coefficients $\beta$, i.e., $V = X\beta$.
+
+Thus, the choice model equation becomes $$U = X\beta + \varepsilon,$$ where the following details need to be specified:
+
+1. Which covariates are included in $X$?
+
+2. What is the distribution of $\varepsilon$?
+
+3. Are random effects present, i.e., does $\beta$ (or parts of it) follow a random distribution?
+
+These details can be specified by defining a `choice_formula` object via the following call:
+
+```r
+choice_formula(formula, error_term, re)
+```
+
+### Included covariates
+
+Covariates to be included in the model are specified via the `formula` argument as a symbolic description, similar to specifying a formula for fitting a linear model using the `stats::lm()` function. Additionally, we distinguish between covariates that vary across alternatives (alternative-specific covariates) and covariates that are constant across alternatives (alternative-constant covariates). Furthermore, alternative-specific covariates can either be connected to a coefficient that is constant across alternatives or to coefficients that are alternative-specific. Coefficients of alternative-constant covariates necessarily have to be alternative-specific. Thus, three different types of covariates need to be distinguished, which is accomplished via vertical bars as follows:
+
+<!-- TODO: link to "choice effects" for more details on how they differ with information about identifiability, see mlogit vignette  https://cran.r-project.org/web/packages/mlogit/vignettes/c2.formula.data.html -->
+
+```r
+response variable ~ type-1 covariates | type-2 covariates | type-3 covariates
+```
+
+Here,
+
+- `type-1 covariates` are alternative-specific covariates with an alternative-constant coefficient,
+
+- `type-2 covariates` are alternative-constant covariates,
+
+- `type-3 covariates` are alternative-specific covariates with an alternative-specific coefficient.
+
+The following rules apply:
+
+- Multiple covariates are separated by a `+` sign. For example, `choice ~ A + B`.
+
+- By default, alternative-specific constants (ASCs) are included in the model. To remove them, add `+ 0` in the second position, e.g., `choice ~ A | B + 0 | C`. If you want to exclude any covariates of the second type but still estimate ASCs, add `1` in the second position, e.g., `choice ~ A | 1 | C`. Using `choice ~ A | 0 | C` means no covariates of the second type and no ASCs.
+
+- Some parts of the formula can be omitted when there is no ambiguity. For example, `choice ~ A` is equivalent to `choice ~ A | 1 | 0`.
+
+### Error distribution 
+
+Different assumptions about the error term $\varepsilon$ lead to different choice models. The most commonly used models are the logit and the probit model:
+
+- **Logit model**: This model is specified by setting `error_term = "logit"`. Here, the entries of the error vector $\varepsilon$ are assumed to be independently and identically distributed according to a standard Gumbel distribution. The primary advantage of the logit model is that the choice probabilities have a closed-form expression, making them easy to calculate. However, a significant limitation is the independence from irrelevant alternatives (IIA) property. This implies that the relative odds of choosing one alternative over another are unaffected by the presence of other alternatives, leading to proportional substitution effects that may not be realistic.
+
+- **Probit model**: This model is specified by setting `error_term = "probit"`. In the probit model, the error vector $\varepsilon$ is assumed to follow a multivariate normal distribution. This allows the probit model to avoid the restrictive IIA assumption of the logit model by accommodating flexible correlations among alternatives. The main drawback is that the choice probabilities do not have a closed-form expression. Instead, evaluating these probabilities requires computing a multivariate integral whose dimensionality is determined by the number of choice alternatives, resulting in increased computational time.
+
+<!-- TODO: link to "choice probabilities" for more details on how they are computed -->
+
+### Random effects
+
+The third and final part required to create a `choice_formula` object is the `re` argument, which allows for the optional specification of random effects. Covariates can have random effects, meaning their coefficients can follow a random distribution (known as a mixing distribution). The `{choicedata}` package currently supports normal and log-normal mixing distributions:
+
+- **Normal mixing distribution**: To specify a normal mixing distribution for a covariate `A`, include `"A"` in the `re` argument.
+
+- **Log-normal mixing distribution**: To specify a log-normal mixing distribution for a covariate `A`, include `"A+"` in the `re` argument.
+
+<!-- TODO: general example -->
+
 ## References

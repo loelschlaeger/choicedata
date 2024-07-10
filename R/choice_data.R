@@ -63,7 +63,7 @@ choice_data <- function(
   check_column_occasion(column_occasion, null.ok = FALSE)
   check_column_covariates_alternative_constant(column_covariates_alternative_constant)
   check_column_covariates_alternative_varying(column_covariates_alternative_varying)
-  check_alternatives(alternatives, J = length(alternatives), ordered = ordered, null.ok = TRUE)
+  check_alternatives(alternatives, J = length(alternatives))
   check_ranked(ranked)
   check_delimiter(delimiter)
 

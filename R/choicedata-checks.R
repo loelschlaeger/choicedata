@@ -1,11 +1,11 @@
 # The following functions are helper functions for input checks.
-
+#
 # The first argument is always the argument to be checked, potentially
 # followed but additional arguments required for the check.
-
+#
 # Each check function throws an error if the check failed, otherwise it
-# returns invisibly the first argument
-# (except for the `check_consistency_*` functions, they return invisibly TRUE).
+# returns invisibly the first argument (except for the `check_consistency_*`
+# functions, they return invisibly TRUE).
 
 check_allow_missing <- function(allow_missing) {
   check_not_missing(allow_missing)
@@ -54,6 +54,21 @@ check_C <- function(C, latent_classes) {
     cli::cli_abort("Input {.var C} is bad: {check}", call = NULL)
   }
   invisible(C)
+}
+
+check_choice_formula_ordered_valid <- function(choice_formula) {
+  is.choice_formula(choice_formula, error = TRUE, var_name = "choice_formula")
+  check <- if (isFALSE(choice_formula$ordered_valid)) {
+    "In the ordered case, {.var formula} must be of the form
+    {.code choice ~ 0 | A + B + 0} (i.e., no alternative-specific covariates and
+    no ASCs)"
+  } else {
+    TRUE
+  }
+  if (!isTRUE(check)) {
+    cli::cli_abort(paste("Input {.var choice_formula} is bad:", check), call = NULL)
+  }
+  invisible(choice_formula)
 }
 
 check_column_alternatives <- function(column_alternatives, na.ok = TRUE) {
@@ -172,6 +187,15 @@ check_delimiter <- function(delimiter) {
     cli::cli_abort("Input {.var delimiter} is bad: {check}", call = NULL)
   }
   invisible(delimiter)
+}
+
+check_error_term <- function(error_term, choices = c("logit", "probit")) {
+  check_not_missing(error_term)
+  check <- checkmate::check_choice(error_term, choices = choices)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var error_term} is bad: {check}", call = NULL)
+  }
+  invisible(format)
 }
 
 check_format <- function(format, choices = c("wide", "long")) {

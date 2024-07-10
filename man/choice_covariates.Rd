@@ -53,7 +53,7 @@ covariate_number(choice_formula, choice_alternatives)
 \arguments{
 \item{covariates}{TODO}
 
-\item{x}{An object of the corresponding class to be printed.}
+\item{x}{An object of the corresponding class.}
 
 \item{error}{TODO}
 
@@ -118,9 +118,8 @@ and covariate \code{j} in the output of \code{\link{covariate_names}}.
 deviation and correlation. If \code{FALSE} (default), they specify the
 values for the population.}
 
-\item{delimiter}{A \code{character}, the delimiter between covariate and alternative name
-to build the effect name.
-By default, \code{delimiter = "_"}.}
+\item{delimiter}{(\code{character(1)})\cr
+A delimiter between covariate and alternative label to build the effect name.}
 
 \item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
 decider identifiers.}

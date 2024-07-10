@@ -1,33 +1,31 @@
 #' Define choice formula
 #'
 #' @description
-#' This function constructs an object of class \code{\link{choice_formula}},
-#' which defines the formula for a choice model.
+#' This function constructs an object of class \code{choice_formula}, which
+#' defines the formula for a choice model.
 #'
 #' @param formula (`formula`)\cr
 #' A symbolic description of the choice model, see details.
 #'
-#' @param error
-#' TODO
+#' @param error_term (`character()`)\cr
+#' Defines the model's error term. Current options are:
+#' - `"logit"`: errors are assumed to be iid standard Gumbel distributed
+#' - `"probit"`: errors are assumed to be multivariate normally distributed
 #'
 #' @param re (`character()`)\cr
-#' The names of covariates in \code{formula} that have a random effect,
-#' see details.
-#'
-#' @inheritParams choice_alternatives
+#' The names of covariates in \code{formula} with a random effect, see details.
 #'
 #' @return
-#' An object of class \code{\link{choice_formula}}, which is a \code{list} with
-#' the following elements:
+#' An object of class \code{choice_formula}, which is a \code{list} with the
+#' following elements:
 #' \describe{
 #'   \item{\code{formula}}{The model formula.}
-#'   \item{\code{re}}{The names of covariates with random effects.}
-#'   \item{\code{ordered}}{Are the choice alternatives ordered?}
-#'   \item{\code{choice}}{The name of the dependent variable.}
+#'   \item{\code{error_term}}{The model's error term.}
+#'   \item{\code{choice}}{The name of the discrete response variable.}
 #'   \item{\code{var_types}}{The three different types of covariates.}
-#'   \item{\code{ASC}}{Does the model have alternative specific constants?}
-#'   \item{\code{re_n}}{The covariates with normal mixing distribution.}
-#'   \item{\code{re_ln}}{The covariates with log-normal mixing distribution.}
+#'   \item{\code{ASC}}{Does the model have alternative-specific constants?}
+#'   \item{\code{mixing_types}}{The types of random effects (if any).}
+#'   \item{\code{ordered_valid}}{Formula valid for ordered case (see details)?}
 #' }
 #'
 #' @section Model formula:
@@ -35,50 +33,56 @@
 #' \code{choice ~ A | B | C}, where
 #' \itemize{
 #'   \item \code{choice} is the name of the discrete response variable,
-#'   \item \code{A} are names of \strong{alternative specific covariates} with
+#'   \item \code{A} are names of \strong{alternative-specific covariates} with
 #'   \strong{a coefficient that is constant across alternatives},
 #'   \item \code{B} are names of \strong{covariates that are constant across
 #'   alternatives},
-#'   \item and \code{C} are names of \strong{alternative specific covariates}
-#'   with \strong{alternative specific coefficients}.
+#'   \item and \code{C} are names of \strong{alternative-specific covariates}
+#'   with \strong{alternative-specific coefficients}.
 #' }
 #'
-#' Multiple covariates of one type are separated by a \code{+} sign, i.e.,
+#' Multiple covariates of one type are separated by a \code{+} sign, e.g.,
 #' \code{choice ~ A1 + A2}.
 #'
-#' By default, alternative specific constants (ASCs) are added to the model.
-#' They can be removed by adding \code{+ 0} in the second spot, i.e.,
+#' By default, alternative-specific constants (ASCs) are added to the model.
+#' They can be removed by adding \code{+ 0} in the second spot, e.g.,
 #' \code{choice ~ A | B + 0 | C}. To not include any covariates of
-#' the second category but to estimate ASCs, add \code{1} in the second
+#' the second type but to estimate ASCs, add \code{1} in the second
 #' spot, e.g., \code{choice ~ A | 1 | C}. The expression
 #' \code{choice ~ A | 0 | C} is interpreted as no covariates of the second
-#' category and no ASCs.
+#' type and no ASCs.
 #'
-#' In the ordered model case (\code{ordered = TRUE}), covariates are not
-#' alternative specific, i.e., there exists only one type of covariate.
-#' Therefore, the \code{formula} object does not need the special
-#' separation form via \code{|}, and hence has the simple structure
-#' \code{choice ~ A + B + C}.
-#' ASCs cannot be estimated in the ordered case.
+#' Some parts of the formula can be omitted when there is no ambiguity. For
+#' example, `choice ~ A` is equivalent to `choice ~ A | 1 | 0`.
+#'
+#' In the ordered case, since only a single utility is modeled, no ASCs and no
+#' alternative-specific covariates can be included. Hence, in the ordered case,
+#' \code{formula} must be of the form, e.g.,  \code{choice ~ 0 | A + B + 0}.
 #'
 #' @section Random effects:
 #' Covariates can have random effects, i.e., their coefficients can follow a
-#' random distribution. Per default, the distribution is normal. The log-normal
+#' random distribution (a so-called mixing distribution).
+#' Per default, the mixing distribution is normal. In addition, the log-normal
 #' distribution (e.g., for sign-restriction) can be specified via appending
 #' \code{+} to the corresponding name in \code{re}.
 #' To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
 #' \code{re}.
 #'
+#' @examples
+#' choice_formula(
+#'   formula = choice ~ A | B | C,
+#'   error_term = "probit",
+#'   re = c("A", "B+")
+#' )
+#'
 #' @export
 
-choice_formula <- function(
-    formula, error = "probit", re = NULL, ordered = FALSE
-  ) {
+choice_formula <- function(formula, error_term = "probit", re = NULL) {
 
   ### input checks
-  formula <- check_formula(formula)
-  re <- check_re(re)
-  ordered <- check_ordered(ordered)
+  check_formula(formula)
+  check_error_term(error_term)
+  check_re(re)
 
   ### read formula
   formula_parts <- as.character(formula)
@@ -101,17 +105,13 @@ choice_formula <- function(
     var_types <- c(var_types, NA_character_)
   }
   var_types <- lapply(strsplit(var_types, split = "+", fixed = TRUE), trimws)
-  ASC <- if (ordered) FALSE else ifelse(0 %in% var_types[[2]], FALSE, TRUE)
+  ASC <- ifelse(0 %in% var_types[[2]], FALSE, TRUE)
   var_types <- lapply(var_types, function(x) x[!x %in% c(0, 1, NA)])
-  if (ordered) {
-    ### in the ordered case, 'var_types' has only variables in second position
-    if (grepl("|", formula[3], fixed = TRUE)) {
-      cli::cli_abort(
-        "Vertical bars in {.var formula} are not allowed in the ordered case",
-        call = NULL
-      )
-    }
-    var_types <- list(character(), unlist(var_types[1:3]), character())
+  if ("ASC" %in% unlist(var_types)) {
+    cli::cli_abort(
+      "Covariates named {.val ASC} in {.var formula} are not allowed",
+      call = NULL
+    )
   }
   if (any(duplicated(unlist(var_types)))) {
     dup_ind <- which(duplicated(unlist(var_types)))[1]
@@ -128,36 +128,45 @@ choice_formula <- function(
       call = NULL
     )
   }
-  re_n <- re[!endsWith(re, "+")]
-  re_ln <- sub(".{1}$", "", re[endsWith(re, "+")])
-  if (length(intersect(re_n, re_ln)) != 0) {
-    re_double <- intersect(re_n, re_ln)[1]
-    cli::cli_abort(
-      "Input {.var re} cannot include both {.val {re_double}} and {.val {re_double}+}",
-      call = NULL
-    )
-  }
-  for (re_val in c(re_n, re_ln)) {
-    if (!re_val %in% c(unlist(var_types), if(ASC) "ASC")) {
+
+  ### determine mixing types
+  mixing_types <- character()
+  for (re_entry in re) {
+    if (endsWith(re_entry, "+")) {
+      re_entry <- sub(".{1}$", "", re_entry)
+      mixing_type <- "log-normal"
+    } else {
+      mixing_type <- "normal"
+    }
+    if (re_entry %in% names(mixing_types)) {
       cli::cli_abort(
-        "Input {.var re} contains {.val {re_val}}, but it is not on the right
+        "Multiple random effects specifications for {.val {re_entry}} detected",
+        call = NULL
+      )
+    } else if (!re_entry %in% c(unlist(var_types), if(ASC) "ASC")) {
+      cli::cli_abort(
+        "Input {.var re} contains {.val {re_entry}}, but it is not on the right
         hand side of {.var formula}",
         call = NULL
       )
+    } else {
+      mixing_types[re_entry] <- mixing_type
     }
   }
+
+  ### check if formula is valid for the ordered case
+  ordered_valid <- length(var_types[[1]]) == 0 & length(var_types[[3]]) == 0 & !ASC
 
   ### build object
   structure(
     list(
       formula = formula,
-      re = re,
-      ordered = ordered,
+      error_term = error_term,
       choice = choice,
       var_types = var_types,
       ASC = ASC,
-      re_n = re_n,
-      re_ln = re_ln
+      mixing_types = mixing_types,
+      ordered_valid = ordered_valid
     ),
     class = c("choice_formula", "list")
   )
@@ -172,7 +181,8 @@ is.choice_formula <- function(
   check <- inherits(x, "choice_formula")
   if (isTRUE(error) && !isTRUE(check)) {
     cli::cli_abort(
-      "Input {.var {var_name}} must be an object of class {.cls choice_formula}",
+      "Input {.var {var_name}} must be an object of class
+      {.cls choice_formula}",
       call = NULL
     )
   } else {
@@ -187,11 +197,14 @@ is.choice_formula <- function(
 print.choice_formula <- function(x, ...) {
   is.choice_formula(x, error = TRUE)
   cli::cli_h3("Choice formula")
-  cli::cat_line(deparse1(x$formula))
-  if (length(x$re) > 0) {
-    cli::cat_line("with random effects")
-    cli::cat_bullet(x$re)
+  ul <- cli::cli_ul()
+  cli::cli_li(deparse1(x$formula))
+  cli::cli_li(paste("error term:", x$error_term))
+  if (length(x$mixing_types) > 0) {
+    cli::cli_li("random effects:")
+    cli::cli_ol(paste0(names(x$mixing_types), ": ", x$mixing_types))
   }
+  cli::cli_end(ul)
   invisible(x)
 }
 

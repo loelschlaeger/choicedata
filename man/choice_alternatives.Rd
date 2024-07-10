@@ -24,27 +24,23 @@ Must be at least \code{2}.}
 Labels for the choice alternatives.}
 
 \item{base}{(\code{character(1)})\cr
-The name of the base alternative for covariates that are
-not alternative specific, see details.
+The name of the base alternative for covariates that are not
+alternative-specific, see details.
 
 \code{base} must be contained in \code{alternatives}.
-
-Ignored if the model has no alternative specific covariates (in particular if
-\code{ordered = TRUE}).
 
 By default, \code{base} is the first element of \code{alternatives}.}
 
 \item{ordered}{(\code{logical(1)})\cr
 Are the choice alternatives ordered?}
 
-\item{x}{An object of the corresponding class to be printed.}
+\item{x}{An object of the corresponding class.}
 
 \item{...}{Currently not used.}
 }
 \value{
-An object of class \code{\link{choice_alternatives}}, which is a
-\code{character} vector of the choice alternatives and has the following
-attributes:
+An object of class \code{choice_alternatives}, which is a \code{character}
+vector of the choice alternatives that has the following attributes:
 \describe{
 \item{\code{J}}{The number of choice alternatives.}
 \item{\code{base}}{The name of the base alternative.}
@@ -52,17 +48,25 @@ attributes:
 }
 }
 \description{
-This function constructs an object of class
-\code{\link{choice_alternatives}}, which defines the set of choice
-alternatives.
+This function constructs an object of class \code{choice_alternatives}, which
+defines the set of choice alternatives.
 }
 \section{Base alternative}{
 
 The full set of coefficients for covariates that are constant across
-alternatives (including alternative specific constants) is not identified.
+alternatives (including alternative-specific constants) is not identified.
 To achieve identifiability, the coefficient of alternative \code{base}
 is fixed to \code{0}. The other coefficients then have to be interpreted with
 respect to \code{base}. The base alternative is marked with a \code{*} when
-printing a \code{\link{choice_alternatives}} object.
+printing a \code{choice_alternatives} object.
 }
 
+\examples{
+choice_alternatives(
+  J = 3,
+  alternatives = c("gas", "electricity", "oil"),
+  base = "gas",
+  ordered = FALSE
+)
+
+}

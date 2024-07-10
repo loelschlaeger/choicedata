@@ -4,7 +4,7 @@
 \alias{compute_P}
 \alias{compute_P_f}
 \alias{compute_P_r}
-\title{Compute number of (fixed and random) model effects}
+\title{Compute number of model effects}
 \usage{
 compute_P(formula, re, J, ordered = FALSE)
 
@@ -17,8 +17,7 @@ compute_P_r(formula, re, J, ordered = FALSE)
 A symbolic description of the choice model, see details.}
 
 \item{re}{(\code{character()})\cr
-The names of covariates in \code{formula} that have a random effect,
-see details.}
+The names of covariates in \code{formula} with a random effect, see details.}
 
 \item{J}{(\code{integer(1)})\cr
 The number of choice alternatives.
@@ -32,11 +31,14 @@ Are the choice alternatives ordered?}
 An \code{integer}, the number of model effects.
 }
 \description{
-These functions compute the number of fixed and random model effects.
-
-\code{compute_P()} computes the total number \code{P} of model effects.
-\code{compute_P_f()} computes the number \code{P_f} of fixed model effects.
-\code{compute_P_r()} computes the number \code{P_r} of random model effects.
+These functions compute the number of model effects.
+\itemize{
+\item \code{compute_P()} computes the total number \code{P} of model effects.
+\item \code{compute_P_f()} computes the number \code{P_f} of non-random
+model effects.
+\item \code{compute_P_r()} computes the number \code{P_r} of random model
+effects.
+}
 }
 \section{Model formula}{
 
@@ -44,49 +46,42 @@ The structure of \code{formula} is
 \code{choice ~ A | B | C}, where
 \itemize{
 \item \code{choice} is the name of the discrete response variable,
-\item \code{A} are names of \strong{alternative specific covariates} with
+\item \code{A} are names of \strong{alternative-specific covariates} with
 \strong{a coefficient that is constant across alternatives},
 \item \code{B} are names of \strong{covariates that are constant across
 alternatives},
-\item and \code{C} are names of \strong{alternative specific covariates}
-with \strong{alternative specific coefficients}.
+\item and \code{C} are names of \strong{alternative-specific covariates}
+with \strong{alternative-specific coefficients}.
 }
 
-Multiple covariates of one type are separated by a \code{+} sign, i.e.,
+Multiple covariates of one type are separated by a \code{+} sign, e.g.,
 \code{choice ~ A1 + A2}.
 
-By default, alternative specific constants (ASCs) are added to the model.
-They can be removed by adding \code{+ 0} in the second spot, i.e.,
+By default, alternative-specific constants (ASCs) are added to the model.
+They can be removed by adding \code{+ 0} in the second spot, e.g.,
 \code{choice ~ A | B + 0 | C}. To not include any covariates of
-the second category but to estimate ASCs, add \code{1} in the second
+the second type but to estimate ASCs, add \code{1} in the second
 spot, e.g., \code{choice ~ A | 1 | C}. The expression
 \code{choice ~ A | 0 | C} is interpreted as no covariates of the second
-category and no ASCs.
+type and no ASCs.
 
-In the ordered model case (\code{ordered = TRUE}), covariates are not
-alternative specific, i.e., there exists only one type of covariate.
-Therefore, the \code{formula} object does not need the special
-separation form via \code{|}, and hence has the simple structure
-\code{choice ~ A + B + C}.
-ASCs cannot be estimated in the ordered case.
+Some parts of the formula can be omitted when there is no ambiguity. For
+example, \code{choice ~ A} is equivalent to \code{choice ~ A | 1 | 0}.
+
+In the ordered case, since only a single utility is modeled, no ASCs and no
+alternative-specific covariates can be included. Hence, in the ordered case,
+\code{formula} must be of the form, e.g.,  \code{choice ~ 0 | A + B + 0}.
 }
 
 \section{Random effects}{
 
 Covariates can have random effects, i.e., their coefficients can follow a
-random distribution. Per default, the distribution is normal. The log-normal
+random distribution (a so-called mixing distribution).
+Per default, the mixing distribution is normal. In addition, the log-normal
 distribution (e.g., for sign-restriction) can be specified via appending
 \code{+} to the corresponding name in \code{re}.
 To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
 \code{re}.
 }
 
-\examples{
-formula <- choice ~ A | B | C + D
-re <- c("A", "D+")
-J <- 3
-compute_P(formula, re, J)
-compute_P_f(formula, re, J)
-compute_P_r(formula, re, J)
-
-}
+\keyword{internal}

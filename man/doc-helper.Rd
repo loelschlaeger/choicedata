@@ -14,7 +14,7 @@
 
 \item{ranked}{Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.}
 
-\item{x}{An object of the corresponding class to be printed.}
+\item{x}{An object of the corresponding class.}
 
 \item{...}{Currently not used.}
 }

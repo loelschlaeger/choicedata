@@ -1,23 +1,23 @@
 # choice_formula can be printed
 
     Code
-      choice_formula(formula = choice ~ A | B, re = NULL, ordered = FALSE)
+      choice_formula(formula = choice ~ A | B, re = NULL)
     Message
       
       -- Choice formula 
-    Output
-      choice ~ A | B
+      * choice ~ A | B
+      * error term: probit
 
 ---
 
     Code
-      choice_formula(formula = choice ~ A + B, re = c("A+", "B"), ordered = TRUE)
+      choice_formula(formula = choice ~ A + B, re = c("A+", "B"))
     Message
       
       -- Choice formula 
-    Output
-      choice ~ A + B
-      with random effects
-      * A+
-      * B
+      * choice ~ A + B
+      * error term: probit
+      * random effects:
+        1. A: log-normal
+        2. B: normal
 

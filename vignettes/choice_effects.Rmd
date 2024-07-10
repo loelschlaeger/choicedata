@@ -1,0 +1,24 @@
+---
+title: "Choice effects"
+description: >
+  How to define choice effects?
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Choice effects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: ../inst/REFERENCES.bib
+link-citations: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("choicedata")
+```
+
+The choice formula together with the choice alternatives determine the choice effects. In the `{choicedata}` package, choice effects are represented as a `choice_effects` S3 object [@Chambers1992].  
+
+## References
