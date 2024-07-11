@@ -40,19 +40,20 @@ check_base <- function(base, alternatives, J) {
 
 check_C <- function(C, latent_classes) {
   check_not_missing(C)
-  check_latent_classes(latent_classes)
-  check <- if (latent_classes == "none") {
+  latent_classes <- check_latent_classes(latent_classes)
+  check <- if (length(latent_classes) == 0) {
     if (C != 1) {
       "Must be equal to 1 (latent classes undefined)"
     } else {
       TRUE
     }
   } else {
-    checkmate::check_int(C, lower = 1)
+    checkmate::check_int(C, lower = 2)
   }
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var C} is bad: {check}", call = NULL)
   }
+  C <- as.integer(C)
   invisible(C)
 }
 
@@ -195,7 +196,7 @@ check_error_term <- function(error_term, choices = c("logit", "probit")) {
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var error_term} is bad: {check}", call = NULL)
   }
-  invisible(format)
+  invisible(error_term)
 }
 
 check_format <- function(format, choices = c("wide", "long")) {
@@ -227,7 +228,10 @@ check_J <- function(J) {
 
 check_latent_classes <- function(latent_classes) {
   check_not_missing(latent_classes)
-  check <- checkmate::check_choice(latent_classes, choices = c("none", "fe", "re", "both"))
+  if (is.null(latent_classes)) {
+    latent_classes <- character()
+  }
+  check <- checkmate::check_names(latent_classes, type = "unique")
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var latent_classes} is bad: {check}", call = NULL)
   }
@@ -280,15 +284,15 @@ check_ranked <- function(ranked) {
   invisible(ranked)
 }
 
-check_re <- function(re) {
-  check_not_missing(re)
-  check <- checkmate::check_character(re, any.missing = FALSE, unique = TRUE, null.ok = TRUE)
+check_random_effects <- function(random_effects) {
+  check_not_missing(random_effects)
+  if (is.null(random_effects)) {
+    random_effects <- character()
+  }
+  check <- checkmate::check_names(random_effects, type = "unique")
   if (!isTRUE(check)) {
-    cli::cli_abort("Input {.var re} is bad: {check}", call = NULL)
+    cli::cli_abort("Input {.var random_effects} is bad: {check}", call = NULL)
   }
-  if (is.null(re)) {
-    re <- character()
-  }
-  invisible(re)
+  invisible(random_effects)
 }
 

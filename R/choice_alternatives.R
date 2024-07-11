@@ -40,6 +40,27 @@
 #' respect to \code{base}. The base alternative is marked with a \code{*} when
 #' printing a \code{choice_alternatives} object.
 #'
+#' @section Ordered choice alternatives:
+#' When the set of choice alternatives is ordered, the choice model has only a
+#' single utility equation
+#' \deqn{U_{nt} = X_{nt}' \tilde{\beta}_n + \epsilon_{nt},}
+#' where \eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)} in the probit model
+#' and logistic in the logit model, per decider \eqn{n} and choice
+#' occasion \eqn{t}.
+#'
+#' This utility can be interpreted as the level of association that \eqn{n} has
+#' with the choice question. It falls into discrete categories, which in turn
+#' are linked to the ordered alternatives \eqn{j=1,\dots,J}. Formally,
+#' \deqn{y_{nt} = \sum_{j = 1,\dots,J} j \cdot I(\gamma_{j-1} < U_{nt} \leq
+#' \gamma_{j}),}
+#' where \eqn{\gamma_0 = -\infty} and \eqn{\gamma_J = +\infty}. This implies
+#' that alternative \eqn{j} is chosen, if the utility falls into the interval
+#' \eqn{(\gamma_{j-1}, \gamma_j]}.
+#' Monotonicity of the thresholds \eqn{(\gamma_j)_{j=1,\dots,J-1}} is ensured
+#' by estimating logarithmic increments \eqn{d_j} with
+#' \eqn{\gamma_j = \sum_{i\leq j} \exp{(d_i)}}, \eqn{j=1,\dots,J-1}.
+#' For level normalization, we fix \eqn{\gamma_1 = 0}.
+#'
 #' @examples
 #' choice_alternatives(
 #'   J = 3,
@@ -88,7 +109,13 @@ is.choice_alternatives <- function(
 }
 
 #' @rdname choice_alternatives
-#' @inheritParams doc-helper
+#'
+#' @param x (`choice_alternatives`)\cr
+#' The `choice_alternatives` object to be printed.
+#'
+#' @param ...
+#' Currently not used.
+#'
 #' @exportS3Method
 
 print.choice_alternatives <- function(x, ...) {

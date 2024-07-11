@@ -10,14 +10,17 @@ choice_effects(choice_formula, choice_alternatives, delimiter = "_")
 \method{print}{choice_effects}(x, ...)
 }
 \arguments{
-\item{choice_formula}{A \code{\link{choice_formula}} object.}
+\item{choice_formula}{(\code{choice_formula})\cr
+The \code{\link{choice_formula}} object that defines the choice effects.}
 
-\item{choice_alternatives}{A \code{\link{choice_alternatives}} object.}
+\item{choice_alternatives}{(\code{choice_alternatives})\cr
+The \code{\link{choice_alternatives}} object that defines the choice effects.}
 
 \item{delimiter}{(\code{character(1)})\cr
 A delimiter between covariate and alternative label to build the effect name.}
 
-\item{x}{An object of the corresponding class.}
+\item{x}{(\code{choice_effects})\cr
+The \code{choice_effects} object to be printed.}
 
 \item{...}{Currently not used.}
 }
@@ -34,10 +37,11 @@ if the effect is alternative-specific, i.e., varies across alternatives),
 alternative-specific,
 \item \code{"as_effect"}, indicator whether the effect is alternative-specific,
 \item \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
-and \code{"log-normal"}, indicating the type of random effect
+and \code{"log-normal"}, indicating the type of random effect,
+\item \code{"lc_effect"}, indicator whether the effect has latent classes.
 }
 
-The effects are ordered as follows:
+For identification, the effects are ordered as follows:
 \itemize{
 \item Non-random effects come before random effects.
 \item Normal random effects come before log-normal random effects.
@@ -46,67 +50,13 @@ The effects are ordered as follows:
 }
 \description{
 This function constructs an object of class \code{choice_effects}, which
-defines the choice model effects.
+defines the effects of a choice model.
 }
-\section{Model formula}{
-
-The structure of \code{formula} is
-\code{choice ~ A | B | C}, where
-\itemize{
-\item \code{choice} is the name of the discrete response variable,
-\item \code{A} are names of \strong{alternative-specific covariates} with
-\strong{a coefficient that is constant across alternatives},
-\item \code{B} are names of \strong{covariates that are constant across
-alternatives},
-\item and \code{C} are names of \strong{alternative-specific covariates}
-with \strong{alternative-specific coefficients}.
-}
-
-Multiple covariates of one type are separated by a \code{+} sign, e.g.,
-\code{choice ~ A1 + A2}.
-
-By default, alternative-specific constants (ASCs) are added to the model.
-They can be removed by adding \code{+ 0} in the second spot, e.g.,
-\code{choice ~ A | B + 0 | C}. To not include any covariates of
-the second type but to estimate ASCs, add \code{1} in the second
-spot, e.g., \code{choice ~ A | 1 | C}. The expression
-\code{choice ~ A | 0 | C} is interpreted as no covariates of the second
-type and no ASCs.
-
-Some parts of the formula can be omitted when there is no ambiguity. For
-example, \code{choice ~ A} is equivalent to \code{choice ~ A | 1 | 0}.
-
-In the ordered case, since only a single utility is modeled, no ASCs and no
-alternative-specific covariates can be included. Hence, in the ordered case,
-\code{formula} must be of the form, e.g.,  \code{choice ~ 0 | A + B + 0}.
-}
-
-\section{Random effects}{
-
-Covariates can have random effects, i.e., their coefficients can follow a
-random distribution (a so-called mixing distribution).
-Per default, the mixing distribution is normal. In addition, the log-normal
-distribution (e.g., for sign-restriction) can be specified via appending
-\code{+} to the corresponding name in \code{re}.
-To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
-\code{re}.
-}
-
-\section{Base alternative}{
-
-The full set of coefficients for covariates that are constant across
-alternatives (including alternative-specific constants) is not identified.
-To achieve identifiability, the coefficient of alternative \code{base}
-is fixed to \code{0}. The other coefficients then have to be interpreted with
-respect to \code{base}. The base alternative is marked with a \code{*} when
-printing a \code{choice_alternatives} object.
-}
-
 \examples{
 choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ price | income | comfort,
-    re = c("price+", "income")
+    formula = choice ~ price | income | comfort, error_term = "probit",
+    random_effects = c("price+", "income")
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )

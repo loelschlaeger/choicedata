@@ -1,26 +1,3 @@
-#' Documentation helper
-#'
-#' @name doc-helper
-#'
-#' @param choice_alternatives
-#' A \code{\link{choice_alternatives}} object.
-#' @param choice_covariates
-#' A \code{\link{choice_covariates}} object.
-#' @param choice_formula
-#' A \code{\link{choice_formula}} object.
-#' @param choice_parameters
-#' A \code{\link{choice_parameters}} object.
-#' @param ranked
-#' Either \code{TRUE} for ranked choices or \code{FALSE} (default), else.
-#' @param x
-#' An object of the corresponding class.
-#' @param ...
-#' Currently not used.
-#'
-#' @keywords internal
-
-NULL
-
 #' @keywords internal
 
 covariate_spec_sugar <- function(

@@ -77,7 +77,8 @@ Are the choice alternatives ordered?}
 
 \item{delimiter}{TODO}
 
-\item{x}{An object of the corresponding class.}
+\item{x}{(\code{choice_alternatives})\cr
+The \code{choice_alternatives} object to be printed.}
 
 \item{error}{TODO}
 

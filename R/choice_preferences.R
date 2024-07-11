@@ -1,4 +1,3 @@
-#' @rdname choice_parameters
 
 choice_preferences <- function(preferences, choice_identifiers = NULL) {
   structure(

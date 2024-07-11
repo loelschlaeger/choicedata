@@ -1,36 +1,10 @@
 test_that("effect overview can be created", {
-  expect_error(
-    choice_effects(),
-    "Please specify the input `choice_formula`"
-  )
-  expect_error(
-    choice_effects(choice_formula = choice ~ A),
-    "Input `choice_formula` must be an object of class"
-  )
-  expect_error(
-    choice_effects(choice_formula = choice_formula(formula = A ~ B)),
-    "Please specify the input `choice_alternatives`"
-  )
-  expect_error(
-    choice_effects(
-      choice_formula = choice_formula(formula = A ~ B),
-      choice_alternatives = 2
-    ),
-    "Input `choice_alternatives` must be an object of class"
-  )
-  expect_error(
-    choice_effects(
-      choice_formula = choice_formula(formula = A ~ B),
-      choice_alternatives = choice_alternatives(J = 3),
-      delimiter = 1
-    ),
-    "Input `delimiter` is bad: Must be of type 'string', not 'double'"
-  )
   expect_equal(
     choice_effects(
       choice_formula = choice_formula(
         formula = choice ~ cov,
-        re = c("cov", "ASC+")
+        error_term = "logit",
+        random_effects = c("cov", "ASC+")
       ),
       choice_alternatives = choice_alternatives(
         J = 3,
@@ -49,7 +23,8 @@ test_that("effect overview can be created", {
           c(1L, 2L, 2L),
           levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
-        )
+        ),
+        lc_effect = c(FALSE, FALSE, FALSE)
       ),
       row.names = c(NA, -3L),
       class = c("choice_effects", "data.frame")
@@ -59,7 +34,8 @@ test_that("effect overview can be created", {
     choice_effects(
       choice_formula = choice_formula(
         formula = choice ~ A | B + 0 | C,
-        re = NULL
+        error_term = "probit",
+        random_effects = NULL
       ),
       choice_alternatives = choice_alternatives(
         J = 2,
@@ -78,7 +54,8 @@ test_that("effect overview can be created", {
           c(NA_integer_, NA_integer_, NA_integer_, NA_integer_),
           levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
-        )
+        ),
+        lc_effect = c(FALSE, FALSE, FALSE, FALSE)
       ),
       row.names = c(NA, -4L),
       class = c("choice_effects", "data.frame")
@@ -88,7 +65,8 @@ test_that("effect overview can be created", {
     choice_effects(
       choice_formula = choice_formula(
         formula = choice ~ 0 | A + B + C + 0,
-        re = "A+"
+        error_term = "logit",
+        random_effects = "A+"
       ),
       choice_alternatives = choice_alternatives(
         J = 3, ordered = TRUE
@@ -105,21 +83,89 @@ test_that("effect overview can be created", {
           c(NA_integer_, NA_integer_, 2L),
           levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
-        )
+        ),
+        lc_effect = c(FALSE, FALSE, FALSE)
       ),
       row.names = c(NA, -3L),
       class = c("choice_effects", "data.frame")
     )
   )
+  expect_equal(
+    choice_effects(
+      choice_formula = choice_formula(
+        formula = choice ~ 0 | A + B + C + 0,
+        error_term = "logit",
+        random_effects = "A+",
+        latent_classes = c("A", "B", "C"),
+        C = 3
+      ),
+      choice_alternatives = choice_alternatives(
+        J = 3, ordered = TRUE
+      )
+    ),
+    structure(
+      list(
+        name = c("B", "C", "A"),
+        covariate = c("B", "C", "A"),
+        alternative = c(NA_character_, NA_character_, NA_character_),
+        as_covariate = c(FALSE, FALSE, FALSE),
+        as_effect = c(FALSE, FALSE, FALSE),
+        mixing = structure(
+          c(NA_integer_, NA_integer_, 2L),
+          levels = c("normal", "log-normal"),
+          class = c("ordered", "factor")
+        ),
+        lc_effect = c(TRUE, TRUE, TRUE)
+      ),
+      row.names = c(NA, -3L),
+      class = c("choice_effects", "data.frame")
+    )
+  )
+})
+
+test_that("misspecified effects can be detected", {
+  expect_error(
+    choice_effects(),
+    "Please specify the input `choice_formula`"
+  )
+  expect_error(
+    choice_effects(choice_formula = choice ~ A),
+    "Input `choice_formula` must be an object of class"
+  )
+  expect_error(
+    choice_effects(
+      choice_formula = choice_formula(formula = A ~ B, error_term = "probit")
+    ),
+    "Please specify the input `choice_alternatives`"
+  )
+  expect_error(
+    choice_effects(
+      choice_formula = choice_formula(formula = A ~ B, error_term = "logit"),
+      choice_alternatives = 2
+    ),
+    "Input `choice_alternatives` must be an object of class"
+  )
+  expect_error(
+    choice_effects(
+      choice_formula = choice_formula(formula = A ~ B, error_term = "probit"),
+      choice_alternatives = choice_alternatives(J = 3),
+      delimiter = 1
+    ),
+    "Input `delimiter` is bad: Must be of type 'string', not 'double'"
+  )
   expect_error(
     is.choice_effects(1),
     "must be an object of class"
   )
+})
+
+test_that("printing effects works", {
   expect_snapshot(
     choice_effects(
       choice_formula = choice_formula(
         formula = choice ~ price | income | comfort,
-        re = c("price+", "income")
+        error_term = "probit",
+        random_effects = c("price+", "income")
       ),
       choice_alternatives = choice_alternatives(J = 3)
     )
@@ -128,10 +174,10 @@ test_that("effect overview can be created", {
 
 test_that("number of effects can be computed", {
   formula <- choice ~ A | B + 0 | C + D
-  re <- c("A", "D+")
+  random_effects <- c("A", "D+")
   J <- 3
-  expect_equal(compute_P(formula, re, J), 9)
-  expect_equal(compute_P_f(formula, re, J), 5)
-  expect_equal(compute_P_r(formula, re, J), 4)
+  expect_equal(compute_P(formula, random_effects, J), 9)
+  expect_equal(compute_P_f(formula, random_effects, J), 5)
+  expect_equal(compute_P_r(formula, random_effects, J), 4)
 })
 

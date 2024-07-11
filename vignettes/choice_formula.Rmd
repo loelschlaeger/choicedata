@@ -1,7 +1,7 @@
 ---
 title: "Choice formula"
 description: >
-  How to define a choice formula?
+  How to define a choice model formula?
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Choice formula}
@@ -21,7 +21,7 @@ library("choicedata")
 
 The choice formula describes the choice model to be fitted to choice data. In the `{choicedata}` package, the choice formula is represented as a `choice_formula` S3 object [@Chambers1992]. 
 
-Choice models are typically defined in the random utility model (RUM) framework by specifying a formula for the latent utilities. These utilities are linked to the observed discrete choices based on the assumption of utility-maximizing behavior by the decision-makers [@Train2009]. A general equation for the latent utilities is: $$U = f(V, \varepsilon),$$ where
+Choice models are typically defined in the random utility model (RUM) framework by specifying an equation for the latent utilities. These utilities are linked to the observed discrete choices based on the assumption of utility-maximizing behavior by the decision-makers [@Train2009]. A general equation for the latent utilities is: $$U = f(V, \varepsilon),$$ where
 
 - $U$ is a vector of latent utilities for each alternative,
 
@@ -45,13 +45,17 @@ Thus, the choice model equation becomes $$U = X\beta + \varepsilon,$$ where the 
 
 3. Are random effects present, i.e., does $\beta$ (or parts of it) follow a random distribution?
 
+4. Are latent classes present, i.e., does $\beta$ (or parts of it) change according to a latent class?
+
 These details can be specified by defining a `choice_formula` object via the following call:
 
 ```r
-choice_formula(formula, error_term, re)
+choice_formula(formula, error_term, random_effects = NULL, latent_classes = NULL)
 ```
 
-### Included covariates
+Note that only the arguments `formula` and `error_term` are required. The arguments `random_effects` and `latent_classes` have default values, indicating no random effects and no latent classes by default.
+
+### Specifying included covariates via `formula`
 
 Covariates to be included in the model are specified via the `formula` argument as a symbolic description, similar to specifying a formula for fitting a linear model using the `stats::lm()` function. Additionally, we distinguish between covariates that vary across alternatives (alternative-specific covariates) and covariates that are constant across alternatives (alternative-constant covariates). Furthermore, alternative-specific covariates can either be connected to a coefficient that is constant across alternatives or to coefficients that are alternative-specific. Coefficients of alternative-constant covariates necessarily have to be alternative-specific. Thus, three different types of covariates need to be distinguished, which is accomplished via vertical bars as follows:
 
@@ -71,29 +75,33 @@ Here,
 
 The following rules apply:
 
-- Multiple covariates are separated by a `+` sign. For example, `choice ~ A + B`.
+- Multiple covariates are separated by a `+` sign, e.g., `choice ~ A + B`.
 
-- By default, alternative-specific constants (ASCs) are included in the model. To remove them, add `+ 0` in the second position, e.g., `choice ~ A | B + 0 | C`. If you want to exclude any covariates of the second type but still estimate ASCs, add `1` in the second position, e.g., `choice ~ A | 1 | C`. Using `choice ~ A | 0 | C` means no covariates of the second type and no ASCs.
+- By default, alternative-specific constants (ASCs) are included in the model. To remove them, add `+ 0` in the second position, e.g., `choice ~ A | B + 0 | C`. If you want to include ASCs but no other covariates of the second type, add `1` in the second position, e.g., `choice ~ A | 1 | C`. Using `choice ~ A | 0 | C` means no covariates of the second type and no ASCs.
 
-- Some parts of the formula can be omitted when there is no ambiguity. For example, `choice ~ A` is equivalent to `choice ~ A | 1 | 0`.
+- Some parts of the formula can be omitted when there is no ambiguity, e.g., `choice ~ A` is equivalent to `choice ~ A | 1 | 0`.
 
-### Error distribution 
+### Specifying the error distribution via `error_term`
 
-Different assumptions about the error term $\varepsilon$ lead to different choice models. The most commonly used models are the logit and the probit model:
+Different distributional assumptions about the error term $\varepsilon$ lead to different choice models. The most commonly used models are the logit and the probit model:
 
-- **Logit model**: This model is specified by setting `error_term = "logit"`. Here, the entries of the error vector $\varepsilon$ are assumed to be independently and identically distributed according to a standard Gumbel distribution. The primary advantage of the logit model is that the choice probabilities have a closed-form expression, making them easy to calculate. However, a significant limitation is the independence from irrelevant alternatives (IIA) property. This implies that the relative odds of choosing one alternative over another are unaffected by the presence of other alternatives, leading to proportional substitution effects that may not be realistic.
+- **Logit model**: This model is specified by setting `error_term = "logit"`. Here, the entries of the error vector $\varepsilon$ are assumed to be independently and identically distributed according to a standard Gumbel distribution. The primary advantage of the logit model is that the choice probabilities have a closed-form expression, making them easier to calculate. However, a limitation is the independence from irrelevant alternatives (IIA) property. This implies that the relative odds of choosing one alternative over another are unaffected by the presence of other alternatives, leading to proportional substitution effects that may not be realistic.
 
-- **Probit model**: This model is specified by setting `error_term = "probit"`. In the probit model, the error vector $\varepsilon$ is assumed to follow a multivariate normal distribution. This allows the probit model to avoid the restrictive IIA assumption of the logit model by accommodating flexible correlations among alternatives. The main drawback is that the choice probabilities do not have a closed-form expression. Instead, evaluating these probabilities requires computing a multivariate integral whose dimensionality is determined by the number of choice alternatives, resulting in increased computational time.
+- **Probit model**: This model is specified by setting `error_term = "probit"`. In the probit model, the error vector $\varepsilon$ is assumed to follow a multivariate normal distribution. This allows the probit model to avoid the restrictive IIA assumption of the logit model by accommodating flexible correlations among alternatives. The main drawback is that the choice probabilities do not have a closed-form expression. Instead, computing these probabilities requires evaluating a multivariate integral whose dimensionality is determined by the number of choice alternatives, resulting in increased computational time.
 
 <!-- TODO: link to "choice probabilities" for more details on how they are computed -->
 
-### Random effects
+### Specifying random effects via `random_effects`
 
-The third and final part required to create a `choice_formula` object is the `re` argument, which allows for the optional specification of random effects. Covariates can have random effects, meaning their coefficients can follow a random distribution (known as a mixing distribution). The `{choicedata}` package currently supports normal and log-normal mixing distributions:
+Optionally, covariates can have random effects, meaning their coefficients can follow a random distribution (known as a mixing distribution). The `{choicedata}` package currently supports normal and log-normal mixing distributions:
 
-- **Normal mixing distribution**: To specify a normal mixing distribution for a covariate `A`, include `"A"` in the `re` argument.
+- **Normal mixing distribution**: To specify a normal mixing distribution for a covariate `A` contained in `formula`, include `"A"` in the `random_effects` argument.
 
-- **Log-normal mixing distribution**: To specify a log-normal mixing distribution for a covariate `A`, include `"A+"` in the `re` argument.
+- **Log-normal mixing distribution**: To specify a log-normal mixing distribution for a covariate `A` contained in `formula`, include `"A+"` in the `random_effects` argument.
+
+### Specifying latent classes via `latent_classes`
+
+Covariates can optionally be linked to latent classes, meaning their coefficients vary according to an underlying and unobserved class of the decider. This can be specified for both random and non-random effects by including a covariate `A` from the `formula` in the `latent_class` argument.
 
 <!-- TODO: general example -->
 

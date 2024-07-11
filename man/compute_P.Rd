@@ -6,18 +6,24 @@
 \alias{compute_P_r}
 \title{Compute number of model effects}
 \usage{
-compute_P(formula, re, J, ordered = FALSE)
+compute_P(formula, random_effects, J, ordered = FALSE)
 
-compute_P_f(formula, re, J, ordered = FALSE)
+compute_P_f(formula, random_effects, J, ordered = FALSE)
 
-compute_P_r(formula, re, J, ordered = FALSE)
+compute_P_r(formula, random_effects, J, ordered = FALSE)
 }
 \arguments{
 \item{formula}{(\code{formula})\cr
 A symbolic description of the choice model, see details.}
 
-\item{re}{(\code{character()})\cr
-The names of covariates in \code{formula} with a random effect, see details.}
+\item{random_effects}{(\code{character()})\cr
+The names of covariates in \code{formula} connected to a random effect, i.e.,
+their coefficients follow a random (so-called mixing) distribution.
+
+Per default, the mixing distribution is normal. In addition, the log-normal
+distribution (e.g., for sign-restriction) can be specified via appending
+\code{+} to the corresponding name. To have random effects for the ASCs, add
+\code{ASC} (or \code{ASC+}) to \code{random_effects}.}
 
 \item{J}{(\code{integer(1)})\cr
 The number of choice alternatives.
@@ -31,7 +37,8 @@ Are the choice alternatives ordered?}
 An \code{integer}, the number of model effects.
 }
 \description{
-These functions compute the number of model effects.
+These helper functions compute the number effects in a specified choice
+model:
 \itemize{
 \item \code{compute_P()} computes the total number \code{P} of model effects.
 \item \code{compute_P_f()} computes the number \code{P_f} of non-random
@@ -40,7 +47,7 @@ model effects.
 effects.
 }
 }
-\section{Model formula}{
+\section{Specifying the model formula}{
 
 The structure of \code{formula} is
 \code{choice ~ A | B | C}, where
@@ -73,15 +80,27 @@ alternative-specific covariates can be included. Hence, in the ordered case,
 \code{formula} must be of the form, e.g.,  \code{choice ~ 0 | A + B + 0}.
 }
 
-\section{Random effects}{
+\section{Ordered choice alternatives}{
 
-Covariates can have random effects, i.e., their coefficients can follow a
-random distribution (a so-called mixing distribution).
-Per default, the mixing distribution is normal. In addition, the log-normal
-distribution (e.g., for sign-restriction) can be specified via appending
-\code{+} to the corresponding name in \code{re}.
-To have random effects for the ASCs, add \code{ASC} (or \code{ASC+}) to
-\code{re}.
+When the set of choice alternatives is ordered, the choice model has only a
+single utility equation
+\deqn{U_{nt} = X_{nt}' \tilde{\beta}_n + \epsilon_{nt},}
+where \eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)} in the probit model
+and logistic in the logit model, per decider \eqn{n} and choice
+occasion \eqn{t}.
+
+This utility can be interpreted as the level of association that \eqn{n} has
+with the choice question. It falls into discrete categories, which in turn
+are linked to the ordered alternatives \eqn{j=1,\dots,J}. Formally,
+\deqn{y_{nt} = \sum_{j = 1,\dots,J} j \cdot I(\gamma_{j-1} < U_{nt} \leq
+\gamma_{j}),}
+where \eqn{\gamma_0 = -\infty} and \eqn{\gamma_J = +\infty}. This implies
+that alternative \eqn{j} is chosen, if the utility falls into the interval
+\eqn{(\gamma_{j-1}, \gamma_j]}.
+Monotonicity of the thresholds \eqn{(\gamma_j)_{j=1,\dots,J-1}} is ensured
+by estimating logarithmic increments \eqn{d_j} with
+\eqn{\gamma_j = \sum_{i\leq j} \exp{(d_i)}}, \eqn{j=1,\dots,J-1}.
+For level normalization, we fix \eqn{\gamma_1 = 0}.
 }
 
 \keyword{internal}

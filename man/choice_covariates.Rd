@@ -53,7 +53,8 @@ covariate_number(choice_formula, choice_alternatives)
 \arguments{
 \item{covariates}{TODO}
 
-\item{x}{An object of the corresponding class.}
+\item{x}{(\code{choice_effects})\cr
+The \code{choice_effects} object to be printed.}
 
 \item{error}{TODO}
 

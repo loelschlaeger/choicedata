@@ -1,23 +1,41 @@
 # choice_formula can be printed
 
     Code
-      choice_formula(formula = choice ~ A | B, re = NULL)
+      choice_formula(formula = choice ~ A | B, error_term = "logit", random_effects = NULL)
     Message
       
       -- Choice formula 
       * choice ~ A | B
-      * error term: probit
+      * error term: logit
 
 ---
 
     Code
-      choice_formula(formula = choice ~ A + B, re = c("A+", "B"))
+      choice_formula(formula = choice ~ A + B, error_term = "probit", random_effects = c(
+        "A+", "B"))
     Message
       
       -- Choice formula 
       * choice ~ A + B
       * error term: probit
       * random effects:
-        1. A: log-normal
-        2. B: normal
+        * A: log-normal
+        * B: normal
+
+---
+
+    Code
+      choice_formula(formula = choice ~ A + B, error_term = "logit", random_effects = c(
+        "A+", "B"), latent_class = c("A", "B"))
+    Message
+      
+      -- Choice formula 
+      * choice ~ A + B
+      * error term: logit
+      * random effects:
+        * A: log-normal
+        * B: normal
+      * latent classes:
+        * A
+        * B
 

@@ -1,12 +1,4 @@
-test_that("input checks for probit parameter work", {
-  expect_error(
-    choice_parameters(C = 2),
-    "Input `C` is bad: Must be equal to 1"
-  )
-  expect_error(
-    choice_parameters(latent_classes = "both", C = 3.1),
-    "Input `C` is bad: Must be of type 'single integerish value', not 'double'"
-  )
+test_that("input checks for choice parameters work", {
   expect_error(
     choice_parameters(s = "not_a_numeric"),
     "Input `s` is bad: Must be of type 'numeric', not 'character'"
@@ -33,20 +25,23 @@ test_that("input checks for probit parameter work", {
   )
 })
 
-test_that("probit parameter can be created", {
+test_that("choice parameter can be created", {
   x <- choice_parameters()
   expect_true(is.choice_parameters(x))
   expect_s3_class(x, "choice_parameters")
+  expect_snapshot(print(x))
+})
+
+test_that("choice parameters can be sampled", {
   choice_formula <- choice_formula(
     formula = choice ~ A | 0 + B, re = "B"
   )
   set.seed(1)
   x <- sample_choice_parameters(x, choice_formula = choice_formula, J = 3)
   expect_s3_class(x, "choice_parameters")
-  expect_snapshot(print(x))
 })
 
-test_that("probit parameter can be validated", {
+test_that("choice parameter can be validated", {
   expect_error(
     validate_choice_parameters(choice_parameters = choice_parameters()),
     "Please specify the input `choice_formula`"
