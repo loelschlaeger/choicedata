@@ -3,7 +3,7 @@
 \name{choice_parameters}
 \alias{choice_parameters}
 \alias{print.choice_parameters}
-\alias{sample_choice_parameters}
+\alias{generate_choice_parameters}
 \alias{validate_choice_parameters}
 \alias{identify_choice_parameters}
 \title{Define choice model parameters}
@@ -27,41 +27,45 @@ choice_parameters(
   details = !simplify
 )
 
-sample_choice_parameters(
+generate_choice_parameters(
   choice_effects,
+  C = 1,
   fixed_parameters = choice_parameters()
 )
 
 validate_choice_parameters(
   choice_parameters,
   choice_effects,
+  C = 1,
   allow_missing = FALSE
 )
 
-identify_choice_parameters(x, mode, choice_effects, scale = 1, level = 1)
+identify_choice_parameters(choice_parameters, scale = 1, level = 1)
 }
 \arguments{
 \item{s}{(\code{numeric(C)})\cr
-The latent class weights. Only relevant if latent classes are specified.}
+The latent class weights. Only relevant if latent classes are specified.
+
+Must be non-negative and sum-up to 1.}
 
 \item{alpha}{(\code{numeric(P_f)} or \code{matrix(nrow = P_f, ncol = C)})\cr
 The non-random coefficients. Only relevant if non-random coefficients are
 specified.
 
-Different values are stored column-wise in the case of latent classes.}
+In the case of latent classes, different values are stored column-wise.}
 
 \item{b}{(\code{numeric(P_r)} or \code{matrix(nrow = P_r, ncol = C)})\cr
 The mean of random effects. Only relevant if random coefficients are
 specified.
 
-Different values are stored column-wise in the case of latent classes.}
+In the case of latent classes, different values are stored column-wise.}
 
 \item{Omega}{(\code{matrix(P_r)} or \code{matrix(nrow = P_r^2, ncol = C)})\cr
 The covariance matrix of random effects. Only relevant if random coefficients
 are specified.
 
-Different covariance matrices are stored column-wise in vector form in the
-case of latent classes.}
+In the case of latent classes, different covariance matrices are stored
+column-wise in vector form.}
 
 \item{Sigma}{(\code{matrix(nrow = J, ncol = J)} or \code{numeric(1)})\cr
 The error term covariance matrix. Only relevant in the probit model.
@@ -77,8 +81,10 @@ Must be strictly ascending.
 lower and upper bounds are \eqn{\gamma_0 = -\infty} and
 \eqn{\gamma_J = +\infty}.}
 
-\item{x}{Either a \code{\link{choice_parameters}} object or a \code{numeric}
-\code{vector}.}
+\item{x}{(\code{choice_parameters})\cr
+The \code{choice_parameters} object to be printed.}
+
+\item{...}{Currently not used.}
 
 \item{rowdots}{An \code{integer}, the row number which is replaced by \code{...}.
 By default, \code{rowdots = 4}.}
@@ -97,11 +103,19 @@ By default, \code{simplify = FALSE}.}
 dimension of \code{x}.
 By default, \code{details = !simplify}.}
 
-\item{mode}{\itemize{
-\item \code{"vector_identified"}: return numeric and named vector of identified parameters
-\item \code{"list_identified"}: return list of identified parameters
-\item \code{"choice_parameters"}: return choice_parameters object with new normalization
-}}
+\item{choice_effects}{(\code{choice_effects})\cr
+The \code{\link{choice_effects}} object that defines the choice effects.}
+
+\item{C}{(\code{integer(1)})\cr
+The number of latent classes (if any specified in \code{choice_formula}).
+
+By default, \code{C = 1}, which effectively means no latent classes.}
+
+\item{fixed_parameters}{(\code{choice_parameters})\cr
+Optionally a \code{\link{choice_parameters}} object of parameters to keep
+fixed when sampling other parameters.}
+
+\item{choice_parameters}{TODO}
 
 \item{scale}{TODO}
 
@@ -120,15 +134,17 @@ following elements:
 }
 }
 \description{
-These functions construct and validate an object of class
+These functions construct, validate, and transform an object of class
 \code{choice_parameters}, which defines the parameters of a choice model.
 \itemize{
 \item \code{choice_parameters()} constructs a \code{choice_parameters} object.
-\item \code{sample_choice_parameters()} samples parameters at random, see
+\item \code{generate_choice_parameters()} samples parameters at random, see
 details.
 \item \code{validate_choice_parameters()} validates a \code{choice_parameters}
 object.
 \item \code{identify_choice_parameters()} applies scale and level normalization.
+\item \code{transform_choice_parameters()} transforms a \code{choice_parameters}
+object between different modes.
 }
 }
 \section{Sampling missing choice model parameters}{
@@ -178,10 +194,10 @@ For level normalization in the ordered model case, we fix
 \eqn{\gamma_1 = 0}.
 
 For scale normalization, we fix the top left element of \code{Sigma_diff} to
-\eqn{1} (or fix \code{Sigma = 1} in the ordered probit case). In the logit
-model case, the scale normalization is already implied by the assumption that
-the errors are independently distributed extreme value with variance
-\eqn{\pi^2/6}.
+the value \code{scale} (or fix \code{Sigma = scale} in the ordered probit case).
+In the logit model case, the scale normalization is already implied by the
+assumption that the errors are independently extreme value distributed with
+variance \eqn{\pi^2/6}.
 }
 
 \section{The probit and logit model}{
@@ -232,7 +248,8 @@ choice_formula <- choice_formula(
   formula = choice ~ A | B, error_term = "probit", random_effects = "A"
 )
 choice_alternatives <- choice_alternatives(J = 3)
-sample_choice_parameters(
+generate_choice_parameters(
   choice_effects = choice_effects(choice_formula, choice_alternatives)
 )
+
 }

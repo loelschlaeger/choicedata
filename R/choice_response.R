@@ -107,12 +107,11 @@ choice_response <- function(
 #'
 #' @rdname choice_response
 
-simulate_choices <- function(
-  choice_parameters,
+generate_choices <- function(
+  choice_effects,
   choice_covariates,
-  choice_formula = NULL,
-  choice_preferences = NULL,
-  ordered = FALSE,
+  choice_parameters,
+  choice_preferences,
   ranked = FALSE,
   column_choice = "choice",
   delimiter = "_"
@@ -136,7 +135,7 @@ simulate_choices <- function(
       choice_alternatives = choice_alternatives,
       delimiter = "_"
     )
-    choice_preferences <- sample_choice_preferences(
+    choice_preferences <- generate_choice_preferences(
       choice_parameters = choice_parameters,
       choice_effects = choice_effects,
       N = N

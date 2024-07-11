@@ -1,15 +1,17 @@
 #' Define choice model parameters
 #'
 #' @description
-#' These functions construct and validate an object of class
+#' These functions construct, validate, and transform an object of class
 #' \code{choice_parameters}, which defines the parameters of a choice model.
 #'
 #' - \code{choice_parameters()} constructs a \code{choice_parameters} object.
-#' - \code{sample_choice_parameters()} samples parameters at random, see
+#' - \code{generate_choice_parameters()} samples parameters at random, see
 #'   details.
 #' - \code{validate_choice_parameters()} validates a \code{choice_parameters}
 #'   object.
 #' - \code{identify_choice_parameters()} applies scale and level normalization.
+#' - \code{transform_choice_parameters()} transforms a \code{choice_parameters}
+#'   object between different modes.
 #'
 #' @inheritSection choice_formula The probit and logit model
 #'
@@ -21,24 +23,26 @@
 #' @param s (`numeric(C)`)\cr
 #' The latent class weights. Only relevant if latent classes are specified.
 #'
+#' Must be non-negative and sum-up to 1.
+#'
 #' @param alpha (`numeric(P_f)` or `matrix(nrow = P_f, ncol = C)`)\cr
 #' The non-random coefficients. Only relevant if non-random coefficients are
 #' specified.
 #'
-#' Different values are stored column-wise in the case of latent classes.
+#' In the case of latent classes, different values are stored column-wise.
 #'
 #' @param b (`numeric(P_r)` or `matrix(nrow = P_r, ncol = C)`)\cr
 #' The mean of random effects. Only relevant if random coefficients are
 #' specified.
 #'
-#' Different values are stored column-wise in the case of latent classes.
+#' In the case of latent classes, different values are stored column-wise.
 #'
 #' @param Omega (`matrix(P_r)` or `matrix(nrow = P_r^2, ncol = C)`)\cr
 #' The covariance matrix of random effects. Only relevant if random coefficients
 #' are specified.
 #'
-#' Different covariance matrices are stored column-wise in vector form in the
-#' case of latent classes.
+#' In the case of latent classes, different covariance matrices are stored
+#' column-wise in vector form.
 #'
 #' @param Sigma (`matrix(nrow = J, ncol = J)` or `numeric(1)`)\cr
 #' The error term covariance matrix. Only relevant in the probit model.
@@ -121,7 +125,15 @@ is.choice_parameters <- function(
 }
 
 #' @rdname choice_parameters
+#'
+#' @param x (`choice_parameters`)\cr
+#' The `choice_parameters` object to be printed.
+#'
+#' @param ...
+#' Currently not used.
+#'
 #' @inheritParams oeli::print_matrix
+#'
 #' @exportS3Method
 
 print.choice_parameters <- function(
@@ -176,14 +188,14 @@ print.choice_parameters <- function(
 #'   formula = choice ~ A | B, error_term = "probit", random_effects = "A"
 #' )
 #' choice_alternatives <- choice_alternatives(J = 3)
-#' sample_choice_parameters(
+#' generate_choice_parameters(
 #'   choice_effects = choice_effects(choice_formula, choice_alternatives)
 #' )
 #'
 #' @export
 
-sample_choice_parameters <- function(
-    choice_effects, fixed_parameters = choice_parameters()
+generate_choice_parameters <- function(
+    choice_effects, C = 1, fixed_parameters = choice_parameters()
   ) {
 
   ### input checks
@@ -206,7 +218,7 @@ sample_choice_parameters <- function(
     allow_missing = TRUE
   )
 
-  ### sample missing parameters
+  ### generate missing parameters
 
   # s
   if (C > 1 && is.null(x$s)) {
@@ -276,7 +288,7 @@ sample_choice_parameters <- function(
 #' @export
 
 validate_choice_parameters <- function(
-    choice_parameters, choice_effects, allow_missing = FALSE
+    choice_parameters, choice_effects, C = 1, allow_missing = FALSE
   ) {
 
   ### input checks
@@ -437,16 +449,8 @@ validate_choice_parameters <- function(
 
 #' @rdname choice_parameters
 #'
-#' @param x
-#' Either a \code{\link{choice_parameters}} object or a \code{numeric}
-#' \code{vector}.
-#'
-#' @param mode
-#' \itemize{
-#'   \item \code{"vector_identified"}: return numeric and named vector of identified parameters
-#'   \item \code{"list_identified"}: return list of identified parameters
-#'   \item \code{"choice_parameters"}: return choice_parameters object with new normalization
-#' }
+#' @param choice_parameters
+#' TODO
 #'
 #' @param scale
 #' TODO
@@ -478,22 +482,45 @@ validate_choice_parameters <- function(
 #' \eqn{\gamma_1 = 0}.
 #'
 #' For scale normalization, we fix the top left element of \code{Sigma_diff} to
-#' \eqn{1} (or fix \code{Sigma = 1} in the ordered probit case). In the logit
-#' model case, the scale normalization is already implied by the assumption that
-#' the errors are independently distributed extreme value with variance
-#' \eqn{\pi^2/6}.
+#' the value `scale` (or fix \code{Sigma = scale} in the ordered probit case).
+#' In the logit model case, the scale normalization is already implied by the
+#' assumption that the errors are independently extreme value distributed with
+#' variance \eqn{\pi^2/6}.
 #'
 #' @export
 
 identify_choice_parameters <- function(
-    x, mode, choice_effects, scale = 1, level = 1
+    choice_parameters, scale = 1, level = 1
   ) {
 
 
 }
 
+#' TODO: inherit choice_effects and error_term
+#'
+#' @param x (`choice_parameters` or `numeric`)\cr
+#' Either a \code{\link{choice_parameters}} object or a \code{numeric}
+#' \code{vector}.
+#'
+#' @param mode (`character(1)`)\cr
+#' TODO
+#' \itemize{
+#'   \item \code{"vector"}: vector of identified parameters
+#'   \item \code{"choice_parameters"}: `choice_parameters` object
+#' }
+#'
+#' @param names (`character(1)`)\cr
+#' - `"effect"`
+#' - `"generic"`
+#' - `"unnamed"`
+#'
+#' TODO: order of numeric vector
 
+transform_choice_parameters <- function(
+    x, choice_effects, mode, names = "effect"
+  ) {
 
+}
 
 
 

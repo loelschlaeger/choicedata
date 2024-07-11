@@ -20,7 +20,7 @@ choice_effects(choice_formula, choice_alternatives)
 
 # using the formula and the alternatives, simulate covariates
 
-choice_covariates <- sample_choice_covariates(
+choice_covariates <- generate_choice_covariates(
   choice_formula = choice_formula,
   N = 100,
   Tp = 1,
@@ -33,7 +33,7 @@ choice_parameters <- choice_parameters(
   model_type = "probit"
 )
 
-choice_parameters <- sample_choice_parameters(
+choice_parameters <- generate_choice_parameters(
   fixed_parameters = choice_parameters,
   choice_formula = choice_formula,
   J = 3,

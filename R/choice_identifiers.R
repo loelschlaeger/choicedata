@@ -183,16 +183,17 @@ read_choice_identifiers <- function(
 #' Expand \code{Tp}
 #'
 #' @description
-#' This function expands the number of choice occasions \code{Tp} to a
+#' This helper function expands the number of choice occasions \code{Tp} to a
 #' \code{vector} of length \code{N}.
 #'
-#' @param N
-#' A positive \code{integer}, the number of deciders.
-#' @param Tp
-#' A positive \code{integer}, the number of choice occasions per decider.
+#' @param N (`integer(1)`)\cr
+#' The number of deciders.
+#'
+#' @param Tp (`integer()`)\cr
+#' The number of choice occasions per decider.
+#'
 #' Can also be a \code{vector} of length \code{N} for a variable number of
 #' choice occasions per decider.
-#' By default, \code{Tp = 1}.
 #'
 #' @return
 #' An \code{integer} \code{vector} of length \code{N}.
@@ -200,12 +201,9 @@ read_choice_identifiers <- function(
 #' @keywords internal
 
 expand_Tp <- function(N, Tp = 1) {
-  if (missing(N)) {
-    cli::cli_abort(
-      "Please specify the number {.var N} of deciders.",
-      call = NULL
-    )
-  }
+  check_not_missing(N)
+  N <- check_N(N)
+  Tp <- check_Tp(Tp, N = N)
   checkmate::assert_int(N, lower = 1)
   checkmate::assert_numeric(Tp)
   if (length(Tp) == 1) {

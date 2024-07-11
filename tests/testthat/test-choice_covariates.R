@@ -1,7 +1,7 @@
-test_that("covariates can be sampled", {
+test_that("covariates can be generate", {
   N <- 100
   Tp <- sample(1:N, size = N, replace = TRUE)
-  x <- sample_choice_covariates(
+  x <- generate_choice_covariates(
     choice_formula = choice_formula(choice ~ cost | age | time),
     N = N,
     Tp = Tp,
@@ -16,7 +16,7 @@ test_that("customization for covariates works", {
   N <- 100
   Tp <- 10
   expect_warning(
-    x <- sample_choice_covariates(
+    x <- generate_choice_covariates(
       choice_formula = choice_formula(choice ~ cost | age),
       N = N,
       Tp = Tp,
@@ -161,7 +161,7 @@ test_that("effect can be checked whether it is an ASC", {
 })
 
 test_that("covariates can be transformed between data.frame and list format", {
-  x <- sample_choice_covariates(
+  x <- generate_choice_covariates(
     choice_formula = choice_formula(choice ~ cost | age | time),
     N = 5,
     Tp = 1:5,

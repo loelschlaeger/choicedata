@@ -5,7 +5,7 @@
 #' \code{\link{choice_covariates}}, which defines the model covariates,
 #' see the details.
 #'
-#' \code{\link{sample_choice_covariates}} samples covariates.
+#' \code{\link{generate_choice_covariates}} samples covariates.
 #'
 #' \code{\link{as.list.choice_covariates}} and
 #' \code{\link{as.data.frame.choice_covariates}} transform the covariates in
@@ -131,7 +131,7 @@ is.choice_covariates <- function(x, error = TRUE) {
 #'
 #' @export
 
-sample_choice_covariates <- function(
+generate_choice_covariates <- function(
   choice_formula,
   N,
   Tp = 1,

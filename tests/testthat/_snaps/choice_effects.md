@@ -8,13 +8,22 @@
       
       -- Choice effects 
     Output
-             name covariate alternative as_covariate as_effect     mixing lc_effect
-      1     ASC_B      <NA>           B        FALSE      TRUE       <NA>     FALSE
-      2     ASC_C      <NA>           C        FALSE      TRUE       <NA>     FALSE
-      3 comfort_A   comfort           A         TRUE      TRUE       <NA>     FALSE
-      4 comfort_B   comfort           B         TRUE      TRUE       <NA>     FALSE
-      5 comfort_C   comfort           C         TRUE      TRUE       <NA>     FALSE
-      6  income_B    income           B        FALSE      TRUE     normal     FALSE
-      7  income_C    income           C        FALSE      TRUE     normal     FALSE
-      8     price     price        <NA>         TRUE     FALSE log-normal     FALSE
+        effect_name generic_name covariate alternative as_covariate as_effect
+      1       ASC_B      alpha_1      <NA>           B        FALSE      TRUE
+      2       ASC_C      alpha_2      <NA>           C        FALSE      TRUE
+      3   comfort_A      alpha_3   comfort           A         TRUE      TRUE
+      4   comfort_B      alpha_4   comfort           B         TRUE      TRUE
+      5   comfort_C      alpha_5   comfort           C         TRUE      TRUE
+      6    income_B          b_1    income           B        FALSE      TRUE
+      7    income_C          b_2    income           C        FALSE      TRUE
+      8       price          b_3     price        <NA>         TRUE     FALSE
+        lc_effect     mixing
+      1     FALSE       <NA>
+      2     FALSE       <NA>
+      3     FALSE       <NA>
+      4     FALSE       <NA>
+      5     FALSE       <NA>
+      6     FALSE     normal
+      7     FALSE     normal
+      8     FALSE log-normal
 

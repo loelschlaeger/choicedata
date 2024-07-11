@@ -11,22 +11,23 @@
 #' The \code{\link{choice_alternatives}} object that defines the choice effects.
 #'
 #' @param delimiter (`character(1)`)\cr
-#' A delimiter between covariate name, alternative, and class number (if any)
-#' to build the effect name.
+#' A delimiter between covariate and alternative name to build the effect name.
 #'
 #' @return
 #' A \code{choice_effects} object, which is a \code{data.frame}, where each row
 #' is a model effect, and columns are
-#' 1. \code{"name"}, the effect name, composed of covariate name, alternative
-#'    name, and class number (if any),
-#' 2. \code{"covariate"}, the covariate name connected to the effect,
-#' 3. \code{"alternative"}, the alternative name connected to the effect (only
+#' 1. \code{"effect_name"}, the name for the effect which is composed of
+#'    covariate and alternative name,
+#' 2. \code{"generic_name"}, the generic effect name, i.e. \code{"alpha_*"}
+#'    for non-random effects and \code{"b_*"} for random effects,
+#' 3. \code{"covariate"}, the covariate name connected to the effect,
+#' 4. \code{"alternative"}, the alternative name connected to the effect (only
 #'    if the effect is alternative-specific, i.e., varies across alternatives),
-#' 4. \code{"as_covariate"}, indicator whether the covariate is
+#' 5. \code{"as_covariate"}, indicator whether the covariate is
 #'    alternative-specific,
-#' 5. \code{"as_effect"}, indicator whether the effect is alternative-specific,
-#' 6. \code{"lc_effect"}, indicator whether the effect has latent classes,
-#' 7. \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
+#' 6. \code{"as_effect"}, indicator whether the effect is alternative-specific,
+#' 7. \code{"lc_effect"}, indicator whether the effect has latent classes,
+#' 8. \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
 #'    and \code{"log-normal"}, indicating the type of random effect.
 #'
 #' For identification, the effects are ordered as follows:
@@ -34,6 +35,9 @@
 #' - Non-random effects come before random effects.
 #' - Normal random effects come before log-normal random effects.
 #' - Otherwise, the order is determined by occurrence in \code{formula}.
+#'
+#' It contains the arguments `choice_formula` and `choice_alternatives`
+#' as attributes.
 #'
 #' @examples
 #' choice_effects(
@@ -55,7 +59,6 @@ choice_effects <- function(
   is.choice_alternatives(
     choice_alternatives, error = TRUE, var_name = "choice_alternatives"
   )
-  C <- check_C(C = C, latent_classes = choice_formula$latent_classes)
   delimiter <- check_delimiter(delimiter)
 
   ### extract information
@@ -72,104 +75,52 @@ choice_effects <- function(
   if (ordered) {
     check_choice_formula_ordered_valid(choice_formula)
     for (var in var_types[[2]]) {
-      if (var %in% latent_classes) {
-        for (class in seq_len(C)) {
-          var_name <- paste(var, class, sep = delimiter)
-          overview <- rbind(
-            overview,
-            c(
-              var_name, var, NA_character_, class,
-              FALSE, FALSE, TRUE, mixing_types[var]
-            )
-          )
-        }
-      } else {
-        overview <- rbind(
-          overview,
-          c(
-            var, var, NA_character_, NA_integer_,
-            FALSE, FALSE, FALSE, mixing_types[var]
-          )
+      overview <- rbind(
+        overview,
+        c(
+          var, NA_character_, var, NA_character_, FALSE, FALSE,
+          var %in% latent_classes, mixing_types[var]
         )
-      }
+      )
     }
   } else {
     for (var in var_types[[1]]) {
-      if (var %in% latent_classes) {
-        for (class in seq_len(C)) {
-          var_name <- paste(var, class, sep = delimiter)
-          overview <- rbind(
-            overview,
-            c(
-              var_name, var, NA_character_, class,
-              TRUE, FALSE, TRUE, mixing_types[var]
-            )
-          )
-        }
-      } else {
-        overview <- rbind(
-          overview,
-          c(
-            var, var, NA_character_, NA_integer_,
-            TRUE, FALSE, FALSE, mixing_types[var]
-          )
+      overview <- rbind(
+        overview,
+        c(
+          var, NA_character_, var, NA_character_, TRUE, FALSE,
+          var %in% latent_classes, mixing_types[var]
         )
-      }
+      )
     }
     for (var in c(var_types[[2]], if (choice_formula$ASC) "ASC")) {
       for (j in (1:J)[-which(alt == base)]) {
-        if (var %in% latent_classes) {
-          for (class in seq_len(C)) {
-            var_name <- paste(var, alt[j], class, sep = delimiter)
-            overview <- rbind(
-              overview,
-              c(
-                var_name, if (var == "ASC") NA_character_ else var,
-                alt[j], class, FALSE, TRUE, TRUE, mixing_types[var]
-              )
-            )
-          }
-        } else {
-          var_name <- paste(var, alt[j], sep = delimiter)
-          overview <- rbind(
-            overview,
-            c(
-              var_name, if (var == "ASC") NA_character_ else var,
-              alt[j], NA_integer_, FALSE, TRUE, FALSE, mixing_types[var]
-            )
+        var_name <- paste(var, alt[j], sep = delimiter)
+        overview <- rbind(
+          overview,
+          c(
+            var_name, NA_character_, if (var == "ASC") NA_character_ else var,
+            alt[j], FALSE, TRUE, var %in% latent_classes, mixing_types[var]
           )
-        }
+        )
       }
     }
     for (var in var_types[[3]]) {
       for (j in 1:J) {
-        if (var %in% latent_classes) {
-          for (class in seq_len(C)) {
-            var_name <- paste(var, alt[j], class, sep = delimiter)
-            overview <- rbind(
-              overview,
-              c(
-                var_name, var, alt[j], class, TRUE, TRUE, TRUE,
-                mixing_types[var]
-              )
-            )
-          }
-        } else {
-          var_name <- paste(var, alt[j], sep = delimiter)
-          overview <- rbind(
-            overview,
-            c(
-              var_name, var, alt[j], NA_integer_, TRUE, TRUE, FALSE,
-              mixing_types[var]
-            )
+        var_name <- paste(var, alt[j], sep = delimiter)
+        overview <- rbind(
+          overview,
+          c(
+            var_name, NA_character_, var, alt[j], TRUE, TRUE,
+            var %in% latent_classes, mixing_types[var]
           )
-        }
+        )
       }
     }
   }
   colnames(overview) <- c(
-    "name", "covariate", "alternative", "class", "as_covariate", "as_effect",
-    "lc_effect", "mixing"
+    "effect_name", "generic_name", "covariate", "alternative", "as_covariate",
+    "as_effect", "lc_effect", "mixing"
   )
   overview$as_covariate <- as.logical(overview$as_covariate)
   overview$as_effect <- as.logical(overview$as_effect)
@@ -190,13 +141,19 @@ choice_effects <- function(
   overview <- overview[effect_order, ]
   rownames(overview) <- NULL
 
+  ### add generic names
+  P_f <- sum(is.na(overview$mixing))
+  P_r <- nrow(overview) - P_f
+  overview$generic_name <- c(
+    paste0("alpha_", seq_len(P_f), recycle0 = TRUE),
+    paste0("b_", seq_len(P_r), recycle0 = TRUE)
+  )
+
   ### return effects
   structure(
     overview,
-    class = c("choice_effects", "data.frame"),
-    choice_formula = choice_formula,
-    choice_alternatives = choice_alternatives,
-    delimiter = delimiter
+    error_term = choice_formula$error_term,
+    class = c("choice_effects", "data.frame")
   )
 }
 
@@ -246,16 +203,13 @@ print.choice_effects <- function(x, ...) {
 #' @param choice_effects (`choice_effects`)\cr
 #' The \code{\link{choice_effects}} object that defines the choice effects.
 #'
-#' @inheritSection choice_formula Specifying the model formula
-#' @inheritSection choice_alternatives Ordered choice alternatives
-#'
-#' @inheritParams choice_formula
-#' @inheritParams choice_alternatives
+#' @inheritSection choice_formula The probit and logit model
 #'
 #' @return
 #' An \code{integer}, the number of model effects.
 
 compute_P <- function(choice_effects) {
+  is.choice_effects(choice_effects, error = TRUE)
   P_f <- compute_P_f(choice_effects)
   P_r <- compute_P_r(choice_effects)
   as.integer(P_f + P_r)
@@ -264,12 +218,14 @@ compute_P <- function(choice_effects) {
 #' @rdname compute_P
 
 compute_P_f <- function(choice_effects) {
+  is.choice_effects(choice_effects, error = TRUE)
   as.integer(sum(is.na(choice_effects$mixing)))
 }
 
 #' @rdname compute_P
 
 compute_P_r <- function(choice_effects) {
+  is.choice_effects(choice_effects, error = TRUE)
   as.integer(sum(!is.na(choice_effects$mixing)))
 }
 

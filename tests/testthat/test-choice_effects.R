@@ -14,19 +14,21 @@ test_that("effect overview can be created", {
     ),
     structure(
       list(
-        name = c("cov", "ASC_A", "ASC_C"),
+        effect_name = c("cov", "ASC_A", "ASC_C"),
+        generic_name = c("b_1", "b_2", "b_3"),
         covariate = c("cov", NA, NA),
         alternative = c(NA, "A", "C"),
         as_covariate = c(TRUE, FALSE, FALSE),
         as_effect = c(FALSE, TRUE, TRUE),
+        lc_effect = c(FALSE, FALSE, FALSE),
         mixing = structure(
           c(1L, 2L, 2L),
           levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
-        ),
-        lc_effect = c(FALSE, FALSE, FALSE)
+        )
       ),
       row.names = c(NA, -3L),
+      error_term = "logit",
       class = c("choice_effects", "data.frame")
     )
   )
@@ -45,19 +47,21 @@ test_that("effect overview can be created", {
     ),
     structure(
       list(
-        name = c("A", "B*B", "C*A", "C*B"),
+        effect_name = c("A", "B*B", "C*A", "C*B"),
+        generic_name = c("alpha_1", "alpha_2", "alpha_3", "alpha_4"),
         covariate = c("A", "B", "C", "C"),
         alternative = c(NA, "B", "A", "B"),
         as_covariate = c(TRUE, FALSE, TRUE, TRUE),
         as_effect = c(FALSE, TRUE, TRUE, TRUE),
+        lc_effect = c(FALSE, FALSE, FALSE, FALSE),
         mixing = structure(
           c(NA_integer_, NA_integer_, NA_integer_, NA_integer_),
           levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
-        ),
-        lc_effect = c(FALSE, FALSE, FALSE, FALSE)
+        )
       ),
       row.names = c(NA, -4L),
+      error_term = "probit",
       class = c("choice_effects", "data.frame")
     )
   )
@@ -74,19 +78,21 @@ test_that("effect overview can be created", {
     ),
     structure(
       list(
-        name = c("B", "C", "A"),
+        effect_name = c("B", "C", "A"),
+        generic_name = c("alpha_1", "alpha_2", "b_1"),
         covariate = c("B", "C", "A"),
         alternative = c(NA_character_, NA_character_, NA_character_),
         as_covariate = c(FALSE, FALSE, FALSE),
         as_effect = c(FALSE, FALSE, FALSE),
+        lc_effect = c(FALSE, FALSE, FALSE),
         mixing = structure(
           c(NA_integer_, NA_integer_, 2L),
           levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
-        ),
-        lc_effect = c(FALSE, FALSE, FALSE)
+        )
       ),
       row.names = c(NA, -3L),
+      error_term = "logit",
       class = c("choice_effects", "data.frame")
     )
   )
@@ -96,8 +102,7 @@ test_that("effect overview can be created", {
         formula = choice ~ 0 | A + B + C + 0,
         error_term = "logit",
         random_effects = "A+",
-        latent_classes = c("A", "B", "C"),
-        C = 3
+        latent_classes = c("A", "B", "C")
       ),
       choice_alternatives = choice_alternatives(
         J = 3, ordered = TRUE
@@ -105,19 +110,21 @@ test_that("effect overview can be created", {
     ),
     structure(
       list(
-        name = c("B", "C", "A"),
+        effect_name = c("B", "C", "A"),
+        generic_name = c("alpha_1", "alpha_2", "b_1"),
         covariate = c("B", "C", "A"),
         alternative = c(NA_character_, NA_character_, NA_character_),
         as_covariate = c(FALSE, FALSE, FALSE),
         as_effect = c(FALSE, FALSE, FALSE),
+        lc_effect = c(TRUE, TRUE, TRUE),
         mixing = structure(
           c(NA_integer_, NA_integer_, 2L),
           levels = c("normal", "log-normal"),
           class = c("ordered", "factor")
-        ),
-        lc_effect = c(TRUE, TRUE, TRUE)
+        )
       ),
       row.names = c(NA, -3L),
+      error_term = "logit",
       class = c("choice_effects", "data.frame")
     )
   )
@@ -173,11 +180,18 @@ test_that("printing effects works", {
 })
 
 test_that("number of effects can be computed", {
-  formula <- choice ~ A | B + 0 | C + D
-  random_effects <- c("A", "D+")
-  J <- 3
-  expect_equal(compute_P(formula, random_effects, J), 9)
-  expect_equal(compute_P_f(formula, random_effects, J), 5)
-  expect_equal(compute_P_r(formula, random_effects, J), 4)
+  choice_effects <- choice_effects(
+    choice_formula = choice_formula(
+      formula = choice ~ A | B + 0 | C + D,
+      error_term = "logit",
+      random_effects = c("A", "D+")
+    ),
+    choice_alternatives = choice_alternatives(
+      J = 3
+    )
+  )
+  expect_equal(compute_P(choice_effects), 9)
+  expect_equal(compute_P_f(choice_effects), 5)
+  expect_equal(compute_P_r(choice_effects), 4)
 })
 

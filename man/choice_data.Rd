@@ -107,8 +107,8 @@ These functions construct and validate an object of class
 }
 \examples{
 # ### simulate data from a binary probit model with two latent classes
-# data <- simulate_choice_data(
-#   choice_covariates = sample_choice_covariates(
+# data <- generate_choice_data(
+#   choice_covariates = generate_choice_covariates(
 #     choice_formula = choice_formula(
 #       formula = choice ~ cost | income | time, re = c("cost", "time")
 #     ),

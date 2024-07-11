@@ -9,8 +9,7 @@ choice_formula(
   formula,
   error_term,
   random_effects = NULL,
-  latent_classes = NULL,
-  C = 1
+  latent_classes = NULL
 )
 
 \method{print}{choice_formula}(x, ...)
@@ -37,14 +36,7 @@ distribution (e.g., for sign-restriction) can be specified via appending
 
 \item{latent_classes}{(\code{character()})\cr
 The names of covariates in \code{formula} connected to latent classes, see
-details.
-
-If specified, \code{C} must be greater than 1.}
-
-\item{C}{(\code{integer(1)})\cr
-The number (greater or equal 1) of latent classes of decision makers.
-
-The default is \code{C = 1}, i.e., effectively no latent classes.}
+details.}
 
 \item{x}{(\code{choice_formula})\cr
 The \code{choice_formula} object to be printed.}
@@ -62,7 +54,6 @@ following elements:
 \item{\code{ASC}}{Does the model have alternative-specific constants?}
 \item{\code{mixing_types}}{The types of random effects (if any).}
 \item{\code{latent_classes}}{Specification of latent classes (if any).}
-\item{\code{C}}{The number of latent classes.}
 \item{\code{ordered_valid}}{Formula valid for ordered case (see details)?}
 }
 }
@@ -116,7 +107,7 @@ is imposed.
 \section{The latent class model}{
 
 The mixing distribution can be discrete, which results in a discrete latent
-class model where the fixed effects \eqn{\alpha} take a fixed set of
+class model where the non-random effects \eqn{\alpha} take a fixed set of
 \code{C} distinct values \eqn{\alpha_c}.
 
 Alternatively, the mixing distribution can be a mixture of
@@ -173,8 +164,7 @@ choice_formula(
   formula = choice ~ A | B | C,
   error_term = "probit",
   random_effects = c("A", "B+"),
-  latent_classes = c("C"),
-  C = 2
+  latent_classes = "C"
 )
 
 }

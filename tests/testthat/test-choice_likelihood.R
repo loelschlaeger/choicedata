@@ -5,13 +5,13 @@
 #   N <- 100
 #
 #
-#   choice_parameters <- sample_choice_parameters(formula = formula, J = J, N = N)
+#   choice_parameters <- generate_choice_parameters(formula = formula, J = J, N = N)
 #
 #   choice_formula <- choice_formula(formula = formula)
 #
 #   choice_alternatives <- choice_alternatives(J = J)
 #
-#   choice_covariates <- sample_choice_covariates(
+#   choice_covariates <- generate_choice_covariates(
 #     choice_formula = choice_formula,
 #     N = N,
 #     choice_alternatives = choice_alternatives

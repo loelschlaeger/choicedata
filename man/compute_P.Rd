@@ -6,101 +6,67 @@
 \alias{compute_P_r}
 \title{Compute number of model effects}
 \usage{
-compute_P(formula, random_effects, J, ordered = FALSE)
+compute_P(choice_effects)
 
-compute_P_f(formula, random_effects, J, ordered = FALSE)
+compute_P_f(choice_effects)
 
-compute_P_r(formula, random_effects, J, ordered = FALSE)
+compute_P_r(choice_effects)
 }
 \arguments{
-\item{formula}{(\code{formula})\cr
-A symbolic description of the choice model, see details.}
-
-\item{random_effects}{(\code{character()})\cr
-The names of covariates in \code{formula} connected to a random effect, i.e.,
-their coefficients follow a random (so-called mixing) distribution.
-
-Per default, the mixing distribution is normal. In addition, the log-normal
-distribution (e.g., for sign-restriction) can be specified via appending
-\code{+} to the corresponding name. To have random effects for the ASCs, add
-\code{ASC} (or \code{ASC+}) to \code{random_effects}.}
-
-\item{J}{(\code{integer(1)})\cr
-The number of choice alternatives.
-
-Must be at least \code{2}.}
-
-\item{ordered}{(\code{logical(1)})\cr
-Are the choice alternatives ordered?}
+\item{choice_effects}{(\code{choice_effects})\cr
+The \code{\link{choice_effects}} object that defines the choice effects.}
 }
 \value{
 An \code{integer}, the number of model effects.
 }
 \description{
-These helper functions compute the number effects in a specified choice
-model:
+These helper functions count the number of model effects:
 \itemize{
-\item \code{compute_P()} computes the total number \code{P} of model effects.
-\item \code{compute_P_f()} computes the number \code{P_f} of non-random
-model effects.
-\item \code{compute_P_r()} computes the number \code{P_r} of random model
-effects.
+\item \code{compute_P()} returns the total number \code{P} of model effects.
+\item \code{compute_P_f()} returns the number \code{P_f} of non-random effects.
+\item \code{compute_P_r()} returns the number \code{P_r} of random effects.
 }
 }
-\section{Specifying the model formula}{
+\section{The probit and logit model}{
 
-The structure of \code{formula} is
-\code{choice ~ A | B | C}, where
-\itemize{
-\item \code{choice} is the name of the discrete response variable,
-\item \code{A} are names of \strong{alternative-specific covariates} with
-\strong{a coefficient that is constant across alternatives},
-\item \code{B} are names of \strong{covariates that are constant across
-alternatives},
-\item and \code{C} are names of \strong{alternative-specific covariates}
-with \strong{alternative-specific coefficients}.
+Assume that we know the choices of \eqn{N} deciders choosing between
+\eqn{J \geq 2} alternatives at each of \eqn{T} choice occasions.
+Specific to each decider, alternative and choice occasion, we observe \eqn{P}
+covariates, a linear combination of which explains the latent random utility:
+\deqn{U_{ntj} = X_{ntj}' \tilde{\beta}_n + \epsilon_{ntj},}
+\eqn{n=1,\dots,N}, \eqn{t=1,\dots,T}, and \eqn{j=1,\dots,J}.
+Here, \eqn{X_{ntj}} is a (column) vector of \eqn{P} characteristics specific
+to alternative \eqn{j} as faced by decider \eqn{n} at choice occasion
+\eqn{t}, \eqn{\tilde{\beta}_n \in \mathbb{R}^{P}} is the coefficient vector
+encoding the preferences of \eqn{n}, and
+\eqn{(\epsilon_{nt:}) = (\epsilon_{nt1},\dots,\epsilon_{ntJ})'} is the
+model's error term vector for \eqn{n} at \eqn{t}.
+
+In the probit model case, the error vector \eqn{(\epsilon_{nt:})} is normally
+distributed with covariance matrix \code{Sigma}. In the logit model case,
+the components \eqn{\epsilon_{ntj}} of the error vector are independently,
+identically distributed extreme value.
+
+The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
+alternative \code{j}. It is unobserved by the researcher, but we assume that
+the deciders know their utilities for each alternative and make a choice
+which is consistent with utility maximization. Therefore,
+\deqn{y_{nt} = \operatorname*{argmax}_{j = 1,\dots,J} U_{ntj},}
+where \eqn{y_{nt}=j} denotes the event that decider \eqn{n} chooses \eqn{j}
+at their \eqn{t}-th choice occasion.
+
+Entries of the decider-specific coefficient vector \eqn{\tilde{\beta}_n} can
+be fixed across deciders, in which case the coefficient vector is of the form
+\eqn{\tilde{\beta}_n' = (\alpha', \beta_n')'}, where
+\eqn{\alpha \in \mathbb{R}^{P_f}} are \eqn{P_f} coefficients that are
+constant across deciders and \eqn{\beta_n} are \eqn{P_r} decider-specific
+coefficients, \eqn{P_f + P_r = P}.
+
+The decider-specific coefficients are assumed to be random effects, i.e.,
+realizations of an underlying mixing distribution and to be independent of
+the characteristics \eqn{X_{ntj}} and the errors \eqn{(\epsilon_{nt:})}.
+This distribution characterizes heterogeneity among the deciders and allows
+for individual sensitivities. Typically, a normal or log-normal distribution
+is imposed.
 }
 
-Multiple covariates of one type are separated by a \code{+} sign, e.g.,
-\code{choice ~ A1 + A2}.
-
-By default, alternative-specific constants (ASCs) are added to the model.
-They can be removed by adding \code{+ 0} in the second spot, e.g.,
-\code{choice ~ A | B + 0 | C}. To not include any covariates of
-the second type but to estimate ASCs, add \code{1} in the second
-spot, e.g., \code{choice ~ A | 1 | C}. The expression
-\code{choice ~ A | 0 | C} is interpreted as no covariates of the second
-type and no ASCs.
-
-Some parts of the formula can be omitted when there is no ambiguity. For
-example, \code{choice ~ A} is equivalent to \code{choice ~ A | 1 | 0}.
-
-In the ordered case, since only a single utility is modeled, no ASCs and no
-alternative-specific covariates can be included. Hence, in the ordered case,
-\code{formula} must be of the form, e.g.,  \code{choice ~ 0 | A + B + 0}.
-}
-
-\section{Ordered choice alternatives}{
-
-When the set of choice alternatives is ordered, the choice model has only a
-single utility equation
-\deqn{U_{nt} = X_{nt}' \tilde{\beta}_n + \epsilon_{nt},}
-where \eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)} in the probit model
-and logistic in the logit model, per decider \eqn{n} and choice
-occasion \eqn{t}.
-
-This utility can be interpreted as the level of association that \eqn{n} has
-with the choice question. It falls into discrete categories, which in turn
-are linked to the ordered alternatives \eqn{j=1,\dots,J}. Formally,
-\deqn{y_{nt} = \sum_{j = 1,\dots,J} j \cdot I(\gamma_{j-1} < U_{nt} \leq
-\gamma_{j}),}
-where \eqn{\gamma_0 = -\infty} and \eqn{\gamma_J = +\infty}. This implies
-that alternative \eqn{j} is chosen, if the utility falls into the interval
-\eqn{(\gamma_{j-1}, \gamma_j]}.
-Monotonicity of the thresholds \eqn{(\gamma_j)_{j=1,\dots,J-1}} is ensured
-by estimating logarithmic increments \eqn{d_j} with
-\eqn{\gamma_j = \sum_{i\leq j} \exp{(d_i)}}, \eqn{j=1,\dots,J-1}.
-For level normalization, we fix \eqn{\gamma_1 = 0}.
-}
-
-\keyword{internal}

@@ -7,14 +7,14 @@
 #
 #   choice_alternatives <- choice_alternatives(J = J)
 #
-#   choice_covariates <- sample_choice_covariates(
+#   choice_covariates <- generate_choice_covariates(
 #     choice_formula = choice_formula,
 #     N = 10,
 #     Tp = 1:10,
 #     choice_alternatives = choice_alternatives
 #   )
 #
-#   choice_parameters <- sample_choice_parameters(
+#   choice_parameters <- generate_choice_parameters(
 #     choice_formula = choice_formula,
 #     J = J
 #   )

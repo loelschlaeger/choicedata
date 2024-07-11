@@ -3,7 +3,7 @@
 \name{choice_covariates}
 \alias{choice_covariates}
 \alias{is.choice_covariates}
-\alias{sample_choice_covariates}
+\alias{generate_choice_covariates}
 \alias{validate_choice_covariates}
 \alias{as.list.choice_covariates}
 \alias{as.data.frame.choice_covariates}
@@ -15,7 +15,7 @@ choice_covariates(covariates)
 
 is.choice_covariates(x, error = TRUE)
 
-sample_choice_covariates(
+generate_choice_covariates(
   choice_formula,
   N,
   Tp = 1,
@@ -120,7 +120,7 @@ deviation and correlation. If \code{FALSE} (default), they specify the
 values for the population.}
 
 \item{delimiter}{(\code{character(1)})\cr
-A delimiter between covariate and alternative label to build the effect name.}
+A delimiter between covariate and alternative name to build the effect name.}
 
 \item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
 decider identifiers.}
@@ -140,7 +140,7 @@ These functions create and validate an object of class
 \code{\link{choice_covariates}}, which defines the model covariates,
 see the details.
 
-\code{\link{sample_choice_covariates}} samples covariates.
+\code{\link{generate_choice_covariates}} samples covariates.
 
 \code{\link{as.list.choice_covariates}} and
 \code{\link{as.data.frame.choice_covariates}} transform the covariates in

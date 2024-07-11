@@ -2,10 +2,10 @@ test_that("simulation of probit choices works", {
   J <- 3
   choice_alternatives <- choice_alternatives(J = J)
   choice_formula <- choice_formula(formula <- choice ~ X | Y | Z)
-  choice_parameters <- sample_choice_parameters(
+  choice_parameters <- generate_choice_parameters(
     choice_formula = choice_formula, J = 3
   )
-  choice_covariates <- sample_choice_covariates(
+  choice_covariates <- generate_choice_covariates(
     choice_formula = choice_formula,
     N = 10,
     Tp = 1:10,

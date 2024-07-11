@@ -1,16 +1,13 @@
 
-choice_preferences <- function(preferences, choice_identifiers = NULL) {
-  structure(
-    preferences,
-    class = c("choice_preferences", "data.frame")
-  )
-}
-
-validate_choice_preferences <- function() {
+validate_choice_preferences <- function(
+    choice_preferences, ...
+  ) {
 
 }
 
-sample_choice_preferences <- function(choice_parameters, choice_effects, N) {
+generate_choice_preferences <- function(
+    choice_parameters, choice_effects, choice_identifiers
+  ) {
 
   ### input checks
   is.choice_parameters(choice_parameters, error = TRUE)
@@ -59,7 +56,10 @@ sample_choice_preferences <- function(choice_parameters, choice_effects, N) {
   }
 
   ### build 'choice_preferences' object
-  choice_preferences(preferences)
+  structure(
+    preferences,
+    class = c("choice_preferences", "data.frame")
+  )
 }
 
 

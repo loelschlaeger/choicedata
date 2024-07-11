@@ -32,12 +32,12 @@ test_that("choice parameter can be created", {
   expect_snapshot(print(x))
 })
 
-test_that("choice parameters can be sampled", {
+test_that("choice parameters can be generate", {
   choice_formula <- choice_formula(
     formula = choice ~ A | 0 + B, re = "B"
   )
   set.seed(1)
-  x <- sample_choice_parameters(x, choice_formula = choice_formula, J = 3)
+  x <- generate_choice_parameters(x, choice_formula = choice_formula, J = 3)
   expect_s3_class(x, "choice_parameters")
 })
 
