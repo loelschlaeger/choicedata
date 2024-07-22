@@ -2,7 +2,7 @@
 % Please edit documentation in R/choice_response.R
 \name{choice_response}
 \alias{choice_response}
-\alias{simulate_choices}
+\alias{generate_choices}
 \alias{is.choice_response}
 \alias{validate_choice_response}
 \alias{as.data.frame.choice_response}
@@ -18,12 +18,11 @@ choice_response(
   delimiter = "_"
 )
 
-simulate_choices(
-  choice_parameters,
+generate_choices(
+  choice_effects,
   choice_covariates,
-  choice_formula = NULL,
-  choice_preferences = NULL,
-  ordered = FALSE,
+  choice_parameters,
+  choice_preferences,
   ranked = FALSE,
   column_choice = "choice",
   delimiter = "_"
@@ -53,15 +52,13 @@ choices.}
 
 \item{delimiter}{TODO}
 
+\item{choice_covariates}{An \code{\link{choice_covariates}} object, which contains the covariate
+matrices used for the choice data simulation.}
+
 \item{choice_parameters}{An \code{\link{choice_parameters}} object, which contains the model
 parameters used for the choice data simulation.
 By default, \code{choice_parameters = choice_parameters()}, i.e. default
 parameters are used.}
-
-\item{choice_covariates}{An \code{\link{choice_covariates}} object, which contains the covariate
-matrices used for the choice data simulation.}
-
-\item{choice_formula}{TODO}
 
 \item{choice_preferences}{TODO}
 
@@ -70,6 +67,8 @@ matrices used for the choice data simulation.}
 \item{error}{TODO}
 
 \item{...}{TODO}
+
+\item{choice_formula}{TODO}
 }
 \value{
 A \code{\link{choice_response}} object. It can be a \code{data.frame} or

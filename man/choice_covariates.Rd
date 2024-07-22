@@ -60,12 +60,14 @@ The \code{choice_effects} object to be printed.}
 
 \item{choice_formula}{A \code{\link{choice_formula}} object.}
 
-\item{N}{A positive \code{integer}, the number of deciders.}
+\item{N}{(\code{integer(1)})\cr
+The number of deciders.}
 
-\item{Tp}{A positive \code{integer}, the number of choice occasions per decider.
+\item{Tp}{(\code{integer()})\cr
+The number of choice occasions per decider.
+
 Can also be a \code{vector} of length \code{N} for a variable number of
-choice occasions per decider.
-By default, \code{Tp = 1}.}
+choice occasions per decider.}
 
 \item{choice_alternatives}{A \code{\link{choice_alternatives}} object.}
 
