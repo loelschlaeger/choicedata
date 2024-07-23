@@ -19,13 +19,9 @@ generate_choice_covariates(
   choice_formula,
   N,
   Tp = 1,
-  choice_alternatives,
-  covariate_levels = Inf,
-  occasion_constant = character(),
-  covariate_mean = 0,
-  covariate_sd = 1,
-  covariate_correlation = 0,
-  empirical = FALSE,
+  labels,
+  marginals,
+  correlation,
   delimiter = "_",
   column_decider = "deciderID",
   column_occasion = "occasionID"
@@ -69,7 +65,20 @@ The number of choice occasions per decider.
 Can also be a \code{vector} of length \code{N} for a variable number of
 choice occasions per decider.}
 
+\item{delimiter}{(\code{character(1)})\cr
+A delimiter between covariate and alternative name to build the effect name.}
+
+\item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
+decider identifiers.}
+
+\item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
+identifiers for the choice occasions.}
+
 \item{choice_alternatives}{A \code{\link{choice_alternatives}} object.}
+
+\item{...}{Currently not used.}
+
+\item{row.names, optional}{Currently not used.}
 
 \item{covariate_levels}{Defines the number of levels for the covariates. Two formats are allowed:
 \itemize{
@@ -120,19 +129,6 @@ and covariate \code{j} in the output of \code{\link{covariate_names}}.
 \code{covariate_correlation} specify the empirical mean, standard
 deviation and correlation. If \code{FALSE} (default), they specify the
 values for the population.}
-
-\item{delimiter}{(\code{character(1)})\cr
-A delimiter between covariate and alternative name to build the effect name.}
-
-\item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
-decider identifiers.}
-
-\item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
-identifiers for the choice occasions.}
-
-\item{...}{Currently not used.}
-
-\item{row.names, optional}{Currently not used.}
 }
 \value{
 A \code{data.frame}.
@@ -151,8 +147,8 @@ see the details.
 In \code{list} form, it is a \code{list} of \code{list}s of \code{matrix}
 elements. More precise: Let the return value be \code{out}, then
 \itemize{
-\item \code{out} contains the covariate matrices of all deciders at all choice
-occasions,
+\item \code{out} is a \code{list} that contains the covariate matrices of all
+deciders at all choice occasions,
 \item \code{out[[n]]} is a \code{list} of the covariate matrices of decider
 \code{n} at all of their choice occasions,
 \item \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at

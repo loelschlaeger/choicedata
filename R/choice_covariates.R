@@ -13,8 +13,8 @@
 #'
 #' In \code{list} form, it is a \code{list} of \code{list}s of \code{matrix}
 #' elements. More precise: Let the return value be \code{out}, then
-#' - \code{out} contains the covariate matrices of all deciders at all choice
-#'   occasions,
+#' - \code{out} is a \code{list} that contains the covariate matrices of all
+#'   deciders at all choice occasions,
 #' - \code{out[[n]]} is a \code{list} of the covariate matrices of decider
 #'   \code{n} at all of their choice occasions,
 #' - \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at
@@ -135,13 +135,9 @@ generate_choice_covariates <- function(
   choice_formula,
   N,
   Tp = 1,
-  choice_alternatives,
-  covariate_levels = Inf,
-  occasion_constant = character(),
-  covariate_mean = 0,
-  covariate_sd = 1,
-  covariate_correlation = 0,
-  empirical = FALSE,
+  labels,
+  marginals,
+  correlation,
   delimiter = "_",
   column_decider = "deciderID",
   column_occasion = "occasionID"
