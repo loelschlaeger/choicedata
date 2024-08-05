@@ -1,106 +1,80 @@
-#' Define identifiers
+#' Define choice identifiers
 #'
 #' @description
-#' These functions define an object of class \code{\link{choice_identifiers}},
-#' which defines identifiers for the deciders and the choice occasions.
+#' The \code{choice_identifiers} object defines identifiers for the deciders and
+#' the choice occasions.
 #'
-#' \code{\link{generate_choice_identifiers}} generates choice identifiers.
+#' @inheritParams choice_data
 #'
-#' \code{\link{read_choice_identifiers}} reads choice identifiers from a
-#' \code{data.frame}.
+#' @param column_decider \[`character(1)`\]\cr
+#' The name of the \code{data.frame} column with identifier for the deciders.
 #'
-#' @param data
-#' A \code{data.frame}.
-#' @param column_decider
-#' A \code{character}, the name of the \code{data.frame} column with identifier
-#' for the deciders. The default is \code{"deciderID"}.
-#' @param column_occasion
-#' A \code{character}, different from \code{column_decider}, the name of the
-#' \code{data.frame} column with identifier for the choice occasions. These
-#' identifiers must be unique for a given decider.
-#' @param x
-#' TODO
-#' @param error
-#' TODO
-#' @param data
-#' TODO
+#' @param column_occasion \[`character(1)` | `NULL`\]\cr
+#' The name of the \code{data.frame} column with identifier for the choice
+#' occasions.
 #'
-#' It can also be \code{NULL} (default), in which case data is treated as
-#' cross-sectional. The decider ids must be unique in this case. A column for
-#' the (trivial) choice occasion identifiers is generated anyways with the
-#' default name \code{"occasionID"}.
-#' @param as_cs
-#' Either \code{TRUE} to treat the data as cross-sectional (i.e., dropping the
-#' information of multiple choices by the same decider), or \code{FALSE}
-#' (default), else.
+#' Can also be \code{NULL} in the cross-sectional case.
+#'
+#' @param as_cross_section \[`logical(1)`\]\cr
+#' Treat choice data as cross-sectional?
 #'
 #' @return
-#' A \code{\link{choice_identifiers}} object. It is a \code{data.frame} with
-#' two columns, one named \code{column_decider} and containing the decider ids,
-#' and the other one either named \code{column_occasion} or \code{"occasionID"} by
-#' default, containing the choice occasion ids.
+#' An object of class \code{choice_identifiers} object, which is a
+#' \code{data.frame} with two columns:
+#'
+#' 1. \code{column_decider} contains the decider ids,
+#' 2. \code{column_occasion} contains the choice occasion ids.
+#'
+#' @examples
+#' generate_choice_identifiers(N = 2, Tp = 2)
+#'
+#' @export
 
 choice_identifiers <- function(
-  data = data.frame(), column_decider = "deciderID",
-  column_occasion = NULL, as_cs = FALSE
+  data_frame,
+  column_decider = "deciderID",
+  column_occasion = "occasionID",
+  as_cross_section = FALSE
 ) {
-  checkmate::assert_data_frame(data)
-  checkmate::assert_string(column_decider)
-  checkmate::assert_string(column_occasion, null.ok = TRUE)
-  if (identical(column_decider, column_occasion)) {
-    cli::cli_abort(
-      "Names for {.var column_decider} and {.var column_occasion} must be
-      different."
-    )
-  }
-  checkmate::assert_flag(as_cs)
-  if (!column_decider %in% colnames(data)) {
-    cli::cli_abort(
-      "Column {.val {column_decider}} not found in {.var data}."
-    )
-  }
-  decider_ids <- as.character(data[[column_decider]])
+  as_cross_section <- check_as_cross_section(as_cross_section)
+  column_occasion <- check_column_occasion(
+    column_occasion, column_decider = column_decider, null.ok = as_cross_section
+  )
+  data_frame <- check_data_frame(
+    data_frame, required_columns = c(column_decider, column_occasion)
+  )
+  decider_ids <- as.character(data_frame[[column_decider]])
   if (anyNA(decider_ids)) {
     cli::cli_abort(
-      "Column {.val {column_decider}} of {.var data} must not have NAs."
+      "Column {.val {column_decider}} of {.var data_frame} must not have NAs"
     )
   }
   if (is.null(column_occasion)) {
     if (anyDuplicated(decider_ids)) {
       cli::cli_abort(
-        "Column {.val {column_decider}} of {.var data} must not have
-        duplicated values if there are no identifiers for the choice occasions."
+        "Column {.val {column_decider}} of {.var data_frame} must not have
+        duplicated values if there are no identifiers for the choice occasions"
       )
     }
     occasion_ids <- rep("1", length(decider_ids))
     column_occasion <- "occasionID"
-    if (column_decider == "occasionID") {
-      cli::cli_abort(
-        "{.var column_decider} must not equal {.val occasionID}."
-      )
-    }
-  } else if (!column_occasion %in% colnames(data)) {
-    cli::cli_abort(
-      "Column {.val {column_occasion}} not found in {.var data}."
-    )
   } else {
-    occasion_ids <- as.character(data[[column_occasion]])
+    occasion_ids <- as.character(data_frame[[column_occasion]])
     if (anyNA(occasion_ids)) {
       cli::cli_abort(
-        "Column {.val {column_occasion}} of {.var data} must not have NAs."
+        "Column {.val {column_occasion}} of {.var data_frame} must not have NAs"
       )
     }
     for (decider_id in unique(decider_ids)) {
       if (anyDuplicated(occasion_ids[which(decider_ids == decider_id)])) {
         cli::cli_abort(
-          "Column {.val {column_occasion}} of {.var data} must have unique
-          values for a given decider, but decider {.val decider_id} has
-          duplicates for their occasion id."
+          "Column {.val {column_occasion}} of {.var data_frame} must have unique
+          values for any decider, but decider {.val {decider_id}} has duplicates"
         )
       }
     }
   }
-  if (as_cs) {
+  if (as_cross_section) {
     if (anyDuplicated(decider_ids)) {
       decider_ids <- paste(decider_ids, occasion_ids, sep = ".")
     }
@@ -113,16 +87,17 @@ choice_identifiers <- function(
   )
 }
 
-#' @rdname choice_identifiers
-#' @export
+#' @noRd
 
-is.choice_identifiers <- function(x, error = TRUE) {
-  check_not_missing(x)
+is.choice_identifiers <- function(
+    x, error = FALSE, var_name = oeli::variable_name(x)
+  ) {
+  check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_identifiers")
   if (isTRUE(error) && !isTRUE(check)) {
-    var_name <- oeli::variable_name(x)
     cli::cli_abort(
-      "Input {.var {var_name}} must be an object of class {.cls choice_identifiers}",
+      "Input {.var {var_name}} must be an object of class
+      {.cls choice_identifiers}",
       call = NULL
     )
   } else {
@@ -131,29 +106,35 @@ is.choice_identifiers <- function(x, error = TRUE) {
 }
 
 #' @rdname choice_identifiers
+#'
+#' @param x \[`choice_identifiers`\]\cr
+#' The `choice_identifiers` object to be printed.
+#'
+#' @param ...
+#' Currently not used.
+#'
+#' @exportS3Method
+
+print.choice_identifiers <- function(x, ...) {
+  is.choice_identifiers(x, error = TRUE)
+  print.data.frame(x)
+  invisible(x)
+}
+
+#' @rdname choice_identifiers
 #' @inheritParams expand_Tp
 
 generate_choice_identifiers <- function(
-  N, Tp = 1, column_decider = "deciderID", column_occasion = NULL
+  N, Tp = 1, column_decider = "deciderID", column_occasion = "occasionID"
 ) {
   Tp <- expand_Tp(N = N, Tp = Tp)
-  checkmate::assert_string(column_decider)
-  checkmate::assert_string(column_occasion, null.ok = TRUE)
+  column_occasion <- check_column_occasion(
+    column_occasion, column_decider = column_decider, null.ok = all(Tp == 1)
+  )
   if (is.null(column_occasion)) {
     column_occasion <- "occasionID"
-    if (column_decider == "occasionID") {
-      cli::cli_abort(
-        "{.var column_decider} must not equal {.val occasionID}."
-      )
-    }
   }
-  if (column_decider == column_occasion) {
-    cli::cli_abort(
-      "Names for {.var column_decider} and {.var column_occasion} must be
-      different."
-    )
-  }
-  data <- structure(
+  identifiers <- structure(
     data.frame(
       rep(1:N, times = Tp),                          # decider ids
       unlist(sapply(Tp, seq.int, simplify = FALSE))  # choice occasion ids
@@ -161,22 +142,10 @@ generate_choice_identifiers <- function(
     "names" = c(column_decider, column_occasion)
   )
   choice_identifiers(
-    data = data,
+    data_frame = identifiers,
     column_decider = column_decider,
     column_occasion = column_occasion,
-    as_cs = FALSE
-  )
-}
-
-#' @rdname choice_identifiers
-
-read_choice_identifiers <- function(
-  data = data.frame(), column_decider = "deciderID", column_occasion = NULL,
-  as_cs = FALSE
-) {
-  choice_identifiers(
-    data = data, column_decider = column_decider,
-    column_occasion = column_occasion, as_cs = as_cs
+    as_cross_section = is.null(column_occasion)
   )
 }
 
@@ -186,14 +155,14 @@ read_choice_identifiers <- function(
 #' This helper function expands the number of choice occasions \code{Tp} to a
 #' \code{vector} of length \code{N}.
 #'
-#' @param N (`integer(1)`)\cr
+#' @param N \[`integer(1)`\]\cr
 #' The number of deciders.
 #'
-#' @param Tp (`integer()`)\cr
-#' The number of choice occasions per decider.
+#' @param Tp \[`integer(1)` | `integer(N)`\]\cr
+#' The constant number of choice occasions per decider.
 #'
-#' Can also be a \code{vector} of length \code{N} for a variable number of
-#' choice occasions per decider.
+#' Can also be of length \code{N} for a variable number of choice occasions per
+#' decider.
 #'
 #' @return
 #' An \code{integer} \code{vector} of length \code{N}.

@@ -4,10 +4,12 @@
 #' These functions construct and validate an object of class
 #' \code{\link{choice_data}}, which defines the choice model data.
 #'
-#' @param data
-#' A \code{data.frame}.
+#' @param data_frame \[`data.frame`\]\cr
+#' Contains the choice data.
+#'
 #' @param format
 #' TODO
+#'
 #' @param column_choice
 #' A \code{character}, the column name of the \code{data.frame} with the
 #' choices.
@@ -32,7 +34,7 @@
 #' @param choice_formula
 #' TODO
 #' @inheritParams choice_alternatives
-#' @inheritParams choices
+#' @inheritParams choice_response
 #'
 #' @return
 #' A \code{\link{choice_data}} object.

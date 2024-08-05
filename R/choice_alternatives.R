@@ -1,15 +1,14 @@
 #' Define choice alternatives
 #'
 #' @description
-#' This function constructs an object of class \code{choice_alternatives}, which
-#' defines the set of choice alternatives.
+#' The \code{choice_alternatives} object defines the set of choice alternatives.
 #'
-#' @param J (`integer(1)`)\cr
+#' @param J \[`integer(1)`\]\cr
 #' The number of choice alternatives.
 #'
 #' Must be at least \code{2}.
 #'
-#' @param alternatives (`character(J)`)\cr
+#' @param alternatives \[`character(J)`\]\cr
 #' Labels for the choice alternatives.
 #'
 #' @param base (`character(1)`)\cr
@@ -20,7 +19,7 @@
 #'
 #' By default, \code{base} is the first element of \code{alternatives}.
 #'
-#' @param ordered (`logical(1)`)\cr
+#' @param ordered \[`logical(1)`\]\cr
 #' Are the choice alternatives ordered?
 #'
 #' @return
@@ -110,7 +109,7 @@ is.choice_alternatives <- function(
 
 #' @rdname choice_alternatives
 #'
-#' @param x (`choice_alternatives`)\cr
+#' @param x \[`choice_alternatives`\]\cr
 #' The `choice_alternatives` object to be printed.
 #'
 #' @param ...

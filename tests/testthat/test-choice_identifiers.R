@@ -3,25 +3,27 @@ test_that("checks for choice identifiers work", {
     choice_identifiers(
       data.frame("id" = 1), column_decider = "id", column_occasion = "id"
     ),
-    "Names for `column_decider` and `column_occasion` must be different."
+    "Inputs `column_decider` and `column_occasion` must be different"
   )
   expect_error(
     choice_identifiers(
       data.frame("id" = 1:3, "idc" = 1), column_decider = "bad"
     ),
-    "not found in `data`."
+    "Columns of input `data_frame` are bad"
   )
   expect_error(
     choice_identifiers(
-      data.frame("id" = c(1, NA, 3), "idc" = 1), column_decider = "id"
+      data.frame("id" = c(1, NA, 3), "idc" = 1), column_decider = "id",
+      column_occasion = "idc"
     ),
     "must not have NAs"
   )
   expect_error(
     choice_identifiers(
-      data.frame("id" = c(1, 1, 3), "idc" = 1), column_decider = "id"
+      data.frame("id" = c(1, 1, 3), "idc" = 1), column_decider = "id",
+      column_occasion = "idc"
     ),
-    "must not have duplicated values if there are no identifiers for the choice occasions."
+    "must have unique values for any decider"
   )
   expect_error(
     choice_identifiers(
@@ -33,23 +35,115 @@ test_that("checks for choice identifiers work", {
     choice_identifiers(
       data.frame("id" = c(1, 2, 3)), column_decider = "id", column_occasion = "idc"
     ),
-    "not found in `data`."
+    "must include"
   )
   expect_error(
     choice_identifiers(
-      data.frame("id" = c(1, 2, 3), "idc" = c(1, NA, 1)), column_decider = "id", column_occasion = "idc"
+      data.frame("id" = c(1, 2, 3), "idc" = c(1, NA, 1)), column_decider = "id",
+      column_occasion = "idc"
     ),
-    "of `data` must not have NAs."
+    "must not have NAs"
   )
   expect_error(
     choice_identifiers(
-      data.frame("id" = c(1, 1), "idc" = c(1, 1)), column_decider = "id", column_occasion = "idc"
+      data.frame("id" = c(1, 1), "idc" = c(1, 1)), column_decider = "id",
+      column_occasion = "idc"
     ),
-    "must have unique values for a given decider"
+    "must have unique values for any decider"
+  )
+  expect_true(
+    is.choice_identifiers(
+      choice_identifiers(data.frame("deciderID" = 1, "occasionID" = 1))
+    )
+  )
+})
+
+test_that("choice identifiers work for cross-sectional case", {
+  expect_error(
+    choice_identifiers(
+      generate_choice_identifiers(N = 3, Tp = 2),
+      column_occasion = NULL,
+      as_cross_section = TRUE
+    ),
+    "must not have duplicated values"
+  )
+  expect_equal(
+    choice_identifiers(
+      generate_choice_identifiers(N = 3, Tp = 1),
+      column_occasion = NULL,
+      as_cross_section = TRUE
+    ),
+    structure(
+      list(
+        deciderID = structure(
+          1:3,
+          levels = c("1", "2", "3"),
+          class = "factor"
+        ),
+        occasionID = structure(
+          c(1L, 1L, 1L),
+          levels = "1",
+          class = "factor"
+        )
+      ),
+      class = c("choice_identifiers", "data.frame"),
+      row.names = c(NA, 3L)
+    )
+  )
+  expect_equal(
+    choice_identifiers(
+      generate_choice_identifiers(N = 3, Tp = 2),
+      as_cross_section = TRUE
+    ),
+    structure(
+      list(
+        deciderID = structure(
+          1:6,
+          levels = c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2"),
+          class = "factor"
+        ),
+        occasionID = structure(
+          c(1L, 1L, 1L, 1L, 1L, 1L),
+          levels = "1",
+          class = "factor"
+        )
+      ),
+      class = c("choice_identifiers", "data.frame"),
+      row.names = c(NA, 6L)
+    )
+  )
+})
+
+test_that("choice_identifiers can be printed", {
+  expect_error(
+    print.choice_identifiers(data.frame("deciderID" = 1, "occasionID" = 1)),
+    "Input `x` must be an object of class"
+  )
+  expect_snapshot(
+    choice_identifiers(data.frame("deciderID" = 1, "occasionID" = 1))
   )
 })
 
 test_that("choice identifiers can be generated", {
+  expect_equal(
+    generate_choice_identifiers(N = 3, column_occasion = NULL),
+    structure(
+      list(
+        deciderID = structure(
+          1:3,
+          levels = c("1", "2", "3"),
+          class = "factor"
+        ),
+        occasionID = structure(
+          c(1L, 1L, 1L),
+          levels = "1",
+          class = "factor"
+        )
+      ),
+      class = c("choice_identifiers", "data.frame"),
+      row.names = c(NA, 3L)
+    )
+  )
   expect_equal(
     generate_choice_identifiers(N = 3, Tp = 1:3),
     structure(
@@ -77,80 +171,30 @@ test_that("choice identifiers can be generated", {
     generate_choice_identifiers(
       N = 3, Tp = 1:3, column_decider = "id", column_occasion = "id"
     ),
-    "Names for `column_decider` and `column_occasion` must be different."
-  )
-})
-
-test_that("choice identifiers can be read", {
-  data <- data.frame(
-    "decider" = c("A", "B", "A"),
-    "occasion" = 1:3
-  )
-  expect_equal(
-    read_choice_identifiers(
-      data = data, column_decider = "decider",
-      column_occasion = "occasion"
-    ),
-    structure(
-      list(
-        decider = structure(
-          c(1L, 2L, 1L),
-          levels = c("A", "B"),
-          class = "factor"
-        ),
-        occasion = structure(
-          1:3,
-          levels = c("1", "2", "3"),
-          class = "factor")
-        ),
-      class = c("choice_identifiers", "data.frame"),
-      row.names = c(NA, 3L)
-    )
-  )
-  expect_equal(
-    read_choice_identifiers(
-      data = data, column_decider = "decider",
-      column_occasion = "occasion", as_cs = TRUE
-    ),
-    structure(
-      list(
-        decider = structure(
-          c(1L, 3L, 2L),
-          levels = c("A.1", "A.3", "B.2"),
-          class = "factor"
-        ),
-        occasion = structure(
-          c(1L, 1L, 1L),
-          levels = c("1"),
-          class = "factor"
-        )
-      ),
-      class = c("choice_identifiers", "data.frame"),
-      row.names = c(NA, 3L)
-    )
+    "Inputs `column_decider` and `column_occasion` must be different"
   )
 })
 
 test_that("Tp can be expanded", {
   expect_error(
     expand_Tp(),
-    "Please specify the number `N` of deciders."
+    "Please specify the input `N`"
   )
   expect_error(
     expand_Tp(N = 3.5),
-    "Assertion on 'N' failed: Must be of type 'single integerish value', not 'double'."
+    "Input `N` is bad: Must be of type 'single integerish value', not 'double'"
   )
   expect_error(
     expand_Tp(N = 10, Tp = "one"),
-    "Assertion on 'Tp' failed: Must be of type 'numeric', not 'character'."
+    "Input `Tp` is bad: Must be of type 'integerish', not 'character'"
   )
   expect_error(
     expand_Tp(N = 10, Tp = 1:9),
-    "Assertion on 'Tp' failed: Must have length 10, but has length 9."
+    "Input `Tp` is bad: Must have length 10, but has length 9"
   )
   expect_error(
     expand_Tp(N = 10, Tp = 1.5),
-    "Assertion on 'Tp' failed: Must be of type 'integerish', but element 1 is not close to an integer."
+    "Input `Tp` is bad: Must be of type 'integerish', but element 1 is not close to an integer"
   )
   expect_equal(
     expand_Tp(N = 10, Tp = 1),

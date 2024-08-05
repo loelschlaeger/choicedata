@@ -15,12 +15,12 @@ choice_alternatives(
 \method{print}{choice_alternatives}(x, ...)
 }
 \arguments{
-\item{J}{(\code{integer(1)})\cr
+\item{J}{[\code{integer(1)}]\cr
 The number of choice alternatives.
 
 Must be at least \code{2}.}
 
-\item{alternatives}{(\code{character(J)})\cr
+\item{alternatives}{[\code{character(J)}]\cr
 Labels for the choice alternatives.}
 
 \item{base}{(\code{character(1)})\cr
@@ -31,10 +31,10 @@ alternative-specific, see details.
 
 By default, \code{base} is the first element of \code{alternatives}.}
 
-\item{ordered}{(\code{logical(1)})\cr
+\item{ordered}{[\code{logical(1)}]\cr
 Are the choice alternatives ordered?}
 
-\item{x}{(\code{choice_alternatives})\cr
+\item{x}{[\code{choice_alternatives}]\cr
 The \code{choice_alternatives} object to be printed.}
 
 \item{...}{Currently not used.}
@@ -49,8 +49,7 @@ vector of the choice alternatives that has the following attributes:
 }
 }
 \description{
-This function constructs an object of class \code{choice_alternatives}, which
-defines the set of choice alternatives.
+The \code{choice_alternatives} object defines the set of choice alternatives.
 }
 \section{Base alternative}{
 

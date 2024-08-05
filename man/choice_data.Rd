@@ -48,8 +48,6 @@ simulate_choice_data(
 \method{print}{choice_data}(x, ...)
 }
 \arguments{
-\item{data}{A \code{data.frame}.}
-
 \item{format}{TODO}
 
 \item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
@@ -67,17 +65,17 @@ identifiers for the choice occasions.}
 
 \item{column_covariates_alternative_varying}{TODO}
 
-\item{alternatives}{(\code{character(J)})\cr
+\item{alternatives}{[\code{character(J)}]\cr
 Labels for the choice alternatives.}
 
-\item{ordered}{(\code{logical(1)})\cr
+\item{ordered}{[\code{logical(1)}]\cr
 Are the choice alternatives ordered?}
 
 \item{ranked}{TODO}
 
 \item{delimiter}{TODO}
 
-\item{x}{(\code{choice_alternatives})\cr
+\item{x}{[\code{choice_alternatives}]\cr
 The \code{choice_alternatives} object to be printed.}
 
 \item{error}{TODO}
@@ -95,6 +93,9 @@ parameters are used.}
 \item{row.names, optional}{Currently not used.}
 
 \item{...}{Currently not used.}
+
+\item{data_frame}{[\code{data.frame}]\cr
+Contains the choice data.}
 }
 \value{
 A \code{\link{choice_data}} object.

@@ -28,6 +28,15 @@ check_alternatives <- function(alternatives, J) {
   invisible(alternatives)
 }
 
+check_as_cross_section <- function(as_cross_section) {
+  check_not_missing(as_cross_section)
+  check <- checkmate::check_flag(as_cross_section)
+  if (!isTRUE(check)) {
+    cli::cli_abort("Input {.var as_cross_section} is bad: {check}", call = NULL)
+  }
+  invisible(as_cross_section)
+}
+
 check_base <- function(base, alternatives, J) {
   check_not_missing(base)
   check_alternatives(alternatives = alternatives, J = J)
@@ -126,14 +135,27 @@ check_column_decider <- function(column_decider, null.ok = TRUE) {
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var column_decider} is bad: {check}", call = NULL)
   }
+  if (identical(column_decider, "occasionID")) {
+    cli::cli_abort(
+      "Input {.var column_decider} must not equal {.val occasionID}",
+      call = NULL
+    )
+  }
   invisible(column_decider)
 }
 
-check_column_occasion <- function(column_occasion, null.ok = TRUE) {
+check_column_occasion <- function(column_occasion, column_decider, null.ok = TRUE) {
   check_not_missing(column_occasion)
+  check_column_decider(column_decider)
   check <- checkmate::check_string(column_occasion, min.chars = 1, null.ok = null.ok)
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var column_occasion} is bad: {check}", call = NULL)
+  }
+  if (identical(column_decider, column_occasion)) {
+    cli::cli_abort(
+      "Inputs {.var column_decider} and {.var column_occasion} must be different",
+      call = NULL
+    )
   }
   invisible(column_occasion)
 }
@@ -169,16 +191,20 @@ check_consistency_effects_parameters <- function(choice_effects, choice_paramete
   invisible(TRUE)
 }
 
-check_data <- function(data, force_data_frame = TRUE) {
-  check_not_missing(data)
-  check <- checkmate::check_data_frame(data)
+check_data_frame <- function(data_frame, required_columns = character()) {
+  check_not_missing(data_frame)
+  checkmate::assert_character(required_columns)
+  check <- checkmate::check_data_frame(data_frame)
   if (!isTRUE(check)) {
-    cli::cli_abort("Input {.var data} must be a {.cls data.frame}", call = NULL)
+    cli::cli_abort("Input {.var data_frame} is bad: {check}", call = NULL)
   }
-  if (isTRUE(force_data_frame)) {
-    data <- as.data.frame(data)
+  check <- checkmate::check_names(
+    colnames(data_frame), must.include = required_columns, what = "colnames"
+  )
+  if (!isTRUE(check)) {
+    cli::cli_abort("Columns of input {.var data_frame} are bad: {check}", call = NULL)
   }
-  invisible(data)
+  invisible(data_frame)
 }
 
 check_delimiter <- function(delimiter) {
@@ -296,3 +322,17 @@ check_random_effects <- function(random_effects) {
   invisible(random_effects)
 }
 
+check_Tp <- function(Tp, N) {
+  check_not_missing(Tp)
+  check_N(N)
+  check <- checkmate::check_int(Tp, lower = 1)
+  if (!isTRUE(check)) {
+    check <- checkmate::check_integerish(
+      Tp, lower = 1, any.missing = FALSE, len = N
+    )
+    if (!isTRUE(check)) {
+      cli::cli_abort("Input {.var Tp} is bad: {check}", call = NULL)
+    }
+  }
+  invisible(Tp)
+}

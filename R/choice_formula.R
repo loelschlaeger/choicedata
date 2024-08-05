@@ -1,8 +1,8 @@
 #' Define choice model formula
 #'
 #' @description
-#' This function constructs an object of class \code{choice_formula}, which
-#' defines the utility equation for a choice model.
+#' The \code{choice_formula} object defines the utility equation for a choice
+#' model.
 #'
 #' @param formula (`formula`)\cr
 #' A symbolic description of the choice model, see details.
@@ -252,11 +252,12 @@ choice_formula <- function(
 #' @noRd
 
 is.choice_formula <- function(
-    x, error = TRUE, var_name = oeli::variable_name(x)
+    x, error = FALSE, var_name = oeli::variable_name(x)
   ) {
   check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_formula")
   if (isTRUE(error) && !isTRUE(check)) {
+    var_name <- oeli::variable_name(x)
     cli::cli_abort(
       "Input {.var {var_name}} must be an object of class
       {.cls choice_formula}",

@@ -2,78 +2,69 @@
 % Please edit documentation in R/choice_identifiers.R
 \name{choice_identifiers}
 \alias{choice_identifiers}
-\alias{is.choice_identifiers}
+\alias{print.choice_identifiers}
 \alias{generate_choice_identifiers}
-\alias{read_choice_identifiers}
-\title{Define identifiers}
+\title{Define choice identifiers}
 \usage{
 choice_identifiers(
-  data = data.frame(),
+  data_frame,
   column_decider = "deciderID",
-  column_occasion = NULL,
-  as_cs = FALSE
+  column_occasion = "occasionID",
+  as_cross_section = FALSE
 )
 
-is.choice_identifiers(x, error = TRUE)
+\method{print}{choice_identifiers}(x, ...)
 
 generate_choice_identifiers(
   N,
   Tp = 1,
   column_decider = "deciderID",
-  column_occasion = NULL
-)
-
-read_choice_identifiers(
-  data = data.frame(),
-  column_decider = "deciderID",
-  column_occasion = NULL,
-  as_cs = FALSE
+  column_occasion = "occasionID"
 )
 }
 \arguments{
-\item{data}{TODO
+\item{data_frame}{[\code{data.frame}]\cr
+Contains the choice data.}
 
-It can also be \code{NULL} (default), in which case data is treated as
-cross-sectional. The decider ids must be unique in this case. A column for
-the (trivial) choice occasion identifiers is generated anyways with the
-default name \code{"occasionID"}.}
+\item{column_decider}{[\code{character(1)}]\cr
+The name of the \code{data.frame} column with identifier for the deciders.}
 
-\item{column_decider}{A \code{character}, the name of the \code{data.frame} column with identifier
-for the deciders. The default is \code{"deciderID"}.}
+\item{column_occasion}{[\code{character(1)} | \code{NULL}]\cr
+The name of the \code{data.frame} column with identifier for the choice
+occasions.
 
-\item{column_occasion}{A \code{character}, different from \code{column_decider}, the name of the
-\code{data.frame} column with identifier for the choice occasions. These
-identifiers must be unique for a given decider.}
+Can also be \code{NULL} in the cross-sectional case.}
 
-\item{as_cs}{Either \code{TRUE} to treat the data as cross-sectional (i.e., dropping the
-information of multiple choices by the same decider), or \code{FALSE}
-(default), else.}
+\item{as_cross_section}{[\code{logical(1)}]\cr
+Treat choice data as cross-sectional?}
 
-\item{x}{TODO}
+\item{x}{[\code{choice_identifiers}]\cr
+The \code{choice_identifiers} object to be printed.}
 
-\item{error}{TODO}
+\item{...}{Currently not used.}
 
-\item{N}{(\code{integer(1)})\cr
+\item{N}{[\code{integer(1)}]\cr
 The number of deciders.}
 
-\item{Tp}{(\code{integer()})\cr
-The number of choice occasions per decider.
+\item{Tp}{[\code{integer(1)} | \code{integer(N)}]\cr
+The constant number of choice occasions per decider.
 
-Can also be a \code{vector} of length \code{N} for a variable number of
-choice occasions per decider.}
+Can also be of length \code{N} for a variable number of choice occasions per
+decider.}
 }
 \value{
-A \code{\link{choice_identifiers}} object. It is a \code{data.frame} with
-two columns, one named \code{column_decider} and containing the decider ids,
-and the other one either named \code{column_occasion} or \code{"occasionID"} by
-default, containing the choice occasion ids.
+An object of class \code{choice_identifiers} object, which is a
+\code{data.frame} with two columns:
+\enumerate{
+\item \code{column_decider} contains the decider ids,
+\item \code{column_occasion} contains the choice occasion ids.
+}
 }
 \description{
-These functions define an object of class \code{\link{choice_identifiers}},
-which defines identifiers for the deciders and the choice occasions.
+The \code{choice_identifiers} object defines identifiers for the deciders and
+the choice occasions.
+}
+\examples{
+generate_choice_identifiers(N = 2, Tp = 2)
 
-\code{\link{generate_choice_identifiers}} generates choice identifiers.
-
-\code{\link{read_choice_identifiers}} reads choice identifiers from a
-\code{data.frame}.
 }

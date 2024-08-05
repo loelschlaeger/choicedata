@@ -2,161 +2,46 @@
 % Please edit documentation in R/choice_covariates.R
 \name{choice_covariates}
 \alias{choice_covariates}
-\alias{is.choice_covariates}
 \alias{generate_choice_covariates}
-\alias{validate_choice_covariates}
 \alias{as.list.choice_covariates}
 \alias{as.data.frame.choice_covariates}
 \alias{covariate_names}
-\alias{covariate_number}
 \title{Define choice covariates}
 \usage{
 choice_covariates(covariates)
 
-is.choice_covariates(x, error = TRUE)
-
 generate_choice_covariates(
-  choice_formula,
-  N,
-  Tp = 1,
-  labels,
-  marginals,
-  correlation,
-  delimiter = "_",
-  column_decider = "deciderID",
-  column_occasion = "occasionID"
-)
-
-validate_choice_covariates(
-  x,
-  N,
-  Tp = 1,
-  choice_formula,
-  choice_alternatives,
-  delimiter,
-  column_decider,
-  column_occasion
+  choice_effects,
+  choice_identifiers,
+  labels = covariate_names(choice_effects),
+  marginals = list(),
+  correlation = diag(length(labels))
 )
 
 \method{as.list}{choice_covariates}(x, ...)
 
 \method{as.data.frame}{choice_covariates}(x, row.names, optional, ...)
 
-covariate_names(choice_formula, choice_alternatives, delimiter = "_")
-
-covariate_number(choice_formula, choice_alternatives)
+covariate_names(choice_effects)
 }
 \arguments{
 \item{covariates}{TODO}
 
-\item{x}{(\code{choice_effects})\cr
-The \code{choice_effects} object to be printed.}
-
-\item{error}{TODO}
-
-\item{choice_formula}{A \code{\link{choice_formula}} object.}
-
-\item{N}{(\code{integer(1)})\cr
-The number of deciders.}
-
-\item{Tp}{(\code{integer()})\cr
-The number of choice occasions per decider.
-
-Can also be a \code{vector} of length \code{N} for a variable number of
-choice occasions per decider.}
-
-\item{delimiter}{(\code{character(1)})\cr
-A delimiter between covariate and alternative name to build the effect name.}
-
-\item{column_decider}{A \code{character}, the column name of the \code{data.frame} with the
-decider identifiers.}
-
-\item{column_occasion}{A \code{character}, the column name of the \code{data.frame} with the
-identifiers for the choice occasions.}
-
-\item{choice_alternatives}{A \code{\link{choice_alternatives}} object.}
-
-\item{...}{Currently not used.}
-
 \item{row.names, optional}{Currently not used.}
-
-\item{covariate_levels}{Defines the number of levels for the covariates. Two formats are allowed:
-\itemize{
-\item Can be a single, positive \code{numeric} which defines the number of levels
-for all covariates. By default, \code{covariate_levels = Inf}.
-\item Can be a named \code{numeric} \code{vector} for specific number of levels
-for specific covariates. Names must correspond to the output of
-\code{\link{covariate_names}}. Number of levels for missing covariates are
-set to \code{Inf}.
-}}
-
-\item{occasion_constant}{A \code{character} \code{vector} of covariate names
-(see \code{\link{covariate_names}})
-that are supposed to be constant across choice occasions.}
-
-\item{covariate_mean}{Defines the mean for the covariates. Two formats are allowed:
-\itemize{
-\item Can be a single \code{numeric} which defines a mean for all covariates.
-By default, \code{covariate_mean = 0}.
-\item Can be a named \code{numeric} \code{vector} for specific mean values for
-specific covariates. Names must correspond to the output of
-\code{\link{covariate_names}}. Means for missing covariates are set to
-\code{0}.
-}}
-
-\item{covariate_sd}{Defines the standard deviation for the covariates. Two formats are allowed:
-\itemize{
-\item Can be a single, positive \code{numeric} which defines a standard deviation
-for all covariates. By default, \code{covariate_sd = 0}.
-\item Can be a named \code{numeric} \code{vector} for specific standard
-deviations for specific covariates. Names must correspond to the output of
-\code{\link{covariate_names}}. Standard deviations for missing covariates
-are set to \code{1}.
-}}
-
-\item{covariate_correlation}{Defines the correlation across covariates. Two formats are allowed:
-\itemize{
-\item Can be a single \code{numeric} between \code{-1} and \code{1} which defines
-the correlation across all covariates.
-By default, \code{covariate_correlation = 0}.
-\item Can be a correlation \code{matrix} of dimension \code{n}, where \code{n}
-must equal the output of \code{\link{covariate_number}}. The
-\code{(i,j)}-th element defines the correlation between covariate \code{i}
-and covariate \code{j} in the output of \code{\link{covariate_names}}.
-}}
-
-\item{empirical}{If \code{TRUE}, \code{covariate_mean}, \code{covariate_sd}, and
-\code{covariate_correlation} specify the empirical mean, standard
-deviation and correlation. If \code{FALSE} (default), they specify the
-values for the population.}
 }
 \value{
 A \code{data.frame}.
 }
 \description{
-These functions create and validate an object of class
-\code{\link{choice_covariates}}, which defines the model covariates,
-see the details.
-
-\code{\link{generate_choice_covariates}} samples covariates.
-
-\code{\link{as.list.choice_covariates}} and
-\code{\link{as.data.frame.choice_covariates}} transform the covariates in
-\code{list} or \code{data.frame} form, respectively.
-
-In \code{list} form, it is a \code{list} of \code{list}s of \code{matrix}
-elements. More precise: Let the return value be \code{out}, then
+The \code{choice_covariates} object defines the choice model covariates.
 \itemize{
-\item \code{out} is a \code{list} that contains the covariate matrices of all
-deciders at all choice occasions,
-\item \code{out[[n]]} is a \code{list} of the covariate matrices of decider
-\code{n} at all of their choice occasions,
-\item \code{out[[n]][[t]]} is the covariate \code{matrix} of decider \code{n} at
-their \code{t}-th choice occasion.
+\item \code{generate_choice_covariates} samples covariates
+\item \code{as.list.choice_covariates} transforms the covariates to a \code{list}
+of model design matrices, see details
+\item \code{as.data.frame} transforms the covariates to a \code{data.frame}
+\item \code{covariate_names} provides the covariate names for a given model
+specification
 }
-
-\code{\link{covariate_names}} and \code{\link{covariate_number}} provide the
-names and number of covariates for a given model specification.
 }
 \section{Covariate matrices}{
 
@@ -164,19 +49,9 @@ A covariate matrix contains the choice covariates of a decider at some choice
 occasion. It is of dimension \code{J} x \code{P}, where \code{J} is the
 number of alternatives and \code{P} the number of effects. See
 \code{\link{compute_P}} to compute the number \code{P}.
-
-By default, covariates are sampled from independent normal distributions, but
-customization is possible:
-\itemize{
-\item the levels per covariate can be defined via \code{covariate_levels},
-\item covariates with constant value over occasions can be defined via
-\code{occasion_constant},
-\item the means for each covariate can be defined via \code{covariate_mean},
-\item the standard deviation for each covariate can be defined via
-\code{covariate_sd},
-\item the correlation between covariates can be defined via
-\code{covariate_correlation}.
-}
 }
 
-\keyword{object}
+\examples{
+# TODO
+
+}

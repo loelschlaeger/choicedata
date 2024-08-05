@@ -7,14 +7,14 @@
 expand_Tp(N, Tp = 1)
 }
 \arguments{
-\item{N}{(\code{integer(1)})\cr
+\item{N}{[\code{integer(1)}]\cr
 The number of deciders.}
 
-\item{Tp}{(\code{integer()})\cr
-The number of choice occasions per decider.
+\item{Tp}{[\code{integer(1)} | \code{integer(N)}]\cr
+The constant number of choice occasions per decider.
 
-Can also be a \code{vector} of length \code{N} for a variable number of
-choice occasions per decider.}
+Can also be of length \code{N} for a variable number of choice occasions per
+decider.}
 }
 \value{
 An \code{integer} \code{vector} of length \code{N}.

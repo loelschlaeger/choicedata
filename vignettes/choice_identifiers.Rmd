@@ -1,0 +1,22 @@
+---
+title: "Choice identifiers"
+description: >
+  How to define choice identifiers?
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Choice identifiers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: ../inst/REFERENCES.bib
+link-citations: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("choicedata")
+```
+
+## References

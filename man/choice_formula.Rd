@@ -58,8 +58,8 @@ following elements:
 }
 }
 \description{
-This function constructs an object of class \code{choice_formula}, which
-defines the utility equation for a choice model.
+The \code{choice_formula} object defines the utility equation for a choice
+model.
 }
 \section{The probit and logit model}{
 
