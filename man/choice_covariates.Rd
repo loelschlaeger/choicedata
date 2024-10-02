@@ -3,31 +3,60 @@
 \name{choice_covariates}
 \alias{choice_covariates}
 \alias{generate_choice_covariates}
-\alias{as.list.choice_covariates}
-\alias{as.data.frame.choice_covariates}
+\alias{design_matrices}
+\alias{as.data.frame.design_matrices}
 \alias{covariate_names}
 \title{Define choice covariates}
 \usage{
-choice_covariates(covariates)
-
-generate_choice_covariates(
-  choice_effects,
-  choice_identifiers,
-  labels = covariate_names(choice_effects),
-  marginals = list(),
-  correlation = diag(length(labels))
+choice_covariates(
+  data_frame,
+  column_decider = "deciderID",
+  column_occasion = "occasionID",
+  as_cross_section = FALSE,
+  column_covariates = setdiff(colnames(data_frame), c(column_decider, column_occasion))
 )
 
-\method{as.list}{choice_covariates}(x, ...)
+generate_choice_covariates(
+  choice_effects = NULL,
+  choice_identifiers = generate_choice_identifiers(N = 100),
+  labels = covariate_names(choice_effects),
+  n = nrow(choice_identifiers),
+  marginals = list(),
+  correlation = diag(length(labels)),
+  verbose = FALSE
+)
 
-\method{as.data.frame}{choice_covariates}(x, row.names, optional, ...)
+design_matrices(choice_covariates, choice_effects)
+
+\method{as.data.frame}{design_matrices}(x, row.names, optional, ...)
 
 covariate_names(choice_effects)
 }
 \arguments{
-\item{covariates}{TODO}
+\item{data_frame}{[\code{data.frame}]\cr
+Contains the choice data.}
+
+\item{column_decider}{[\code{character(1)}]\cr
+The name of the \code{data_frame} column with identifier for the deciders.}
+
+\item{column_occasion}{[\code{character(1)} | \code{NULL}]\cr
+The name of the \code{data_frame} column with identifier for the choice
+occasions.
+
+Can also be \code{NULL} for the cross-sectional case.}
+
+\item{as_cross_section}{[\code{logical(1)}]\cr
+Treat choice data as cross-sectional?}
+
+\item{column_covariates}{[\code{character()}]\cr
+Names of columns in \code{data_frame} that store covariate values.}
+
+\item{x}{[\code{choice_identifiers}]\cr
+The \code{choice_identifiers} object to be printed.}
 
 \item{row.names, optional}{Currently not used.}
+
+\item{...}{Currently not used.}
 }
 \value{
 A \code{data.frame}.
@@ -35,11 +64,12 @@ A \code{data.frame}.
 \description{
 The \code{choice_covariates} object defines the choice model covariates.
 \itemize{
-\item \code{generate_choice_covariates} samples covariates
-\item \code{as.list.choice_covariates} transforms the covariates to a \code{list}
+\item \code{generate_choice_covariates()} samples covariates
+\item \code{design_matrices()} transforms the covariates to a \code{list}
 of model design matrices, see details
-\item \code{as.data.frame} transforms the covariates to a \code{data.frame}
-\item \code{covariate_names} provides the covariate names for a given model
+\item \code{as.data.frame.design_matrices()} transforms the design matrices
+(back) to a \code{data.frame}
+\item \code{covariate_names()} provides the covariate names for a given model
 specification
 }
 }

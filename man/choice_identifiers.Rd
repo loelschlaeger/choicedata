@@ -13,7 +13,7 @@ choice_identifiers(
   as_cross_section = FALSE
 )
 
-\method{print}{choice_identifiers}(x, ...)
+\method{print}{choice_identifiers}(x, rows = NULL, row.names = FALSE, ...)
 
 generate_choice_identifiers(
   N,
@@ -27,19 +27,27 @@ generate_choice_identifiers(
 Contains the choice data.}
 
 \item{column_decider}{[\code{character(1)}]\cr
-The name of the \code{data.frame} column with identifier for the deciders.}
+The name of the \code{data_frame} column with identifier for the deciders.}
 
 \item{column_occasion}{[\code{character(1)} | \code{NULL}]\cr
-The name of the \code{data.frame} column with identifier for the choice
+The name of the \code{data_frame} column with identifier for the choice
 occasions.
 
-Can also be \code{NULL} in the cross-sectional case.}
+Can also be \code{NULL} for the cross-sectional case.}
 
 \item{as_cross_section}{[\code{logical(1)}]\cr
 Treat choice data as cross-sectional?}
 
 \item{x}{[\code{choice_identifiers}]\cr
 The \code{choice_identifiers} object to be printed.}
+
+\item{rows}{[\code{integer(1)} | \code{NULL} ]\cr
+The number of rows to be printed. Printing is abbreviated in the middle.
+
+Can be \code{NULL} to print everything.}
+
+\item{row.names}{[\code{logical(1)}]\cr
+Print row names?}
 
 \item{...}{Currently not used.}
 
@@ -53,11 +61,12 @@ Can also be of length \code{N} for a variable number of choice occasions per
 decider.}
 }
 \value{
-An object of class \code{choice_identifiers} object, which is a
-\code{data.frame} with two columns:
+An object of class \code{choice_identifiers}, which is a \code{data.frame}
+with columns:
 \enumerate{
 \item \code{column_decider} contains the decider ids,
-\item \code{column_occasion} contains the choice occasion ids.
+\item \code{column_occasion} contains the choice occasion ids
+(only if \code{column_occasion} is not \code{NULL} and \code{as_cross_section = FALSE}).
 }
 }
 \description{
@@ -65,6 +74,10 @@ The \code{choice_identifiers} object defines identifiers for the deciders and
 the choice occasions.
 }
 \examples{
+### general (panel) case
 generate_choice_identifiers(N = 2, Tp = 2)
+
+### cross-sectional case
+generate_choice_identifiers(N = 5, column_occasion = NULL)
 
 }

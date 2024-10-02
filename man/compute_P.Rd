@@ -4,7 +4,7 @@
 \alias{compute_P}
 \alias{compute_P_f}
 \alias{compute_P_r}
-\title{Compute number of model effects}
+\title{Number of model effects}
 \usage{
 compute_P(choice_effects)
 
@@ -13,7 +13,7 @@ compute_P_f(choice_effects)
 compute_P_r(choice_effects)
 }
 \arguments{
-\item{choice_effects}{(\code{choice_effects})\cr
+\item{choice_effects}{[\code{choice_effects}]\cr
 The \code{\link{choice_effects}} object that defines the choice effects.}
 }
 \value{

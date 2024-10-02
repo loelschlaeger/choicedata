@@ -15,17 +15,17 @@ choice_formula(
 \method{print}{choice_formula}(x, ...)
 }
 \arguments{
-\item{formula}{(\code{formula})\cr
+\item{formula}{[\code{formula}]\cr
 A symbolic description of the choice model, see details.}
 
-\item{error_term}{(\code{character()})\cr
+\item{error_term}{[\code{character(1)}]\cr
 Defines the model's error term. Current options are:
 \itemize{
 \item \code{"logit"}: errors are assumed to be iid standard Gumbel distributed
 \item \code{"probit"}: errors are assumed to be multivariate normally distributed
 }}
 
-\item{random_effects}{(\code{character()})\cr
+\item{random_effects}{[\code{character()}]\cr
 The names of covariates in \code{formula} connected to a random effect, i.e.,
 their coefficients follow a random (so-called mixing) distribution.
 
@@ -34,11 +34,11 @@ distribution (e.g., for sign-restriction) can be specified via appending
 \code{+} to the corresponding name. To have random effects for the ASCs, add
 \code{ASC} (or \code{ASC+}) to \code{random_effects}.}
 
-\item{latent_classes}{(\code{character()})\cr
+\item{latent_classes}{[\code{character()}]\cr
 The names of covariates in \code{formula} connected to latent classes, see
 details.}
 
-\item{x}{(\code{choice_formula})\cr
+\item{x}{[\code{choice_formula}]\cr
 The \code{choice_formula} object to be printed.}
 
 \item{...}{Currently not used.}

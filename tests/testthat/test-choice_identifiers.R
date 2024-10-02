@@ -79,15 +79,12 @@ test_that("choice identifiers work for cross-sectional case", {
           1:3,
           levels = c("1", "2", "3"),
           class = "factor"
-        ),
-        occasionID = structure(
-          c(1L, 1L, 1L),
-          levels = "1",
-          class = "factor"
         )
       ),
       class = c("choice_identifiers", "data.frame"),
-      row.names = c(NA, 3L)
+      row.names = c(NA, 3L),
+      column_decider = "deciderID",
+      as_cross_section = TRUE
     )
   )
   expect_equal(
@@ -101,15 +98,12 @@ test_that("choice identifiers work for cross-sectional case", {
           1:6,
           levels = c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2"),
           class = "factor"
-        ),
-        occasionID = structure(
-          c(1L, 1L, 1L, 1L, 1L, 1L),
-          levels = "1",
-          class = "factor"
         )
       ),
       class = c("choice_identifiers", "data.frame"),
-      row.names = c(NA, 6L)
+      row.names = c(NA, 6L),
+      column_decider = "deciderID",
+      as_cross_section = TRUE
     )
   )
 })
@@ -122,6 +116,9 @@ test_that("choice_identifiers can be printed", {
   expect_snapshot(
     choice_identifiers(data.frame("deciderID" = 1, "occasionID" = 1))
   )
+  expect_snapshot(
+    print(generate_choice_identifiers(N = 1000, Tp = 2), rows = 5)
+  )
 })
 
 test_that("choice identifiers can be generated", {
@@ -133,15 +130,12 @@ test_that("choice identifiers can be generated", {
           1:3,
           levels = c("1", "2", "3"),
           class = "factor"
-        ),
-        occasionID = structure(
-          c(1L, 1L, 1L),
-          levels = "1",
-          class = "factor"
         )
       ),
       class = c("choice_identifiers", "data.frame"),
-      row.names = c(NA, 3L)
+      row.names = c(NA, 3L),
+      column_decider = "deciderID",
+      as_cross_section = TRUE
     )
   )
   expect_equal(
@@ -160,7 +154,10 @@ test_that("choice identifiers can be generated", {
         )
       ),
       class = c("choice_identifiers", "data.frame"),
-      row.names = c(NA, 6L)
+      row.names = c(NA, 6L),
+      column_decider = "deciderID",
+      column_occasion = "occasionID",
+      as_cross_section = FALSE
     )
   )
   expect_error(
@@ -203,5 +200,18 @@ test_that("Tp can be expanded", {
   expect_equal(
     expand_Tp(N = 10, Tp = 1:10),
     1:10
+  )
+})
+
+test_that("Tp can be read", {
+  choice_identifiers <- generate_choice_identifiers(N = 3, Tp = 1:3)
+  expect_equal(
+    read_Tp(choice_identifiers),
+    1:3
+  )
+  choice_identifiers <- generate_choice_identifiers(N = 3, Tp = 2, column_occasion = NULL)
+  expect_equal(
+    read_Tp(choice_identifiers),
+    rep(1L, 6)
   )
 })

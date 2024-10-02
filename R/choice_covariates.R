@@ -3,15 +3,18 @@
 #' @description
 #' The \code{choice_covariates} object defines the choice model covariates.
 #'
-#' - \code{generate_choice_covariates} samples covariates
-#' - \code{as.list.choice_covariates} transforms the covariates to a \code{list}
+#' - \code{generate_choice_covariates()} samples covariates
+#' - \code{design_matrices()} transforms the covariates to a \code{list}
 #'   of model design matrices, see details
-#' - \code{as.data.frame} transforms the covariates to a \code{data.frame}
-#' - \code{covariate_names} provides the covariate names for a given model
+#' - \code{as.data.frame.design_matrices()} transforms the design matrices
+#'   (back) to a \code{data.frame}
+#' - \code{covariate_names()} provides the covariate names for a given model
 #'   specification
 #'
-#' @param covariates
-#' TODO
+#' @inheritParams choice_identifiers
+#'
+#' @param column_covariates \[`character()`\]\cr
+#' Names of columns in \code{data_frame} that store covariate values.
 #'
 #' @return
 #' A \code{data.frame}.
@@ -27,13 +30,51 @@
 #'
 #' @export
 
-choice_covariates <- function(covariates) {
+choice_covariates <- function(
+    data_frame,
+    column_decider = "deciderID",
+    column_occasion = "occasionID",
+    as_cross_section = FALSE,
+    column_covariates = setdiff(
+      colnames(data_frame), c(column_decider, column_occasion)
+    )
+  ) {
 
-  ### transform 'choice_data' to 'choice_covariates'
-  # TODO
+  ### input checks
+  check_not_missing(data_frame)
+  oeli::input_check_response(
+     check = checkmate::check_names(column_covariates, type = "strict"),
+     var_name = "column_covariates"
+  )
+  oeli::input_check_response(
+    check = checkmate::check_data_frame(data_frame),
+    var_name = "data_frame"
+  )
+  oeli::input_check_response(
+    check = checkmate::check_names(
+      colnames(data_frame),
+      must.include = c(column_decider, column_occasion, column_covariates)
+    ),
+    var_name = "data_frame"
+  )
+  identifiers <- choice_identifiers(
+    data_frame = data_frame[, c(column_decider, column_occasion)],
+    column_decider = column_decider,
+    column_occasion = column_occasion,
+    as_cross_section = as_cross_section
+  )
 
-  ### validate 'choice_covariates'
-  # validate_choice_covariates()
+  ### build covariates
+  covariates <- data_frame[, column_covariates]
+  structure(
+    cbind(identifiers, covariates),
+    class = c("choice_covariates", "data.frame"),
+    column_decider = attr(identifiers, "column_decider"),
+    column_occasion = attr(identifiers, "column_occasion"),
+    as_cross_section = attr(identifiers, "as_cross_section"),
+    column_covariates = column_covariates
+  )
+
 }
 
 #' @noRd
@@ -58,114 +99,158 @@ is.choice_covariates <- function(
 #' @export
 
 generate_choice_covariates <- function(
-  choice_effects,
-  choice_identifiers,
+  choice_effects = NULL,
+  choice_identifiers = generate_choice_identifiers(N = 100),
   labels = covariate_names(choice_effects),
+  n = nrow(choice_identifiers),
   marginals = list(),
-  correlation = diag(length(labels))
+  correlation = diag(length(labels)),
+  verbose = FALSE
 ) {
 
   ### input checks
+  is.choice_identifiers(choice_identifiers, error = TRUE)
+  oeli::input_check_response(
+    check = checkmate::check_names(labels, type = "strict"),
+    var_name = "labels"
+  )
+  oeli::input_check_response(
+    check = checkmate::check_count(n),
+    var_name = "n"
+  )
+  oeli::input_check_response(
+    check = if (n == nrow(choice_identifiers)) {
+      TRUE
+    } else {
+      "Must be equal to the total number of identifiers"
+    },
+    var_name = "n"
+  )
 
-
-  ### draw covariates
+  ### build covariates
+  covariates <- oeli::correlated_regressors(
+    labels = labels,
+    n = n,
+    marginals = marginals,
+    correlation = correlation,
+    verbose = verbose
+  )
+  choice_covariates(
+    data_frame = cbind(choice_identifiers, covariates),
+    column_decider = attr(choice_identifiers, "column_decider"),
+    column_occasion = attr(choice_identifiers, "column_occasion"),
+    as_cross_section = attr(choice_identifiers, "as_cross_section"),
+    column_covariates = labels
+  )
 
 }
 
 #' @rdname choice_covariates
-#' @exportS3Method
 
-as.list.choice_covariates <- function(x, ...) {
+design_matrices <- function(choice_covariates, choice_effects) {
 
   ### input checks
-  is.choice_covariates(x, error = TRUE)
-  if (checkmate::test_list(x)) {
-    return(x)
+  is.choice_covariates(choice_covariates, error = TRUE)
+
+  ### already in list format?
+  if (checkmate::test_class(
+    choice_covariates, c("choice_covariats", "design_matrices")
+  )) {
+    return(choice_covariates)
   }
-  Tp <- attr(x, "Tp")
-  N <- length(Tp)
-  column_decider <- attr(x, "column_decider")
-  column_occasion <- attr(x, "column_occasion")
-  choice_formula <- attr(x, "choice_formula")
-  choice_alternatives <- attr(x, "choice_alternatives")
-  J <- attr(choice_alternatives, "J")
-  delimiter <- attr(x, "delimiter")
-  effects <- choice_effects(
-    choice_formula = choice_formula,
-    choice_alternatives = choice_alternatives,
-    delimiter = delimiter
+
+  ### extract information
+  choice_identifiers <- choice_identifiers(
+    data_frame = choice_covariates,
+    column_decider = attr(choice_covariates, "column_decider"),
+    column_occasion = attr(choice_covariates, "column_occasion"),
+    as_cross_section = attr(choice_covariates, "as_cross_section")
   )
+  Tp <- read_Tp(choice_identifiers)
+  N <- length(Tp)
+  choice_formula <- attr(choice_effects, "choice_formula")
+  choice_alternatives <- attr(choice_effects, "choice_alternatives")
+  J <- attr(choice_alternatives, "J")
+  delimiter <- attr(choice_effects, "delimiter")
 
   ### transform to list
-  covariates_matrix <- lapply(1:N, function(n) {
-    lapply(1:Tp[n], function(t) {
+  design_matrices <- lapply(seq_len(N), function(n) {
+    lapply(seq_len(Tp[n]), function(t) {
 
       ### build covariate matrix for decider n at choice occasion t
-      covariates_nt <- x[x[[column_decider]] == n & x[[column_occasion]] == t, ]
-      X_nt <- matrix(0, nrow = J, ncol = nrow(effects))
+      id_nt <- choice_covariates[[column_decider]] == n & choice_covariates[[column_occasion]] == t
+      covariates_nt <- choice_covariates[id_nt, ]
+      X_nt <- matrix(0, nrow = J, ncol = nrow(choice_effects))
       rownames(X_nt) <- as.character(choice_alternatives)
-      colnames(X_nt) <- effects$name
-      for (e in seq_len(nrow(effects))) {
+      colnames(X_nt) <- choice_effects$effect_name
+
+      for (e in seq_len(nrow(choice_effects))) {
+
+        e_name <- choice_effects[e, "effect_name"]
+        e_covariate <- choice_effects[e, "covariate"]
+        e_alternative <- choice_effects[e, "alternative"]
+        e_as_covariate <- choice_effects[e, "as_covariate"]
+        e_as_effect <- choice_effects[e, "as_effect"]
+        e_is_ASC <- is.na(e_covariate)
 
         ### check for alternative-specific effects
-        if (effects[e, "as_effect"]) {
+        if (e_as_effect) {
 
           ### check for alternative-constant covariates
-          if (effects[e, "as_covariate"]) {
+          if (e_as_covariate) {
 
-            X_nt[effects[e, "alternative"], effects[e, "name"]] <-
-              covariates_nt[[effects[e, "name"]]]
+            X_nt[e_alternative, e_name] <- covariates_nt[[e_name]]
 
           } else {
 
             ### check for ASCs
-            X_nt[effects[e, "alternative"], effects[e, "name"]] <-
-            if (effect_is_ASC(effects[e, "name"], delimiter)) {
-              1
-            } else {
-              covariates_nt[[effects[e, "covariate"]]]
-            }
+            X_nt[e_alternative, e_name] <-
+              if (e_is_ASC) 1 else covariates_nt[[e_covariate]]
 
           }
 
         } else {
+
           for (alt in as.character(choice_alternatives)) {
-            X_nt[alt, effects[e, "name"]] <-
-              covariates_nt[[paste(effects[e, "name"], alt, sep = delimiter)]]
+            X_nt[alt, e_name] <-
+              covariates_nt[[paste(e_name, alt, sep = delimiter)]]
           }
+
         }
 
       }
       return(X_nt)
+
     })
   })
 
-  ### validate
-  validate_choice_covariates(
-    covariates_matrix,
-    N = N,
-    Tp = Tp,
-    choice_formula = choice_formula,
-    choice_alternatives = choice_alternatives,
-    delimiter = delimiter,
-    column_decider = column_decider,
-    column_occasion = column_occasion
+  ### return
+  structure(
+    design_matrices,
+    class = c("choice_covariates", "design_matrices", "list")
   )
+
 }
 
 #' @rdname choice_covariates
+#'
 #' @param row.names,optional
 #' Currently not used.
+#'
 #' @exportS3Method
 
-as.data.frame.choice_covariates <- function(x, row.names, optional, ...) {
+as.data.frame.design_matrices <- function(x, row.names, optional, ...) {
 
   ### input checks
   is.choice_covariates(x, error = TRUE)
+
+  ### already in data.frame format?
   if (checkmate::test_data_frame(x)) {
     return(x)
   }
-  Tp <- attr(x, "Tp")
+
+  ### extract information
+  Tp <- sapply(x, length)
   N <- length(Tp)
   choice_formula <- attr(x, "choice_formula")
   choice_alternatives <- attr(x, "choice_alternatives")
@@ -223,28 +308,35 @@ as.data.frame.choice_covariates <- function(x, row.names, optional, ...) {
       }
     }
   }
+
+  ### return
+
 }
 
 #' @rdname choice_covariates
 
 covariate_names <- function(choice_effects) {
+
+  ### input checks
+  is.choice_effects(choice_effects, error = TRUE)
+  choice_formula <- attr(choice_effects, "choice_formula")
+  var_types <- choice_formula$var_types
+  choice_alternatives <- attr(choice_effects, "choice_alternatives")
+  delimiter <- attr(choice_effects, "delimiter")
+
+  ### build covariate names
   covariate_names <- character()
-  for (e in seq_len(nrow(effects))) {
-    cov <- effects[e, "covariate"]
-    ### quick and dirty: ignore ASCs
-    if (!is.na(cov)) {
-      if (effects[e, "as_covariate"]) {
-        covariate_names <- c(
-          covariate_names,
-          paste(cov, as.character(choice_alternatives), sep = delimiter)
-        )
-      } else {
-        covariate_names <- c(covariate_names, cov)
-      }
-    }
+  for (cov in unlist(var_types[c(1, 3)])) {
+    covariate_names <- c(
+      covariate_names,
+      paste(cov, as.character(choice_alternatives), sep = delimiter)
+    )
   }
-  ### quick and dirty: drop doubles
-  unique(covariate_names)
+  for (cov in var_types[[2]]) {
+    covariate_names <- c(covariate_names, cov)
+  }
+  return(covariate_names)
+
 }
 
 

@@ -4,13 +4,13 @@
 #' This function constructs an object of class \code{choice_effects}, which
 #' defines the effects of a choice model.
 #'
-#' @param choice_formula (`choice_formula`)\cr
+#' @param choice_formula \[`choice_formula`\]\cr
 #' The \code{\link{choice_formula}} object that defines the choice effects.
 #'
-#' @param choice_alternatives (`choice_alternatives`)\cr
+#' @param choice_alternatives \[`choice_alternatives`\]\cr
 #' The \code{\link{choice_alternatives}} object that defines the choice effects.
 #'
-#' @param delimiter (`character(1)`)\cr
+#' @param delimiter \[`character(1)`\]\cr
 #' A delimiter between covariate and alternative name to build the effect name.
 #'
 #' @return
@@ -152,7 +152,9 @@ choice_effects <- function(
   ### return effects
   structure(
     overview,
-    error_term = choice_formula$error_term,
+    choice_formula = choice_formula,
+    choice_alternatives = choice_alternatives,
+    delimiter = delimiter,
     class = c("choice_effects", "data.frame")
   )
 }
@@ -177,7 +179,7 @@ is.choice_effects <- function(
 
 #' @rdname choice_effects
 #'
-#' @param x (`choice_effects`)\cr
+#' @param x \[`choice_effects`\]\cr
 #' The `choice_effects` object to be printed.
 #'
 #' @param ...
@@ -191,7 +193,7 @@ print.choice_effects <- function(x, ...) {
   print.data.frame(x)
 }
 
-#' Compute number of model effects
+#' Number of model effects
 #'
 #' @description
 #' These helper functions count the number of model effects:
@@ -200,7 +202,7 @@ print.choice_effects <- function(x, ...) {
 #' - \code{compute_P_f()} returns the number \code{P_f} of non-random effects.
 #' - \code{compute_P_r()} returns the number \code{P_r} of random effects.
 #'
-#' @param choice_effects (`choice_effects`)\cr
+#' @param choice_effects \[`choice_effects`\]\cr
 #' The \code{\link{choice_effects}} object that defines the choice effects.
 #'
 #' @inheritSection choice_formula The probit and logit model

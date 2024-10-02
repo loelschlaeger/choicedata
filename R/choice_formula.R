@@ -4,15 +4,15 @@
 #' The \code{choice_formula} object defines the utility equation for a choice
 #' model.
 #'
-#' @param formula (`formula`)\cr
+#' @param formula \[`formula`\]\cr
 #' A symbolic description of the choice model, see details.
 #'
-#' @param error_term (`character()`)\cr
+#' @param error_term \[`character(1)`\]\cr
 #' Defines the model's error term. Current options are:
 #' - `"logit"`: errors are assumed to be iid standard Gumbel distributed
 #' - `"probit"`: errors are assumed to be multivariate normally distributed
 #'
-#' @param random_effects (`character()`)\cr
+#' @param random_effects \[`character()`\]\cr
 #' The names of covariates in \code{formula} connected to a random effect, i.e.,
 #' their coefficients follow a random (so-called mixing) distribution.
 #'
@@ -21,7 +21,7 @@
 #' \code{+} to the corresponding name. To have random effects for the ASCs, add
 #' \code{ASC} (or \code{ASC+}) to \code{random_effects}.
 #'
-#' @param latent_classes (`character()`)\cr
+#' @param latent_classes \[`character()`\]\cr
 #' The names of covariates in \code{formula} connected to latent classes, see
 #' details.
 #'
@@ -270,7 +270,7 @@ is.choice_formula <- function(
 
 #' @rdname choice_formula
 #'
-#' @param x (`choice_formula`)\cr
+#' @param x \[`choice_formula`\]\cr
 #' The `choice_formula` object to be printed.
 #'
 #' @param ...

@@ -86,22 +86,20 @@ The \code{choice_parameters} object to be printed.}
 
 \item{...}{Currently not used.}
 
-\item{rowdots}{An \code{integer}, the row number which is replaced by \code{...}.
-By default, \code{rowdots = 4}.}
+\item{rowdots}{[\code{integer(1)}]\cr
+The row number which is replaced by \code{...}.}
 
-\item{coldots}{An \code{integer}, the column number which is replaced by \code{...}.
-By default, \code{coldots = 4}.}
+\item{coldots}{[\code{integer(1)}]\cr
+The column number which is replaced by \code{...}.}
 
-\item{digits}{An \code{integer}, the number of printed decimal places.
-Only relevant if input \code{x} is numeric.
-By default, \code{digits = 2}.}
+\item{digits}{[\code{integer(1)}]\cr
+The number of printed decimal places if input \code{x} is \code{numeric}.}
 
-\item{simplify}{A \code{logical}, set to \code{TRUE} to simplify the output.
-By default, \code{simplify = FALSE}.}
+\item{simplify}{[\code{logical(1)}]\cr
+Simplify the output?}
 
-\item{details}{A \code{logical}, set to \code{TRUE} to print the type and
-dimension of \code{x}.
-By default, \code{details = !simplify}.}
+\item{details}{[\code{logical(1)}]\cr
+Print the type and dimension of \code{x}?}
 
 \item{choice_effects}{(\code{choice_effects})\cr
 The \code{\link{choice_effects}} object that defines the choice effects.}

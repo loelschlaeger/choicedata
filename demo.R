@@ -3,7 +3,8 @@
 
 choice_formula <- choice_formula(
   formula = transport ~ cost | income | time,
-  re = c("income", "cost+")
+  error_term = "probit"
+  # re = c("income", "cost+")
 )
 
 # specify number and names of alternatives and base alternative
@@ -16,22 +17,19 @@ choice_alternatives <- choice_alternatives(
 
 # use formula and alternatives to derive model effects
 
-choice_effects(choice_formula, choice_alternatives)
+choice_effects <- choice_effects(choice_formula, choice_alternatives)
 
-# using the formula and the alternatives, simulate covariates
+# using the formula and the alternatives, generate covariates
 
-choice_covariates <- generate_choice_covariates(
-  choice_formula = choice_formula,
-  N = 100,
-  Tp = 1,
-  choice_alternatives = choice_alternatives
-)
+choice_covariates <- generate_choice_covariates(choice_effects)
 
 head(choice_covariates)
 
-choice_parameters <- choice_parameters(
-  model_type = "probit"
-)
+design_matrices <- design_matrices(choice_covariates, choice_effects)
+
+as.data.frame(design_matrices)
+
+# generate choice parameters
 
 choice_parameters <- generate_choice_parameters(
   fixed_parameters = choice_parameters,
@@ -43,6 +41,8 @@ choice_parameters <- generate_choice_parameters(
 print(choice_parameters)
 
 as.vector(choice_parameters)
+
+# simulate choice data
 
 choice_data <- simulate_choice_data(
   choice_covariates = choice_covariates,

@@ -10,16 +10,16 @@ choice_effects(choice_formula, choice_alternatives, delimiter = "_")
 \method{print}{choice_effects}(x, ...)
 }
 \arguments{
-\item{choice_formula}{(\code{choice_formula})\cr
+\item{choice_formula}{[\code{choice_formula}]\cr
 The \code{\link{choice_formula}} object that defines the choice effects.}
 
-\item{choice_alternatives}{(\code{choice_alternatives})\cr
+\item{choice_alternatives}{[\code{choice_alternatives}]\cr
 The \code{\link{choice_alternatives}} object that defines the choice effects.}
 
-\item{delimiter}{(\code{character(1)})\cr
+\item{delimiter}{[\code{character(1)}]\cr
 A delimiter between covariate and alternative name to build the effect name.}
 
-\item{x}{(\code{choice_effects})\cr
+\item{x}{[\code{choice_effects}]\cr
 The \code{choice_effects} object to be printed.}
 
 \item{...}{Currently not used.}
