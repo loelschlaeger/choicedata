@@ -1,4 +1,7 @@
 
+rm(list = ls())
+devtools::load_all()
+
 # specify choice formula, types of covariates and random effects
 
 choice_formula <- choice_formula(
@@ -32,10 +35,7 @@ as.data.frame(design_matrices)
 # generate choice parameters
 
 choice_parameters <- generate_choice_parameters(
-  fixed_parameters = choice_parameters,
-  choice_formula = choice_formula,
-  J = 3,
-  N = 100
+  choice_effects = choice_effects
 )
 
 print(choice_parameters)

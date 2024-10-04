@@ -1382,7 +1382,7 @@
       "RemoteRepo": "oeli",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "13f8304bcfe1a20d2d48aef02d00a6dd10e8e50e",
+      "RemoteSha": "c116ba5b9c1d9766989616a9d203d6ee5fa7afbe",
       "Requirements": [
         "Rcpp",
         "RcppArmadillo",
@@ -1401,7 +1401,7 @@
         "usethis",
         "utils"
       ],
-      "Hash": "fad2256d6bc042ff5814bfcfa96e6a6a"
+      "Hash": "28c24ae4da701a90d6449571e9a2a2bd"
     },
     "openssl": {
       "Package": "openssl",

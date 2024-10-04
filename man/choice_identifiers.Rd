@@ -41,14 +41,6 @@ Treat choice data as cross-sectional?}
 \item{x}{[\code{choice_identifiers}]\cr
 The \code{choice_identifiers} object to be printed.}
 
-\item{rows}{[\code{integer(1)} | \code{NULL} ]\cr
-The number of rows to be printed. Printing is abbreviated in the middle.
-
-Can be \code{NULL} to print everything.}
-
-\item{row.names}{[\code{logical(1)}]\cr
-Print row names?}
-
 \item{...}{Currently not used.}
 
 \item{N}{[\code{integer(1)}]\cr

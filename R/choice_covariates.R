@@ -160,10 +160,12 @@ design_matrices <- function(choice_covariates, choice_effects) {
   }
 
   ### extract information
+  column_decider <- attr(choice_covariates, "column_decider")
+  column_occasion <- attr(choice_covariates, "column_occasion")
   choice_identifiers <- choice_identifiers(
     data_frame = choice_covariates,
-    column_decider = attr(choice_covariates, "column_decider"),
-    column_occasion = attr(choice_covariates, "column_occasion"),
+    column_decider = column_decider,
+    column_occasion = column_occasion,
     as_cross_section = attr(choice_covariates, "as_cross_section")
   )
   Tp <- read_Tp(choice_identifiers)
@@ -257,7 +259,8 @@ as.data.frame.design_matrices <- function(x, row.names, optional, ...) {
   J <- attr(choice_alternatives, "J")
   delimiter <- attr(x, "delimiter")
   effects <- choice_effects(
-    choice_formula = choice_formula, choice_alternatives = choice_alternatives,
+    choice_formula = choice_formula,
+    choice_alternatives = choice_alternatives,
     delimiter = delimiter
   )
   column_decider <- attr(x, "column_decider")
