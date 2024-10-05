@@ -169,14 +169,13 @@ validate_choice_data_wide <- function() {
 #'
 #' @param choice_covariates
 #' A \code{\link{choice_covariates}} object.
-#' @param choice_covariates
-#' An \code{\link{choice_covariates}} object, which contains the covariate
-#' matrices used for the choice data simulation.
+#'
+#' @param choice_covariates \[`choice_covariates`\]\cr
+#' The choice covariates used for the choice data simulation.
+#'
 #' @param choice_parameters
 #' An \code{\link{choice_parameters}} object, which contains the model
 #' parameters used for the choice data simulation.
-#' By default, \code{choice_parameters = choice_parameters()}, i.e. default
-#' parameters are used.
 #'
 #' @examples
 #' # ### simulate data from a binary probit model with two latent classes

@@ -8,7 +8,9 @@
 #' A \code{list}, where the \code{n}-th element is a \code{vector} of choices
 #' for the \code{n}-th decider, where the \code{t}-th element is a
 #' \code{character} that defines the choice at their \code{t}-th occasion.
+#'
 #' @inheritParams choice_data
+#'
 #' @param choice_identifiers
 #' TODO
 #' @param ranked
@@ -107,7 +109,7 @@ choice_response <- function(
 #'
 #' @rdname choice_response
 
-generate_choices <- function(
+simulate_choice_response <- function(
   choice_effects,
   choice_covariates,
   choice_parameters,
@@ -120,41 +122,25 @@ generate_choices <- function(
   ### input checks
   is.choice_parameters(choice_parameters)
   is.choice_covariates(choice_covariates)
-  choice_covariates <- as.list(choice_covariates)
-  choice_alternatives <- attr(choice_covariates, "choice_alternatives")
-  alt <- as.character(choice_alternatives)
-  Tp <- attr(choice_covariates, "Tp")
-  N <- length(Tp)
-  if (is.null(choice_formula)) {
-    choice_formula <- attr(choice_covariates, "choice_formula")
-  }
-  is.choice_formula(choice_formula)
-  if (is.null(choice_preferences)) {
-    choice_effects <- choice_effects(
-      choice_formula = choice_formula,
-      choice_alternatives = choice_alternatives,
-      delimiter = "_"
-    )
-    choice_preferences <- generate_choice_preferences(
-      choice_parameters = choice_parameters,
-      choice_effects = choice_effects,
-      N = N
-    )
-  }
-  column_decider <- attr(choice_covariates, "column_decider")
-  column_occasion <- attr(choice_covariates, "column_occasion")
-  choice_identifiers <- generate_choice_identifiers(
-    N = N, Tp = Tp, column_decider = column_decider,
-    column_occasion = column_occasion
+  design_matrices <- design_matrices(
+    choice_covariates, choice_effects
   )
+  choice_alternatives <- attr(choice_effects, "choice_alternatives")
+  ordered <- attr(choice_alternatives, "ordered")
+  alt <- as.character(choice_alternatives)
+  choice_identifiers <- attr(design_matrices, "choice_identifiers")
+  Tp <- read_Tp(choice_identifiers)
+  N <- length(Tp)
+  choice_formula <- attr(choice_effects, "choice_formula")
 
   ### simulate choices
   choices <- lapply(seq_len(N), function(n) {
-    coef_n <- as.numeric(choice_preferences[n, ])
+    # TODO: -(1:2)
+    coef_n <- as.numeric(choice_preferences[n, -(1:2)])
     vapply(
       seq_len(Tp[n]),
       function(t) {
-        X_nt <- choice_covariates[[n]][[t]]
+        X_nt <- design_matrices[[n]][[t]]
         U_nt <- oeli::rmvnorm(
           mean = as.vector(X_nt %*% coef_n),
           Sigma = choice_parameters$Sigma

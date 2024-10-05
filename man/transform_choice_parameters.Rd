@@ -7,7 +7,7 @@
 transform_choice_parameters(x, choice_effects, mode, names = "effect")
 }
 \arguments{
-\item{x}{(\code{choice_parameters} or \code{numeric})\cr
+\item{x}{[\code{choice_parameters} | \code{numeric}()]\cr
 Either a \code{\link{choice_parameters}} object or a \code{numeric}
 \code{vector}.}
 

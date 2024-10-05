@@ -9,13 +9,13 @@ source("panel_probit_code.R")
 J <- 3  # number alternatives
 K <- 3  # number coefficients
 N <- 100 # number deciders
-T <- 10 # number choice occasions
+T <- 1 # number choice occasions
 
 
 beta <- c(-1, 1, 3) # mean of mixing distribution
 # Omega <- oeli::sample_covariance_matrix(dim = K, df = 5) # covariance of mixing distribution
 Omega <- matrix(0, K, K)
-Omega <- matrix(c(1, 0.5, 0.2, 0.5, 1, 0.3, 0.2, 0.3, 1), 3, 3)
+# Omega <- matrix(c(1, 0.5, 0.2, 0.5, 1, 0.3, 0.2, 0.3, 1), 3, 3)
 
 
 mix <- any(Omega != 0)
@@ -35,13 +35,13 @@ data <- simulate_data(N, T, J, K, beta, Omega, Sigma + 1)
 
 x <- pars_2_x(beta, Omega, Sigma, mix)
 
-x_init <- x + rnorm(length(x), sd = 0.1)
-nlm_out <- nlm(nll, x_init, data = data, J = J, K = K, mix = mix, CML = T, print.level = 2, iterlim = 1000)
+x_init <- x #+ rnorm(length(x), sd = 0.1)
+nlm_out <- nlm(nll, x_init, data = data, J = J, K = K, mix = mix, CML = F, print.level = 2, iterlim = 1000)
 
 estimation <- x_2_pars(nlm_out$estimate, J, K, mix)
 
 true_pars <- x_2_pars(x, J, K, mix)
-  
+
 
 result <- list("estimation" = estimation, "true" = true_pars)
 

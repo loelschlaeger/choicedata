@@ -187,7 +187,6 @@ design_matrices <- function(choice_covariates, choice_effects) {
       colnames(X_nt) <- choice_effects$effect_name
 
       for (e in seq_len(nrow(choice_effects))) {
-
         e_name <- choice_effects[e, "effect_name"]
         e_covariate <- choice_effects[e, "covariate"]
         e_alternative <- choice_effects[e, "alternative"]
@@ -200,15 +199,12 @@ design_matrices <- function(choice_covariates, choice_effects) {
 
           ### check for alternative-constant covariates
           if (e_as_covariate) {
-
             X_nt[e_alternative, e_name] <- covariates_nt[[e_name]]
-
           } else {
 
             ### check for ASCs
             X_nt[e_alternative, e_name] <-
               if (e_is_ASC) 1 else covariates_nt[[e_covariate]]
-
           }
 
         } else {
@@ -217,19 +213,19 @@ design_matrices <- function(choice_covariates, choice_effects) {
             X_nt[alt, e_name] <-
               covariates_nt[[paste(e_name, alt, sep = delimiter)]]
           }
-
         }
 
       }
       return(X_nt)
-
     })
   })
 
   ### return
   structure(
     design_matrices,
-    class = c("choice_covariates", "design_matrices", "list")
+    class = c("choice_covariates", "design_matrices", "list"),
+    "choice_effects" = choice_effects,
+    "choice_identifiers" = choice_identifiers
   )
 
 }
@@ -252,60 +248,55 @@ as.data.frame.design_matrices <- function(x, row.names, optional, ...) {
   }
 
   ### extract information
-  Tp <- sapply(x, length)
+  choice_identifiers <- attr(x, "choice_identifiers")
+  column_decider <- attr(choice_identifiers, "column_decider")
+  column_occasion <- attr(choice_identifiers, "column_occasion")
+  as_cross_section <- attr(choice_identifiers, "as_cross_section")
+  choice_effects <- attr(x, "choice_effects")
+  choice_alternatives <- attr(choice_effects, "choice_alternatives")
+  delimiter <- attr(choice_effects, "delimiter")
+  Tp <- read_Tp(choice_identifiers)
   N <- length(Tp)
-  choice_formula <- attr(x, "choice_formula")
-  choice_alternatives <- attr(x, "choice_alternatives")
-  J <- attr(choice_alternatives, "J")
-  delimiter <- attr(x, "delimiter")
-  effects <- choice_effects(
-    choice_formula = choice_formula,
-    choice_alternatives = choice_alternatives,
-    delimiter = delimiter
-  )
-  column_decider <- attr(x, "column_decider")
-  column_occasion <- attr(x, "column_occasion")
 
   ### create structure of data.frame
-  covariate_names <- covariate_names(
-    choice_formula = choice_formula, choice_alternatives = choice_alternatives,
-    delimiter = delimiter
-  )
-  covariate_number <- covariate_number(
-    choice_formula = choice_formula, choice_alternatives = choice_alternatives
-  )
+  covariate_names <- covariate_names(choice_effects)
+  covariate_number <- length(covariate_names)
   covariates_df <- data.frame(
     matrix(NA_real_, nrow = sum(Tp), ncol = covariate_number)
   )
-  id <- rep(1:N, times = Tp)
-  idc <- unlist(sapply(Tp, seq.int, simplify = FALSE))
-  covariates_df <- cbind(id, idc, covariates_df)
+  covariates_df <- cbind(choice_identifiers, covariates_df)
   colnames(covariates_df) <- c(column_decider, column_occasion, covariate_names)
 
   ### enter covariates into data.frame
-  for (n in 1:N) {
-    for (t in 1:Tp[n]) {
+  for (n in seq_len(N)) {
+    for (t in seq_len(Tp[n])) {
       cov_row <- which(
         covariates_df[[column_decider]] == n & covariates_df[[column_occasion]] == t
       )
       X_nt <- x[[n]][[t]]
-      for (e in seq_len(nrow(effects))) {
-        if (effects[e, "as_covariate"]) {
-          if (effects[e, "as_effect"]) {
-            covariates_df[cov_row, effects[e, "name"]] <-
-              X_nt[effects[e, "alternative"], effects[e, "name"]]
+      for (e in seq_len(nrow(choice_effects))) {
+
+        e_name <- choice_effects[e, "effect_name"]
+        e_covariate <- choice_effects[e, "covariate"]
+        e_alternative <- choice_effects[e, "alternative"]
+        e_as_covariate <- choice_effects[e, "as_covariate"]
+        e_as_effect <- choice_effects[e, "as_effect"]
+        e_is_ASC <- is.na(e_covariate)
+
+        if (e_as_covariate) {
+          if (e_as_effect) {
+            covariates_df[cov_row, e_name] <- X_nt[e_alternative, e_name]
           } else {
             cov_names <- paste(
-              effects[e, "covariate"], as.character(choice_alternatives),
+              e_covariate, as.character(choice_alternatives),
               sep = delimiter
             )
-            covariates_df[cov_row, cov_names] <- X_nt[, effects[e, "covariate"]]
+            covariates_df[cov_row, cov_names] <- X_nt[, e_covariate]
           }
 
         } else {
-          if (!effect_is_ASC(effects[e, "name"], delimiter)) {
-            covariates_df[cov_row, effects[e, "covariate"]] <-
-              X_nt[effects[e, "alternative"], effects[e, "name"]]
+          if (!e_is_ASC) {
+            covariates_df[cov_row, e_covariate] <- X_nt[e_alternative, e_name]
           }
         }
       }
@@ -313,6 +304,12 @@ as.data.frame.design_matrices <- function(x, row.names, optional, ...) {
   }
 
   ### return
+  choice_covariates(
+    data_frame = covariates_df,
+    column_decider = column_decider,
+    column_occasion = column_occasion,
+    as_cross_section = as_cross_section
+  )
 
 }
 
