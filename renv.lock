@@ -1246,6 +1246,16 @@
       ],
       "Hash": "074efab766a9d6360865ad39512f2a7e"
     },
+    "matrixcalc": {
+      "Package": "matrixcalc",
+      "Version": "1.0-6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "d2ef06fb3e84b679a20de1fc2204b63f"
+    },
     "memoise": {
       "Package": "memoise",
       "Version": "2.0.1",
