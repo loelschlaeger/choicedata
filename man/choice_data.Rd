@@ -80,13 +80,11 @@ The \code{choice_alternatives} object to be printed.}
 
 \item{error}{TODO}
 
-\item{choice_covariates}{An \code{\link{choice_covariates}} object, which contains the covariate
-matrices used for the choice data simulation.}
+\item{choice_covariates}{[\code{choice_covariates}]\cr
+The choice covariates used for the choice data simulation.}
 
 \item{choice_parameters}{An \code{\link{choice_parameters}} object, which contains the model
-parameters used for the choice data simulation.
-By default, \code{choice_parameters = choice_parameters()}, i.e. default
-parameters are used.}
+parameters used for the choice data simulation.}
 
 \item{choice_formula}{TODO}
 

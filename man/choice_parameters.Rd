@@ -43,37 +43,37 @@ validate_choice_parameters(
 identify_choice_parameters(choice_parameters, scale = 1, level = 1)
 }
 \arguments{
-\item{s}{(\code{numeric(C)})\cr
+\item{s}{[\code{numeric(C)}]\cr
 The latent class weights. Only relevant if latent classes are specified.
 
 Must be non-negative and sum-up to 1.}
 
-\item{alpha}{(\code{numeric(P_f)} or \code{matrix(nrow = P_f, ncol = C)})\cr
+\item{alpha}{[\code{numeric(P_f)} | \code{matrix(nrow = P_f, ncol = C)}]\cr
 The non-random coefficients. Only relevant if non-random coefficients are
 specified.
 
 In the case of latent classes, different values are stored column-wise.}
 
-\item{b}{(\code{numeric(P_r)} or \code{matrix(nrow = P_r, ncol = C)})\cr
+\item{b}{[\code{numeric(P_r)} | \code{matrix(nrow = P_r, ncol = C)}]\cr
 The mean of random effects. Only relevant if random coefficients are
 specified.
 
 In the case of latent classes, different values are stored column-wise.}
 
-\item{Omega}{(\code{matrix(P_r)} or \code{matrix(nrow = P_r^2, ncol = C)})\cr
+\item{Omega}{[\code{matrix(P_r)} | \code{matrix(nrow = P_r^2, ncol = C)}]\cr
 The covariance matrix of random effects. Only relevant if random coefficients
 are specified.
 
 In the case of latent classes, different covariance matrices are stored
 column-wise in vector form.}
 
-\item{Sigma}{(\code{matrix(nrow = J, ncol = J)} or \code{numeric(1)})\cr
+\item{Sigma}{[\code{matrix(nrow = J, ncol = J)} | \code{numeric(1)}]\cr
 The error term covariance matrix. Only relevant in the probit model.
 
 In the ordered probit model, \code{Sigma} is a single, non-negative
 \code{numeric}.}
 
-\item{gamma}{(\code{numeric(J - 1)})\cr
+\item{gamma}{[\code{numeric(J - 1)}]\cr
 The utility thresholds. Only relevant in the ordered model case.
 Must be strictly ascending.
 
@@ -101,10 +101,10 @@ Simplify the output?}
 \item{details}{[\code{logical(1)}]\cr
 Print the type and dimension of \code{x}?}
 
-\item{choice_effects}{(\code{choice_effects})\cr
+\item{choice_effects}{[\code{choice_effects}]\cr
 The \code{\link{choice_effects}} object that defines the choice effects.}
 
-\item{C}{(\code{integer(1)})\cr
+\item{C}{[\code{integer(1)}]\cr
 The number of latent classes (if any specified in \code{choice_formula}).
 
 By default, \code{C = 1}, which effectively means no latent classes.}
@@ -142,7 +142,7 @@ details.
 object.
 \item \code{identify_choice_parameters()} applies scale and level normalization.
 \item \code{transform_choice_parameters()} transforms a \code{choice_parameters}
-object between different modes.
+object between different parameter spaces.
 }
 }
 \section{Sampling missing choice model parameters}{

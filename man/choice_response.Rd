@@ -2,7 +2,7 @@
 % Please edit documentation in R/choice_response.R
 \name{choice_response}
 \alias{choice_response}
-\alias{generate_choices}
+\alias{simulate_choice_response}
 \alias{is.choice_response}
 \alias{validate_choice_response}
 \alias{as.data.frame.choice_response}
@@ -18,7 +18,7 @@ choice_response(
   delimiter = "_"
 )
 
-generate_choices(
+simulate_choice_response(
   choice_effects,
   choice_covariates,
   choice_parameters,
@@ -52,13 +52,11 @@ choices.}
 
 \item{delimiter}{TODO}
 
-\item{choice_covariates}{An \code{\link{choice_covariates}} object, which contains the covariate
-matrices used for the choice data simulation.}
+\item{choice_covariates}{[\code{choice_covariates}]\cr
+The choice covariates used for the choice data simulation.}
 
 \item{choice_parameters}{An \code{\link{choice_parameters}} object, which contains the model
-parameters used for the choice data simulation.
-By default, \code{choice_parameters = choice_parameters()}, i.e. default
-parameters are used.}
+parameters used for the choice data simulation.}
 
 \item{choice_preferences}{TODO}
 

@@ -1,6 +1,11 @@
 
 comp_b_n <- function(beta, Omega) {
-  matrix(oeli::rmvnorm(mean = beta, Sigma = Omega))
+  mix <- any(Omega != 0)
+  if (mix) {
+    matrix(oeli::rmvnorm(mean = beta, Sigma = Omega))
+  } else {
+    beta
+  }
 }
 
 comp_X_nt <- function(J, K) {
@@ -66,7 +71,7 @@ comp_y_n <- function(y_nt_vecs) {
 
 simulate_data <- function(N, T, J, K, beta, Omega, Sigma) {
   data <- list("X" = list(), "y" = list())
-  for (n in 1:N) {
+  for (n in seq_len(N)) {
     X_nt_mats <- comp_X_nt_mats(J, K, T)
     V_nt_vecs <- comp_V_nt_vecs(X_nt_mats, beta, Omega)
     eps_nt_vecs <- comp_eps_nt_vecs(Sigma, T)
@@ -98,7 +103,7 @@ comp_l_n <- function(D_n, V_n, Gamma_n, CML = FALSE) {
     prob <- 1
     for (chunk in chunks) {
       prob <- prob * mvtnorm::pmvnorm(
-        upper = upper[chunk], 
+        upper = upper[chunk],
         sigma = sigma[chunk, chunk, drop = FALSE]
       )
     }
@@ -137,7 +142,7 @@ x_2_pars <- function(x, J, K, mix) {
   } else {
     pars[["Omega"]] <- matrix(0, K, K)
   }
-  pars[["Sigma"]] <- oeli::undiff_cov(oeli::chol_to_cov(c(1, pars[["Sigma"]]))) 
+  pars[["Sigma"]] <- oeli::undiff_cov(oeli::chol_to_cov(c(1, pars[["Sigma"]])))
   return(pars)
 }
 

@@ -11,46 +11,46 @@
 #'   object.
 #' - \code{identify_choice_parameters()} applies scale and level normalization.
 #' - \code{transform_choice_parameters()} transforms a \code{choice_parameters}
-#'   object between different modes.
+#'   object between different parameter spaces.
 #'
 #' @inheritSection choice_formula The probit and logit model
 #'
-#' @param C (`integer(1)`)\cr
+#' @param C \[`integer(1)`\]\cr
 #' The number of latent classes (if any specified in `choice_formula`).
 #'
 #' By default, `C = 1`, which effectively means no latent classes.
 #'
-#' @param s (`numeric(C)`)\cr
+#' @param s \[`numeric(C)`\]\cr
 #' The latent class weights. Only relevant if latent classes are specified.
 #'
 #' Must be non-negative and sum-up to 1.
 #'
-#' @param alpha (`numeric(P_f)` or `matrix(nrow = P_f, ncol = C)`)\cr
+#' @param alpha \[`numeric(P_f)` | `matrix(nrow = P_f, ncol = C)`\]\cr
 #' The non-random coefficients. Only relevant if non-random coefficients are
 #' specified.
 #'
 #' In the case of latent classes, different values are stored column-wise.
 #'
-#' @param b (`numeric(P_r)` or `matrix(nrow = P_r, ncol = C)`)\cr
+#' @param b \[`numeric(P_r)` | `matrix(nrow = P_r, ncol = C)`\]\cr
 #' The mean of random effects. Only relevant if random coefficients are
 #' specified.
 #'
 #' In the case of latent classes, different values are stored column-wise.
 #'
-#' @param Omega (`matrix(P_r)` or `matrix(nrow = P_r^2, ncol = C)`)\cr
+#' @param Omega \[`matrix(P_r)` | `matrix(nrow = P_r^2, ncol = C)`\]\cr
 #' The covariance matrix of random effects. Only relevant if random coefficients
 #' are specified.
 #'
 #' In the case of latent classes, different covariance matrices are stored
 #' column-wise in vector form.
 #'
-#' @param Sigma (`matrix(nrow = J, ncol = J)` or `numeric(1)`)\cr
+#' @param Sigma \[`matrix(nrow = J, ncol = J)` | `numeric(1)`\]\cr
 #' The error term covariance matrix. Only relevant in the probit model.
 #'
 #' In the ordered probit model, \code{Sigma} is a single, non-negative
 #' \code{numeric}.
 #'
-#' @param gamma (`numeric(J - 1)`)\cr
+#' @param gamma \[`numeric(J - 1)`\]\cr
 #' The utility thresholds. Only relevant in the ordered model case.
 #' Must be strictly ascending.
 #'
@@ -58,7 +58,7 @@
 #' lower and upper bounds are \eqn{\gamma_0 = -\infty} and
 #' \eqn{\gamma_J = +\infty}.
 #'
-#' @param choice_effects (`choice_effects`)\cr
+#' @param choice_effects \[`choice_effects`\]\cr
 #' The \code{\link{choice_effects}} object that defines the choice effects.
 #'
 #' @return
@@ -199,22 +199,22 @@ generate_choice_parameters <- function(
   ) {
 
   ### input checks
+  check_not_missing(choice_effects)
   is.choice_parameters(fixed_parameters, error = TRUE)
   x <- fixed_parameters
-  model_type <- attr(x, "model_type")
-  latent_classes <- attr(x, "latent_classes")
-  C <- attr(x, "C")
-  is.choice_formula(choice_formula, error = TRUE)
-  formula <- choice_formula$formula
-  re <- choice_formula$re
-  ordered <- choice_formula$ordered
-  P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
-  P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
-  J <- check_J(J)
+  choice_formula <- attr(choice_effects, "choice_formula")
+  error_term <- choice_formula[["error_term"]]
+  latent_classes <- choice_formula[["latent_classes"]]
+  C <- check_C(C, latent_classes)
+  P_f <- compute_P_f(choice_effects)
+  P_r <- compute_P_r(choice_effects)
+  choice_alternatives <- attr(choice_effects, "choice_alternatives")
+  J <- attr(choice_alternatives, "J")
+  ordered <- attr(choice_alternatives, "ordered")
 
   ### validate fixed parameters
   x <- validate_choice_parameters(
-    choice_parameters = x, choice_formula = choice_formula, J = J,
+    choice_parameters = x, choice_effects = choice_effects, C = C,
     allow_missing = TRUE
   )
 
@@ -263,7 +263,7 @@ generate_choice_parameters <- function(
   }
 
   # Sigma
-  if (model_type == "probit" && is.null(x$Sigma)) {
+  if (error_term == "probit" && is.null(x$Sigma)) {
     x$Sigma <- if (ordered) {
       oeli::rwishart(df = 3, scale = diag(1), inv = TRUE)
     } else {
@@ -279,7 +279,7 @@ generate_choice_parameters <- function(
 
   ### validate parameters and return
   validate_choice_parameters(
-    choice_parameters = x, choice_formula = choice_formula, J = J,
+    choice_parameters = x, choice_effects = choice_effects, C = C,
     allow_missing = FALSE
   )
 }
@@ -293,19 +293,19 @@ validate_choice_parameters <- function(
 
   ### input checks
   check_not_missing(choice_parameters)
+  check_not_missing(choice_effects)
   is.choice_parameters(choice_parameters, error = TRUE)
+  is.choice_effects(choice_effects, error = TRUE)
   x <- choice_parameters
-  model_type <- attr(x, "model_type")
-  latent_classes <- attr(x, "latent_classes")
-  C <- attr(x, "C")
-  check_not_missing(choice_formula)
-  is.choice_formula(choice_formula, error = TRUE)
-  formula <- choice_formula$formula
-  re <- choice_formula$re
-  ordered <- choice_formula$ordered
-  J <- check_J(J)
-  P_f <- compute_P_f(formula = formula, re = re, J = J, ordered = ordered)
-  P_r <- compute_P_r(formula = formula, re = re, J = J, ordered = ordered)
+  choice_formula <- attr(choice_effects, "choice_formula")
+  error_term <- choice_formula$error_term
+  latent_classes <- choice_formula$latent_classes
+  choice_alternatives <- attr(choice_effects, "choice_alternatives")
+  J <- attr(choice_alternatives, "J")
+  ordered <- attr(choice_alternatives, "ordered")
+  P_f <- compute_P_f(choice_effects)
+  P_r <- compute_P_r(choice_effects)
+  C <- check_C(C, latent_classes)
   allow_missing <- check_allow_missing(allow_missing)
 
   ### check parameters
@@ -403,7 +403,7 @@ validate_choice_parameters <- function(
   }
 
   # Sigma
-  if (model_type == "probit") {
+  if (error_term == "probit") {
     if ("Sigma" %in% names(x)) {
       if (ordered) {
         if (checkmate::test_number(x$Sigma)) {
@@ -498,7 +498,7 @@ identify_choice_parameters <- function(
 
 #' TODO: inherit choice_effects and error_term
 #'
-#' @param x (`choice_parameters` or `numeric`)\cr
+#' @param x \[`choice_parameters` | `numeric`()\]\cr
 #' Either a \code{\link{choice_parameters}} object or a \code{numeric}
 #' \code{vector}.
 #'
