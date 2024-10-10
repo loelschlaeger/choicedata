@@ -127,8 +127,7 @@ choice_data <- function(
   )
 }
 
-#' @rdname choice_data
-#' @export
+#' @noRd
 
 is.choice_data <- function(x, error = TRUE) {
   check_not_missing(x)
@@ -142,24 +141,6 @@ is.choice_data <- function(x, error = TRUE) {
   } else {
     isTRUE(check)
   }
-}
-
-#' @rdname choice_data
-
-validate_choice_data <- function() {
-
-}
-
-#' @noRd
-
-validate_choice_data_long <- function() {
-
-}
-
-#' @noRd
-
-validate_choice_data_wide <- function() {
-
 }
 
 #' @rdname choice_data
@@ -272,35 +253,9 @@ simulate_choice_data <- function(
 
 #' @rdname choice_data
 
-as.list.choice_data <- function() {
-
-}
-
-#' @noRd
-
-as.list_choice_data_long <- function() {
-
-}
-
-#' @noRd
-
-as.list_choice_data_wide <- function() {
-
-}
-
-#' @rdname choice_data
-#' @param row.names,optional
-#' Currently not used.
-#' @exportS3Method
-
-as.data.frame.choice_data <- function(x, row.names = NULL, optional = FALSE, format, ...) {
-  NextMethod(format = format, ...)
-}
-
-#' @noRd
-#' @exportS3Method
-
-as.data.frame.choice_data_long <- function(x, row.names = NULL, optional = FALSE, format = "wide", ...) {
+change_format <- function(
+    x, row.names = NULL, optional = FALSE, format = "wide", ...
+  ) {
 
   ### do nothing if already in long format
   if (format == "long") {
@@ -369,28 +324,10 @@ as.data.frame.choice_data_long <- function(x, row.names = NULL, optional = FALSE
   )
 }
 
-#' @noRd
+#' @rdname choice_data
 #' @exportS3Method
 
-as.data.frame.choice_data_wide <- function(x, row.names = NULL, optional = FALSE, format = "long", ...) {
-  return(x)
-}
-
-#' @rdname choice_data
-
 plot.choice_data <- function(x, ...) {
-  NextMethod(...)
-}
-
-#' @noRd
-
-plot.choice_data_long <- function(x, ...) {
-
-}
-
-#' @noRd
-
-plot.choice_data_wide <- function(x, ...) {
 
 }
 
@@ -398,5 +335,5 @@ plot.choice_data_wide <- function(x, ...) {
 #' @exportS3Method
 
 print.choice_data <- function(x, ...) {
-  print(tibble::as_tibble(x), ...)
+  print(x)
 }

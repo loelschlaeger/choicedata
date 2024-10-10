@@ -48,7 +48,7 @@ the components \eqn{\epsilon_{ntj}} of the error vector are independently,
 identically distributed extreme value.
 
 The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
-alternative \code{j}. It is unobserved by the researcher, but we assume that
+alternative \eqn{j}. It is unobserved by the researcher, but we assume that
 the deciders know their utilities for each alternative and make a choice
 which is consistent with utility maximization. Therefore,
 \deqn{y_{nt} = \operatorname*{argmax}_{j = 1,\dots,J} U_{ntj},}

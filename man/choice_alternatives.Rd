@@ -18,12 +18,12 @@ choice_alternatives(
 \item{J}{[\code{integer(1)}]\cr
 The number of choice alternatives.
 
-Must be at least \code{2}.}
+Must be at least two.}
 
 \item{alternatives}{[\code{character(J)}]\cr
 Labels for the choice alternatives.}
 
-\item{base}{(\code{character(1)})\cr
+\item{base}{[\code{character(1)}]\cr
 The name of the base alternative for covariates that are not
 alternative-specific, see details.
 
@@ -56,7 +56,7 @@ The \code{choice_alternatives} object defines the set of choice alternatives.
 The full set of coefficients for covariates that are constant across
 alternatives (including alternative-specific constants) is not identified.
 To achieve identifiability, the coefficient of alternative \code{base}
-is fixed to \code{0}. The other coefficients then have to be interpreted with
+is fixed to zero. The other coefficients then have to be interpreted with
 respect to \code{base}. The base alternative is marked with a \code{*} when
 printing a \code{choice_alternatives} object.
 }
@@ -66,9 +66,9 @@ printing a \code{choice_alternatives} object.
 When the set of choice alternatives is ordered, the choice model has only a
 single utility equation
 \deqn{U_{nt} = X_{nt}' \tilde{\beta}_n + \epsilon_{nt},}
-where \eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)} in the probit model
-and logistic in the logit model, per decider \eqn{n} and choice
-occasion \eqn{t}.
+per decider \eqn{n} and choice occasion \eqn{t}, where
+\eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)} in the probit model
+and logistic in the logit model.
 
 This utility can be interpreted as the level of association that \eqn{n} has
 with the choice question. It falls into discrete categories, which in turn

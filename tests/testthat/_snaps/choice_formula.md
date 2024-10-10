@@ -1,7 +1,7 @@
 # choice_formula can be printed
 
     Code
-      choice_formula(formula = choice ~ A | B, error_term = "logit", random_effects = NULL)
+      choice_formula(formula = choice ~ A | B, error_term = "logit", random_effects = character())
     Message
       
       -- Choice formula 

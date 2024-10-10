@@ -17,14 +17,14 @@ test_that("choice_formula can be specified", {
   f7 <- choice ~ 0 | 1 | C
   f8 <- choice ~ A + B
   f9 <- choice ~ A + B + 1
-  re1 <- NULL
+  re1 <- character()
   re2 <- "A"
   re3 <- "A+"
   re4 <- c("A+", "B")
   re5 <- c("B", "ASC")
   re6 <- c("B", "ASC+")
   re7 <- c("A", "A+")
-  lc1 <- NULL
+  lc1 <- character()
   lc2 <- re2
   lc3 <- re3
   expect_choice_formula(
@@ -162,7 +162,7 @@ test_that("choice_formula can be printed", {
   )
   expect_snapshot(
     choice_formula(
-      formula = choice ~ A | B, error_term = "logit", random_effects = NULL
+      formula = choice ~ A | B, error_term = "logit", random_effects = character()
     )
   )
   expect_snapshot(

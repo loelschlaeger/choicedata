@@ -1,8 +1,7 @@
 #' Define choice model formula
 #'
 #' @description
-#' The \code{choice_formula} object defines the utility equation for a choice
-#' model.
+#' The `choice_formula` object defines the utility equation for a choice model.
 #'
 #' @param formula \[`formula`\]\cr
 #' A symbolic description of the choice model, see details.
@@ -13,30 +12,29 @@
 #' - `"probit"`: errors are assumed to be multivariate normally distributed
 #'
 #' @param random_effects \[`character()`\]\cr
-#' The names of covariates in \code{formula} connected to a random effect, i.e.,
+#' The names of covariates in `formula` connected to a random effect, i.e.,
 #' their coefficients follow a random (so-called mixing) distribution.
 #'
 #' Per default, the mixing distribution is normal. In addition, the log-normal
 #' distribution (e.g., for sign-restriction) can be specified via appending
-#' \code{+} to the corresponding name. To have random effects for the ASCs, add
-#' \code{ASC} (or \code{ASC+}) to \code{random_effects}.
+#' `+` to the corresponding name. To have random effects for the ASCs, add
+#' `ASC` (or `ASC+`) to `random_effects`.
 #'
 #' @param latent_classes \[`character()`\]\cr
-#' The names of covariates in \code{formula} connected to latent classes, see
+#' The names of covariates in `formula` connected to latent classes, see
 #' details.
 #'
 #' @return
-#' An object of class \code{choice_formula}, which is a \code{list} with the
-#' following elements:
+#' An object of class `choice_formula`, which is a `list` of the elements:
 #' \describe{
-#'   \item{\code{formula}}{The model formula.}
-#'   \item{\code{error_term}}{The model's error term.}
-#'   \item{\code{choice}}{The name of the discrete response variable.}
-#'   \item{\code{var_types}}{The three different types of covariates.}
-#'   \item{\code{ASC}}{Does the model have alternative-specific constants?}
-#'   \item{\code{mixing_types}}{The types of random effects (if any).}
-#'   \item{\code{latent_classes}}{Specification of latent classes (if any).}
-#'   \item{\code{ordered_valid}}{Formula valid for ordered case (see details)?}
+#'   \item{`formula`}{The model formula.}
+#'   \item{`error_term`}{The model's error term.}
+#'   \item{`choice`}{The name of the discrete response variable.}
+#'   \item{`var_types`}{The three different types of covariates.}
+#'   \item{`ASC`}{Does the model have alternative-specific constants?}
+#'   \item{`mixing_types`}{The types of random effects (if any).}
+#'   \item{`latent_classes`}{Specification of latent classes (if any).}
+#'   \item{`ordered_valid`}{Formula valid for ordered case (see details)?}
 #' }
 #'
 #' @section The probit and logit model:
@@ -54,12 +52,12 @@
 #' model's error term vector for \eqn{n} at \eqn{t}.
 #'
 #' In the probit model case, the error vector \eqn{(\epsilon_{nt:})} is normally
-#' distributed with covariance matrix \code{Sigma}. In the logit model case,
+#' distributed with covariance matrix `Sigma`. In the logit model case,
 #' the components \eqn{\epsilon_{ntj}} of the error vector are independently,
 #' identically distributed extreme value.
 #'
 #' The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
-#' alternative \code{j}. It is unobserved by the researcher, but we assume that
+#' alternative \eqn{j}. It is unobserved by the researcher, but we assume that
 #' the deciders know their utilities for each alternative and make a choice
 #' which is consistent with utility maximization. Therefore,
 #' \deqn{y_{nt} = \operatorname*{argmax}_{j = 1,\dots,J} U_{ntj},}
@@ -83,7 +81,7 @@
 #' @section The latent class model:
 #' The mixing distribution can be discrete, which results in a discrete latent
 #' class model where the non-random effects \eqn{\alpha} take a fixed set of
-#' \code{C} distinct values \eqn{\alpha_c}.
+#' `C` distinct values \eqn{\alpha_c}.
 #'
 #' Alternatively, the mixing distribution can be a mixture of
 #' \eqn{P_r}-variate Gaussian densities \eqn{\phi_{P_r}} with mean vectors
@@ -101,27 +99,26 @@
 #' \phi_{P_r}(\cdot \mid b_{z_n},\Omega_{z_n}).}
 #'
 #' @section Specifying the model formula:
-#' The structure of \code{formula} is
-#' \code{choice ~ A | B | C}, where
+#' The structure of `formula` is `choice ~ A | B | C`, where
 #' \itemize{
-#'   \item \code{choice} is the name of the discrete response variable,
-#'   \item \code{A} are names of \strong{alternative-specific covariates} with
+#'   \item `choice` is the name of the discrete response variable,
+#'   \item `A` are names of \strong{alternative-specific covariates} with
 #'   \strong{a coefficient that is constant across alternatives},
-#'   \item \code{B} are names of \strong{covariates that are constant across
+#'   \item `B` are names of \strong{covariates that are constant across
 #'   alternatives},
-#'   \item and \code{C} are names of \strong{alternative-specific covariates}
+#'   \item and `C` are names of \strong{alternative-specific covariates}
 #'   with \strong{alternative-specific coefficients}.
 #' }
 #'
-#' Multiple covariates of one type are separated by a \code{+} sign, e.g.,
-#' \code{choice ~ A1 + A2}.
+#' Multiple covariates of one type are separated by a `+` sign, e.g.,
+#' `choice ~ A1 + A2`.
 #'
 #' By default, alternative-specific constants (ASCs) are added to the model.
-#' They can be removed by adding \code{+ 0} in the second spot, e.g.,
-#' \code{choice ~ A | B + 0 | C}. To not include any covariates of
-#' the second type but to estimate ASCs, add \code{1} in the second
-#' spot, e.g., \code{choice ~ A | 1 | C}. The expression
-#' \code{choice ~ A | 0 | C} is interpreted as no covariates of the second
+#' They can be removed by adding `+ 0` in the second spot, e.g.,
+#' `choice ~ A | B + 0 | C`. To not include any covariates of
+#' the second type but to estimate ASCs, add `1` in the second
+#' spot, e.g., `choice ~ A | 1 | C`. The expression
+#' `choice ~ A | 0 | C` is interpreted as no covariates of the second
 #' type and no ASCs.
 #'
 #' Some parts of the formula can be omitted when there is no ambiguity. For
@@ -129,7 +126,7 @@
 #'
 #' In the ordered case, since only a single utility is modeled, no ASCs and no
 #' alternative-specific covariates can be included. Hence, in the ordered case,
-#' \code{formula} must be of the form, e.g.,  \code{choice ~ 0 | A + B + 0}.
+#' `formula` must be of the form, e.g., `choice ~ 0 | A + B + 0`.
 #'
 #' @examples
 #' choice_formula(
@@ -142,7 +139,10 @@
 #' @export
 
 choice_formula <- function(
-    formula, error_term, random_effects = NULL, latent_classes = NULL
+    formula,
+    error_term,
+    random_effects = character(),
+    latent_classes = character()
   ) {
 
   ### input checks
@@ -252,7 +252,9 @@ choice_formula <- function(
 #' @noRd
 
 is.choice_formula <- function(
-    x, error = FALSE, var_name = oeli::variable_name(x)
+    x,
+    error = FALSE,
+    var_name = oeli::variable_name(x)
   ) {
   check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_formula")
@@ -278,7 +280,10 @@ is.choice_formula <- function(
 #'
 #' @exportS3Method
 
-print.choice_formula <- function(x, ...) {
+print.choice_formula <- function(
+    x,
+    ...
+  ) {
   is.choice_formula(x, error = TRUE)
   cli::cli_h3("Choice formula")
   ul <- cli::cli_ul()

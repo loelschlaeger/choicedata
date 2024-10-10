@@ -1,16 +1,20 @@
 test_that("effect overview can be created", {
+
+  ### test 1
+  choice_formula <- choice_formula(
+    formula = choice ~ cov,
+    error_term = "logit",
+    random_effects = c("cov", "ASC+")
+  )
+  choice_alternatives <- choice_alternatives(
+    J = 3,
+    alternatives = c("C", "B", "A"),
+    base = "B"
+  )
   expect_equal(
     choice_effects(
-      choice_formula = choice_formula(
-        formula = choice ~ cov,
-        error_term = "logit",
-        random_effects = c("cov", "ASC+")
-      ),
-      choice_alternatives = choice_alternatives(
-        J = 3,
-        alternatives = c("C", "B", "A"),
-        base = "B"
-      )
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives
     ),
     structure(
       list(
@@ -27,22 +31,28 @@ test_that("effect overview can be created", {
           class = c("ordered", "factor")
         )
       ),
-      row.names = c(NA, -3L),
-      error_term = "logit",
-      class = c("choice_effects", "data.frame")
+      row.names = c(NA, 3L),
+      class = c("choice_effects", "data.frame"),
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives,
+      delimiter = "_"
     )
+  )
+
+  ### test 2
+  choice_formula <- choice_formula(
+    formula = choice ~ A | B + 0 | C,
+    error_term = "probit",
+    random_effects = character()
+  )
+  choice_alternatives <- choice_alternatives(
+    J = 2,
+    alternatives = c("A", "B")
   )
   expect_equal(
     choice_effects(
-      choice_formula = choice_formula(
-        formula = choice ~ A | B + 0 | C,
-        error_term = "probit",
-        random_effects = NULL
-      ),
-      choice_alternatives = choice_alternatives(
-        J = 2,
-        alternatives = c("A", "B")
-      ),
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives,
       delimiter = "*"
     ),
     structure(
@@ -61,20 +71,26 @@ test_that("effect overview can be created", {
         )
       ),
       row.names = c(NA, -4L),
-      error_term = "probit",
-      class = c("choice_effects", "data.frame")
+      class = c("choice_effects", "data.frame"),
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives,
+      delimiter = "*"
     )
+  )
+
+  ### test 3
+  choice_formula <- choice_formula(
+    formula = choice ~ 0 | A + B + C + 0,
+    error_term = "logit",
+    random_effects = "A+"
+  )
+  choice_alternatives <- choice_alternatives(
+    J = 3, ordered = TRUE
   )
   expect_equal(
     choice_effects(
-      choice_formula = choice_formula(
-        formula = choice ~ 0 | A + B + C + 0,
-        error_term = "logit",
-        random_effects = "A+"
-      ),
-      choice_alternatives = choice_alternatives(
-        J = 3, ordered = TRUE
-      )
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives
     ),
     structure(
       list(
@@ -92,21 +108,27 @@ test_that("effect overview can be created", {
         )
       ),
       row.names = c(NA, -3L),
-      error_term = "logit",
-      class = c("choice_effects", "data.frame")
+      class = c("choice_effects", "data.frame"),
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives,
+      delimiter = "_"
     )
+  )
+
+  ### test 4
+  choice_formula <- choice_formula(
+    formula = choice ~ 0 | A + B + C + 0,
+    error_term = "logit",
+    random_effects = "A+",
+    latent_classes = c("A", "B", "C")
+  )
+  choice_alternatives <- choice_alternatives(
+    J = 3, ordered = TRUE
   )
   expect_equal(
     choice_effects(
-      choice_formula = choice_formula(
-        formula = choice ~ 0 | A + B + C + 0,
-        error_term = "logit",
-        random_effects = "A+",
-        latent_classes = c("A", "B", "C")
-      ),
-      choice_alternatives = choice_alternatives(
-        J = 3, ordered = TRUE
-      )
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives
     ),
     structure(
       list(
@@ -124,8 +146,10 @@ test_that("effect overview can be created", {
         )
       ),
       row.names = c(NA, -3L),
-      error_term = "logit",
-      class = c("choice_effects", "data.frame")
+      class = c("choice_effects", "data.frame"),
+      choice_formula = choice_formula,
+      choice_alternatives = choice_alternatives,
+      delimiter = "_"
     )
   )
 })

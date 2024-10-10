@@ -1,11 +1,15 @@
 
-validate_choice_preferences <- function(
+choice_preferences <- function(
     choice_preferences, ...
   ) {
 
 }
 
-simulate_choice_preferences <- function(
+is.choice_preferences <- function() {
+
+}
+
+generate_choice_preferences <- function(
     choice_parameters,
     choice_effects,
     choice_identifiers = generate_choice_identifiers(N = 100)
@@ -16,11 +20,15 @@ simulate_choice_preferences <- function(
   check_not_missing(choice_effects)
   is.choice_parameters(choice_parameters, error = TRUE)
   is.choice_effects(choice_effects, error = TRUE)
+
   # TODO
-  # check_consistency(
-  #   choice_parameters = choice_parameters,
-  #   choice_effects = choice_effects
+  # validate_choice_parameters <- function(
+  #   choice_parameters,
+  #   choice_effects,
+  #   C = 1,
+  #   allow_missing = FALSE
   # )
+
   is.choice_identifiers(choice_identifiers, error = TRUE)
   Tp <- read_Tp(choice_identifiers)
   N <- length(Tp)
@@ -85,6 +93,7 @@ simulate_choice_preferences <- function(
   )
 }
 
+print.choice_preferences <- function() {
 
-
+}
 

@@ -1,51 +1,51 @@
 #' Define choice alternatives
 #'
 #' @description
-#' The \code{choice_alternatives} object defines the set of choice alternatives.
+#' The `choice_alternatives` object defines the set of choice alternatives.
 #'
 #' @param J \[`integer(1)`\]\cr
 #' The number of choice alternatives.
 #'
-#' Must be at least \code{2}.
+#' Must be at least two.
 #'
 #' @param alternatives \[`character(J)`\]\cr
 #' Labels for the choice alternatives.
 #'
-#' @param base (`character(1)`)\cr
+#' @param base \[`character(1)`\]\cr
 #' The name of the base alternative for covariates that are not
 #' alternative-specific, see details.
 #'
-#' \code{base} must be contained in \code{alternatives}.
+#' `base` must be contained in `alternatives`.
 #'
-#' By default, \code{base} is the first element of \code{alternatives}.
+#' By default, `base` is the first element of `alternatives`.
 #'
 #' @param ordered \[`logical(1)`\]\cr
 #' Are the choice alternatives ordered?
 #'
 #' @return
-#' An object of class \code{choice_alternatives}, which is a \code{character}
+#' An object of class `choice_alternatives`, which is a `character`
 #' vector of the choice alternatives that has the following attributes:
 #' \describe{
-#'   \item{\code{J}}{The number of choice alternatives.}
-#'   \item{\code{base}}{The name of the base alternative.}
-#'   \item{\code{ordered}}{Are the choice alternatives ordered?}
+#'   \item{`J`}{The number of choice alternatives.}
+#'   \item{`base`}{The name of the base alternative.}
+#'   \item{`ordered`}{Are the choice alternatives ordered?}
 #' }
 #'
 #' @section Base alternative:
 #' The full set of coefficients for covariates that are constant across
 #' alternatives (including alternative-specific constants) is not identified.
-#' To achieve identifiability, the coefficient of alternative \code{base}
-#' is fixed to \code{0}. The other coefficients then have to be interpreted with
-#' respect to \code{base}. The base alternative is marked with a \code{*} when
-#' printing a \code{choice_alternatives} object.
+#' To achieve identifiability, the coefficient of alternative `base`
+#' is fixed to zero. The other coefficients then have to be interpreted with
+#' respect to `base`. The base alternative is marked with a `*` when
+#' printing a `choice_alternatives` object.
 #'
 #' @section Ordered choice alternatives:
 #' When the set of choice alternatives is ordered, the choice model has only a
 #' single utility equation
 #' \deqn{U_{nt} = X_{nt}' \tilde{\beta}_n + \epsilon_{nt},}
-#' where \eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)} in the probit model
-#' and logistic in the logit model, per decider \eqn{n} and choice
-#' occasion \eqn{t}.
+#' per decider \eqn{n} and choice occasion \eqn{t}, where
+#' \eqn{\epsilon_{nt} \sim \text{MVN}_{1} (0,\Sigma)} in the probit model
+#' and logistic in the logit model.
 #'
 #' This utility can be interpreted as the level of association that \eqn{n} has
 #' with the choice question. It falls into discrete categories, which in turn
@@ -71,8 +71,13 @@
 #' @export
 
 choice_alternatives <- function(
-    J = 2, alternatives = LETTERS[1:J], base = alternatives[1], ordered = FALSE
+    J = 2,
+    alternatives = LETTERS[1:J],
+    base = alternatives[1],
+    ordered = FALSE
 ) {
+
+  ### input checks
   check_base(base = base, alternatives = alternatives, J = J)
   check_ordered(ordered)
   if (ordered) {
@@ -80,6 +85,8 @@ choice_alternatives <- function(
   } else {
     alternatives <- sort(alternatives)
   }
+
+  ### build object
   structure(
     alternatives,
     "J" = as.integer(J),
@@ -92,7 +99,9 @@ choice_alternatives <- function(
 #' @noRd
 
 is.choice_alternatives <- function(
-    x, error = FALSE, var_name = oeli::variable_name(x)
+    x,
+    error = FALSE,
+    var_name = oeli::variable_name(x)
   ) {
   check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_alternatives")
@@ -117,7 +126,10 @@ is.choice_alternatives <- function(
 #'
 #' @exportS3Method
 
-print.choice_alternatives <- function(x, ...) {
+print.choice_alternatives <- function(
+    x,
+    ...
+  ) {
   is.choice_alternatives(x, error = TRUE)
   base <- attr(x, "base")
   ordered <- attr(x, "ordered")

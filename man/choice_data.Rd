@@ -2,11 +2,8 @@
 % Please edit documentation in R/choice_data.R
 \name{choice_data}
 \alias{choice_data}
-\alias{is.choice_data}
-\alias{validate_choice_data}
 \alias{simulate_choice_data}
-\alias{as.list.choice_data}
-\alias{as.data.frame.choice_data}
+\alias{change_format}
 \alias{plot.choice_data}
 \alias{print.choice_data}
 \title{Define choice data}
@@ -26,10 +23,6 @@ choice_data(
   delimiter = "_"
 )
 
-is.choice_data(x, error = TRUE)
-
-validate_choice_data()
-
 simulate_choice_data(
   choice_covariates,
   choice_parameters,
@@ -39,9 +32,7 @@ simulate_choice_data(
   column_choice = "choice"
 )
 
-\method{as.list}{choice_data}()
-
-\method{as.data.frame}{choice_data}(x, row.names = NULL, optional = FALSE, format, ...)
+change_format(x, row.names = NULL, optional = FALSE, format = "wide", ...)
 
 \method{plot}{choice_data}(x, ...)
 
@@ -75,11 +66,6 @@ Are the choice alternatives ordered?}
 
 \item{delimiter}{TODO}
 
-\item{x}{[\code{choice_alternatives}]\cr
-The \code{choice_alternatives} object to be printed.}
-
-\item{error}{TODO}
-
 \item{choice_covariates}{[\code{choice_covariates}]\cr
 The choice covariates used for the choice data simulation.}
 
@@ -88,12 +74,15 @@ parameters used for the choice data simulation.}
 
 \item{choice_formula}{TODO}
 
-\item{row.names, optional}{Currently not used.}
+\item{x}{[\code{choice_alternatives}]\cr
+The \code{choice_alternatives} object to be printed.}
 
 \item{...}{Currently not used.}
 
 \item{data_frame}{[\code{data.frame}]\cr
 Contains the choice data.}
+
+\item{error}{TODO}
 }
 \value{
 A \code{\link{choice_data}} object.

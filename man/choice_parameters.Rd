@@ -70,8 +70,7 @@ column-wise in vector form.}
 \item{Sigma}{[\code{matrix(nrow = J, ncol = J)} | \code{numeric(1)}]\cr
 The error term covariance matrix. Only relevant in the probit model.
 
-In the ordered probit model, \code{Sigma} is a single, non-negative
-\code{numeric}.}
+In the ordered probit model, \code{Sigma} is \code{numeric(1)}.}
 
 \item{gamma}{[\code{numeric(J - 1)}]\cr
 The utility thresholds. Only relevant in the ordered model case.
@@ -81,7 +80,7 @@ Must be strictly ascending.
 lower and upper bounds are \eqn{\gamma_0 = -\infty} and
 \eqn{\gamma_J = +\infty}.}
 
-\item{x}{(\code{choice_parameters})\cr
+\item{x}{[\code{choice_parameters}]\cr
 The \code{choice_parameters} object to be printed.}
 
 \item{...}{Currently not used.}
@@ -109,8 +108,8 @@ The number of latent classes (if any specified in \code{choice_formula}).
 
 By default, \code{C = 1}, which effectively means no latent classes.}
 
-\item{fixed_parameters}{(\code{choice_parameters})\cr
-Optionally a \code{\link{choice_parameters}} object of parameters to keep
+\item{fixed_parameters}{[\code{choice_parameters}]\cr
+Optionally a \code{choice_parameters} object of parameters to keep
 fixed when sampling other parameters.}
 
 \item{choice_parameters}{TODO}
@@ -120,8 +119,7 @@ fixed when sampling other parameters.}
 \item{level}{TODO}
 }
 \value{
-An object of class \code{choice_parameters}, which is a \code{list} with the
-following elements:
+An object of class \code{choice_parameters}, which is a \code{list} with the elements:
 \describe{
 \item{\code{s}}{The class weights (if any).}
 \item{\code{alpha}}{The non-random coefficients (if any).}
@@ -136,13 +134,10 @@ These functions construct, validate, and transform an object of class
 \code{choice_parameters}, which defines the parameters of a choice model.
 \itemize{
 \item \code{choice_parameters()} constructs a \code{choice_parameters} object.
-\item \code{generate_choice_parameters()} samples parameters at random, see
-details.
-\item \code{validate_choice_parameters()} validates a \code{choice_parameters}
-object.
+\item \code{generate_choice_parameters()} samples parameters at random, see details.
+\item \code{validate_choice_parameters()} validates a \code{choice_parameters} object.
 \item \code{identify_choice_parameters()} applies scale and level normalization.
-\item \code{transform_choice_parameters()} transforms a \code{choice_parameters}
-object between different parameter spaces.
+\item \code{transform_choice_parameters()} transforms between parameter spaces.
 }
 }
 \section{Sampling missing choice model parameters}{
@@ -219,7 +214,7 @@ the components \eqn{\epsilon_{ntj}} of the error vector are independently,
 identically distributed extreme value.
 
 The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
-alternative \code{j}. It is unobserved by the researcher, but we assume that
+alternative \eqn{j}. It is unobserved by the researcher, but we assume that
 the deciders know their utilities for each alternative and make a choice
 which is consistent with utility maximization. Therefore,
 \deqn{y_{nt} = \operatorname*{argmax}_{j = 1,\dots,J} U_{ntj},}

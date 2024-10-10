@@ -2,16 +2,13 @@
 #'
 #' @description
 #' These functions construct, validate, and transform an object of class
-#' \code{choice_parameters}, which defines the parameters of a choice model.
+#' `choice_parameters`, which defines the parameters of a choice model.
 #'
-#' - \code{choice_parameters()} constructs a \code{choice_parameters} object.
-#' - \code{generate_choice_parameters()} samples parameters at random, see
-#'   details.
-#' - \code{validate_choice_parameters()} validates a \code{choice_parameters}
-#'   object.
-#' - \code{identify_choice_parameters()} applies scale and level normalization.
-#' - \code{transform_choice_parameters()} transforms a \code{choice_parameters}
-#'   object between different parameter spaces.
+#' - `choice_parameters()` constructs a `choice_parameters` object.
+#' - `generate_choice_parameters()` samples parameters at random, see details.
+#' - `validate_choice_parameters()` validates a `choice_parameters` object.
+#' - `identify_choice_parameters()` applies scale and level normalization.
+#' - `transform_choice_parameters()` transforms between parameter spaces.
 #'
 #' @inheritSection choice_formula The probit and logit model
 #'
@@ -47,14 +44,13 @@
 #' @param Sigma \[`matrix(nrow = J, ncol = J)` | `numeric(1)`\]\cr
 #' The error term covariance matrix. Only relevant in the probit model.
 #'
-#' In the ordered probit model, \code{Sigma} is a single, non-negative
-#' \code{numeric}.
+#' In the ordered probit model, `Sigma` is `numeric(1)`.
 #'
 #' @param gamma \[`numeric(J - 1)`\]\cr
 #' The utility thresholds. Only relevant in the ordered model case.
 #' Must be strictly ascending.
 #'
-#' \code{gamma} corresponds to \eqn{\gamma_1, \dots, \gamma_{J-1}}, while the
+#' `gamma` corresponds to \eqn{\gamma_1, \dots, \gamma_{J-1}}, while the
 #' lower and upper bounds are \eqn{\gamma_0 = -\infty} and
 #' \eqn{\gamma_J = +\infty}.
 #'
@@ -62,15 +58,14 @@
 #' The \code{\link{choice_effects}} object that defines the choice effects.
 #'
 #' @return
-#' An object of class \code{choice_parameters}, which is a \code{list} with the
-#' following elements:
+#' An object of class `choice_parameters`, which is a `list` with the elements:
 #' \describe{
-#'   \item{\code{s}}{The class weights (if any).}
-#'   \item{\code{alpha}}{The non-random coefficients (if any).}
-#'   \item{\code{b}}{The mean of random effects (if any).}
-#'   \item{\code{Omega}}{The covariance of random effects (if any).}
-#'   \item{\code{Sigma}}{The error term covariance (if any).}
-#'   \item{\code{gamma}}{The utility thresholds (if any).}
+#'   \item{`s`}{The class weights (if any).}
+#'   \item{`alpha`}{The non-random coefficients (if any).}
+#'   \item{`b`}{The mean of random effects (if any).}
+#'   \item{`Omega`}{The covariance of random effects (if any).}
+#'   \item{`Sigma`}{The error term covariance (if any).}
+#'   \item{`gamma`}{The utility thresholds (if any).}
 #' }
 #'
 #' @export
@@ -83,6 +78,7 @@ choice_parameters <- function(
     Sigma = NULL,
     gamma = NULL
   ) {
+
   parameters <- list(
     "s" = s,
     "alpha" = alpha,
@@ -91,6 +87,7 @@ choice_parameters <- function(
     "Sigma" = Sigma,
     "gamma" = gamma
   )
+
   parameters[sapply(parameters, is.null)] <- NULL
   for (i in seq_along(parameters)) {
     check <- checkmate::check_numeric(parameters[[i]], any.missing = FALSE)
@@ -104,12 +101,15 @@ choice_parameters <- function(
     parameters,
     class = c("choice_parameters", "list")
   )
+
 }
 
 #' @noRd
 
 is.choice_parameters <- function(
-    x, error = TRUE, var_name = oeli::variable_name(x)
+    x,
+    error = TRUE,
+    var_name = oeli::variable_name(x)
   ) {
   check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_parameters")
@@ -126,7 +126,7 @@ is.choice_parameters <- function(
 
 #' @rdname choice_parameters
 #'
-#' @param x (`choice_parameters`)\cr
+#' @param x \[`choice_parameters`\]\cr
 #' The `choice_parameters` object to be printed.
 #'
 #' @param ...
@@ -137,7 +137,12 @@ is.choice_parameters <- function(
 #' @exportS3Method
 
 print.choice_parameters <- function(
-    x, ..., rowdots = 4, coldots = 4, digits = 2, simplify = FALSE,
+    x,
+    ...,
+    rowdots = 4,
+    coldots = 4,
+    digits = 2,
+    simplify = FALSE,
     details = !simplify
 ) {
   is.choice_parameters(x, error = TRUE)
@@ -159,8 +164,8 @@ print.choice_parameters <- function(
 
 #' @rdname choice_parameters
 #'
-#' @param fixed_parameters (`choice_parameters`)\cr
-#' Optionally a \code{\link{choice_parameters}} object of parameters to keep
+#' @param fixed_parameters \[`choice_parameters`\]\cr
+#' Optionally a `choice_parameters` object of parameters to keep
 #' fixed when sampling other parameters.
 #'
 #' @section Sampling missing choice model parameters:
@@ -168,18 +173,18 @@ print.choice_parameters <- function(
 #' Unspecified choice model parameters (if required for the model) are drawn
 #' independently from the following distributions:
 #' \describe{
-#'   \item{\code{s}}{drawn from a Dirichlet distribution with concentration 1}
-#'   \item{\code{alpha}}{drawn from a multivariate normal distribution with
+#'   \item{`s`}{drawn from a Dirichlet distribution with concentration 1}
+#'   \item{`alpha`}{drawn from a multivariate normal distribution with
 #'   zero mean and a diagonal covariance matrix with value 10 on the diagonal}
-#'   \item{\code{b}}{drawn from a multivariate normal distribution with zero
+#'   \item{`b`}{drawn from a multivariate normal distribution with zero
 #'   mean and a diagonal covariance matrix with value 10 on the diagonal}
-#'   \item{\code{Omega}}{drawn from an Inverse-Wishart distribution with degrees
-#'   of freedom equal to \code{P_r} + 2 and scale matrix equal to the identity}
-#'   \item{\code{Sigma}}{drawn from an Inverse-Wishart distribution with degrees
-#'   of freedom equal to \code{J} + 2 and scale matrix equal to the identity,
+#'   \item{`Omega`}{drawn from an Inverse-Wishart distribution with degrees
+#'   of freedom equal to `P_r` + 2 and scale matrix equal to the identity}
+#'   \item{`Sigma`}{drawn from an Inverse-Wishart distribution with degrees
+#'   of freedom equal to `J` + 2 and scale matrix equal to the identity,
 #'   in the ordered probit case drawn from a standard normal distribution}
-#'   \item{\code{gamma}}{derived from the logarithmic increases of the utility
-#'   thresholds \code{d}, which are drawn from a multivariate normal
+#'   \item{`gamma`}{derived from the logarithmic increases of the utility
+#'   thresholds `d`, which are drawn from a multivariate normal
 #'   distribution with zero mean and covariance matrix equal to the identity}
 #' }
 #'
@@ -195,7 +200,9 @@ print.choice_parameters <- function(
 #' @export
 
 generate_choice_parameters <- function(
-    choice_effects, C = 1, fixed_parameters = choice_parameters()
+    choice_effects,
+    C = 1,
+    fixed_parameters = choice_parameters()
   ) {
 
   ### input checks
@@ -288,7 +295,10 @@ generate_choice_parameters <- function(
 #' @export
 
 validate_choice_parameters <- function(
-    choice_parameters, choice_effects, C = 1, allow_missing = FALSE
+    choice_parameters,
+    choice_effects,
+    C = 1,
+    allow_missing = FALSE
   ) {
 
   ### input checks
@@ -474,15 +484,15 @@ validate_choice_parameters <- function(
 #' In the probit model case, the error term differences
 #' \eqn{(\tilde{\epsilon}_{nt:})} again are
 #' multivariate normally distributed with mean \eqn{0} but transformed
-#' covariance matrix \eqn{\tilde{\Sigma}}, also denoted by \code{Sigma_diff}.
-#' See \code{\link[oeli]{diff_cov}} for computing \code{Sigma_diff} from
-#' \code{Sigma}, and \code{\link[oeli]{undiff_cov}} for the other way around.
+#' covariance matrix \eqn{\tilde{\Sigma}}, also denoted by `Sigma_diff`.
+#' See \code{\link[oeli]{diff_cov}} for computing `Sigma_diff` from
+#' `Sigma`, and \code{\link[oeli]{undiff_cov}} for the other way around.
 #'
 #' For level normalization in the ordered model case, we fix
 #' \eqn{\gamma_1 = 0}.
 #'
-#' For scale normalization, we fix the top left element of \code{Sigma_diff} to
-#' the value `scale` (or fix \code{Sigma = scale} in the ordered probit case).
+#' For scale normalization, we fix the top left element of `Sigma_diff` to
+#' the value `scale` (or fix `Sigma = scale` in the ordered probit case).
 #' In the logit model case, the scale normalization is already implied by the
 #' assumption that the errors are independently extreme value distributed with
 #' variance \eqn{\pi^2/6}.
@@ -490,7 +500,9 @@ validate_choice_parameters <- function(
 #' @export
 
 identify_choice_parameters <- function(
-    choice_parameters, scale = 1, level = 1
+    choice_parameters,
+    scale = 1,
+    level = 1
   ) {
 
 
@@ -499,25 +511,19 @@ identify_choice_parameters <- function(
 #' TODO: inherit choice_effects and error_term
 #'
 #' @param x \[`choice_parameters` | `numeric`()\]\cr
-#' Either a \code{\link{choice_parameters}} object or a \code{numeric}
-#' \code{vector}.
+#' The choice parameters.
 #'
-#' @param mode (`character(1)`)\cr
-#' TODO
-#' \itemize{
-#'   \item \code{"vector"}: vector of identified parameters
-#'   \item \code{"choice_parameters"}: `choice_parameters` object
-#' }
-#'
-#' @param names (`character(1)`)\cr
+#' @param names \[`character(1)`\]\cr
 #' - `"effect"`
 #' - `"generic"`
 #' - `"unnamed"`
 #'
 #' TODO: order of numeric vector
 
-transform_choice_parameters <- function(
-    x, choice_effects, mode, names = "effect"
+switch_parameter_space <- function(
+    choice_parameters,
+    choice_effects,
+    names = "effect"
   ) {
 
 }

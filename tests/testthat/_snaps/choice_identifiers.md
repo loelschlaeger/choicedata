@@ -17,9 +17,9 @@
        2         1         
       
     Message
-      < 1995 rows hidden >
+      <1995 rows hidden>
     Output
-             
-       1000 1
-       1000 2
+                           
+       1000      1         
+       1000      2         
 

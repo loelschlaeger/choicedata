@@ -1,7 +1,7 @@
 #' Define choice model effects
 #'
 #' @description
-#' This function constructs an object of class \code{choice_effects}, which
+#' This function constructs an object of class `choice_effects`, which
 #' defines the effects of a choice model.
 #'
 #' @param choice_formula \[`choice_formula`\]\cr
@@ -14,30 +14,30 @@
 #' A delimiter between covariate and alternative name to build the effect name.
 #'
 #' @return
-#' A \code{choice_effects} object, which is a \code{data.frame}, where each row
+#' A `choice_effects` object, which is a `data.frame`, where each row
 #' is a model effect, and columns are
-#' 1. \code{"effect_name"}, the name for the effect which is composed of
+#'
+#' 1. `"effect_name"`, the name for the effect which is composed of
 #'    covariate and alternative name,
-#' 2. \code{"generic_name"}, the generic effect name, i.e. \code{"alpha_*"}
-#'    for non-random effects and \code{"b_*"} for random effects,
-#' 3. \code{"covariate"}, the covariate name connected to the effect,
-#' 4. \code{"alternative"}, the alternative name connected to the effect (only
+#' 2. `"generic_name"`, the generic effect name (i.e., `"alpha_*"` for
+#'    non-random effects and `"b_*"` for random effects),
+#' 3. `"covariate"`, the covariate name connected to the effect,
+#' 4. `"alternative"`, the alternative name connected to the effect (only
 #'    if the effect is alternative-specific, i.e., varies across alternatives),
-#' 5. \code{"as_covariate"}, indicator whether the covariate is
-#'    alternative-specific,
-#' 6. \code{"as_effect"}, indicator whether the effect is alternative-specific,
-#' 7. \code{"lc_effect"}, indicator whether the effect has latent classes,
-#' 8. \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
-#'    and \code{"log-normal"}, indicating the type of random effect.
+#' 5. `"as_covariate"`, indicator whether the covariate is alternative-specific,
+#' 6. `"as_effect"`, indicator whether the effect is alternative-specific,
+#' 7. `"lc_effect"`, indicator whether the effect has latent classes,
+#' 8. `"mixing"`, a factor with levels `"none"`, `"normal"`,
+#'    and `"log-normal"`, indicating the type of random effect.
 #'
 #' For identification, the effects are ordered as follows:
 #'
 #' - Non-random effects come before random effects.
 #' - Normal random effects come before log-normal random effects.
-#' - Otherwise, the order is determined by occurrence in \code{formula}.
+#' - Otherwise, the order is determined by occurrence in `formula`.
 #'
-#' It contains the arguments `choice_formula` and `choice_alternatives`
-#' as attributes.
+#' It contains the arguments `choice_formula`, `choice_alternatives`, and
+#' `delimiter` as attributes.
 #'
 #' @examples
 #' choice_effects(
@@ -51,7 +51,9 @@
 #' @export
 
 choice_effects <- function(
-    choice_formula, choice_alternatives, delimiter = "_"
+    choice_formula,
+    choice_alternatives,
+    delimiter = "_"
   ) {
 
   ### input checks
@@ -162,7 +164,9 @@ choice_effects <- function(
 #' @noRd
 
 is.choice_effects <- function(
-    x, error = TRUE, var_name = oeli::variable_name(x)
+    x,
+    error = TRUE,
+    var_name = oeli::variable_name(x)
   ) {
   check_not_missing(x, var_name = var_name)
   check <- inherits(x, "choice_effects")
@@ -187,7 +191,10 @@ is.choice_effects <- function(
 #'
 #' @exportS3Method
 
-print.choice_effects <- function(x, ...) {
+print.choice_effects <- function(
+    x,
+    ...
+  ) {
   is.choice_effects(x, error = TRUE)
   cli::cli_h3("Choice effects")
   print.data.frame(x)
@@ -198,9 +205,9 @@ print.choice_effects <- function(x, ...) {
 #' @description
 #' These helper functions count the number of model effects:
 #'
-#' - \code{compute_P()} returns the total number \code{P} of model effects.
-#' - \code{compute_P_f()} returns the number \code{P_f} of non-random effects.
-#' - \code{compute_P_r()} returns the number \code{P_r} of random effects.
+#' - `compute_P()` returns the total number `P` of model effects.
+#' - `compute_P_f()` returns the number `P_f` of non-random effects.
+#' - `compute_P_r()` returns the number `P_r` of random effects.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
 #' The \code{\link{choice_effects}} object that defines the choice effects.
@@ -208,7 +215,7 @@ print.choice_effects <- function(x, ...) {
 #' @inheritSection choice_formula The probit and logit model
 #'
 #' @return
-#' An \code{integer}, the number of model effects.
+#' An `integer`, the number of model effects.
 
 compute_P <- function(choice_effects) {
   is.choice_effects(choice_effects, error = TRUE)

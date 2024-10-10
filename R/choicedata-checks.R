@@ -254,9 +254,6 @@ check_J <- function(J) {
 
 check_latent_classes <- function(latent_classes) {
   check_not_missing(latent_classes)
-  if (is.null(latent_classes)) {
-    latent_classes <- character()
-  }
   check <- checkmate::check_names(latent_classes, type = "unique")
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var latent_classes} is bad: {check}", call = NULL)
@@ -312,9 +309,6 @@ check_ranked <- function(ranked) {
 
 check_random_effects <- function(random_effects) {
   check_not_missing(random_effects)
-  if (is.null(random_effects)) {
-    random_effects <- character()
-  }
   check <- checkmate::check_names(random_effects, type = "unique")
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var random_effects} is bad: {check}", call = NULL)

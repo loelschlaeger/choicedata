@@ -8,8 +8,8 @@
 choice_formula(
   formula,
   error_term,
-  random_effects = NULL,
-  latent_classes = NULL
+  random_effects = character(),
+  latent_classes = character()
 )
 
 \method{print}{choice_formula}(x, ...)
@@ -32,7 +32,7 @@ their coefficients follow a random (so-called mixing) distribution.
 Per default, the mixing distribution is normal. In addition, the log-normal
 distribution (e.g., for sign-restriction) can be specified via appending
 \code{+} to the corresponding name. To have random effects for the ASCs, add
-\code{ASC} (or \code{ASC+}) to \code{random_effects}.}
+\code{ASC} (or \verb{ASC+}) to \code{random_effects}.}
 
 \item{latent_classes}{[\code{character()}]\cr
 The names of covariates in \code{formula} connected to latent classes, see
@@ -44,8 +44,7 @@ The \code{choice_formula} object to be printed.}
 \item{...}{Currently not used.}
 }
 \value{
-An object of class \code{choice_formula}, which is a \code{list} with the
-following elements:
+An object of class \code{choice_formula}, which is a \code{list} of the elements:
 \describe{
 \item{\code{formula}}{The model formula.}
 \item{\code{error_term}}{The model's error term.}
@@ -58,8 +57,7 @@ following elements:
 }
 }
 \description{
-The \code{choice_formula} object defines the utility equation for a choice
-model.
+The \code{choice_formula} object defines the utility equation for a choice model.
 }
 \section{The probit and logit model}{
 
@@ -82,7 +80,7 @@ the components \eqn{\epsilon_{ntj}} of the error vector are independently,
 identically distributed extreme value.
 
 The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
-alternative \code{j}. It is unobserved by the researcher, but we assume that
+alternative \eqn{j}. It is unobserved by the researcher, but we assume that
 the deciders know their utilities for each alternative and make a choice
 which is consistent with utility maximization. Therefore,
 \deqn{y_{nt} = \operatorname*{argmax}_{j = 1,\dots,J} U_{ntj},}
@@ -128,8 +126,7 @@ introducing variables \eqn{z=(z_n)_n}, allocating each decision maker
 
 \section{Specifying the model formula}{
 
-The structure of \code{formula} is
-\code{choice ~ A | B | C}, where
+The structure of \code{formula} is \code{choice ~ A | B | C}, where
 \itemize{
 \item \code{choice} is the name of the discrete response variable,
 \item \code{A} are names of \strong{alternative-specific covariates} with
@@ -156,7 +153,7 @@ example, \code{choice ~ A} is equivalent to \code{choice ~ A | 1 | 0}.
 
 In the ordered case, since only a single utility is modeled, no ASCs and no
 alternative-specific covariates can be included. Hence, in the ordered case,
-\code{formula} must be of the form, e.g.,  \code{choice ~ 0 | A + B + 0}.
+\code{formula} must be of the form, e.g., \code{choice ~ 0 | A + B + 0}.
 }
 
 \examples{

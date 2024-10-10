@@ -30,13 +30,12 @@ is a model effect, and columns are
 \enumerate{
 \item \code{"effect_name"}, the name for the effect which is composed of
 covariate and alternative name,
-\item \code{"generic_name"}, the generic effect name, i.e. \code{"alpha_*"}
-for non-random effects and \code{"b_*"} for random effects,
+\item \code{"generic_name"}, the generic effect name (i.e., \code{"alpha_*"} for
+non-random effects and \code{"b_*"} for random effects),
 \item \code{"covariate"}, the covariate name connected to the effect,
 \item \code{"alternative"}, the alternative name connected to the effect (only
 if the effect is alternative-specific, i.e., varies across alternatives),
-\item \code{"as_covariate"}, indicator whether the covariate is
-alternative-specific,
+\item \code{"as_covariate"}, indicator whether the covariate is alternative-specific,
 \item \code{"as_effect"}, indicator whether the effect is alternative-specific,
 \item \code{"lc_effect"}, indicator whether the effect has latent classes,
 \item \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
@@ -50,8 +49,8 @@ For identification, the effects are ordered as follows:
 \item Otherwise, the order is determined by occurrence in \code{formula}.
 }
 
-It contains the arguments \code{choice_formula} and \code{choice_alternatives}
-as attributes.
+It contains the arguments \code{choice_formula}, \code{choice_alternatives}, and
+\code{delimiter} as attributes.
 }
 \description{
 This function constructs an object of class \code{choice_effects}, which
