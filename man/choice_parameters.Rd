@@ -121,7 +121,7 @@ fixed when sampling other parameters.}
 \value{
 An object of class \code{choice_parameters}, which is a \code{list} with the elements:
 \describe{
-\item{\code{s}}{The class weights (if any).}
+\item{\code{s}}{The latent class weights (if any).}
 \item{\code{alpha}}{The non-random coefficients (if any).}
 \item{\code{b}}{The mean of random effects (if any).}
 \item{\code{Omega}}{The covariance of random effects (if any).}
@@ -137,7 +137,7 @@ These functions construct, validate, and transform an object of class
 \item \code{generate_choice_parameters()} samples parameters at random, see details.
 \item \code{validate_choice_parameters()} validates a \code{choice_parameters} object.
 \item \code{identify_choice_parameters()} applies scale and level normalization.
-\item \code{transform_choice_parameters()} transforms between parameter spaces.
+\item \code{change_format.choice_parameters()} transforms between parameter spaces.
 }
 }
 \section{Sampling missing choice model parameters}{

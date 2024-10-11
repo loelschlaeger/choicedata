@@ -8,7 +8,7 @@
 #' - `generate_choice_parameters()` samples parameters at random, see details.
 #' - `validate_choice_parameters()` validates a `choice_parameters` object.
 #' - `identify_choice_parameters()` applies scale and level normalization.
-#' - `transform_choice_parameters()` transforms between parameter spaces.
+#' - `change_format.choice_parameters()` transforms between parameter spaces.
 #'
 #' @inheritSection choice_formula The probit and logit model
 #'
@@ -60,7 +60,7 @@
 #' @return
 #' An object of class `choice_parameters`, which is a `list` with the elements:
 #' \describe{
-#'   \item{`s`}{The class weights (if any).}
+#'   \item{`s`}{The latent class weights (if any).}
 #'   \item{`alpha`}{The non-random coefficients (if any).}
 #'   \item{`b`}{The mean of random effects (if any).}
 #'   \item{`Omega`}{The covariance of random effects (if any).}
@@ -79,6 +79,7 @@ choice_parameters <- function(
     gamma = NULL
   ) {
 
+  ### generate list for parameters
   parameters <- list(
     "s" = s,
     "alpha" = alpha,
@@ -88,7 +89,10 @@ choice_parameters <- function(
     "gamma" = gamma
   )
 
+  ### remove missing parameters from the list
   parameters[sapply(parameters, is.null)] <- NULL
+
+  ### ensure that parameters are numerics without missing values
   for (i in seq_along(parameters)) {
     check <- checkmate::check_numeric(parameters[[i]], any.missing = FALSE)
     if (!isTRUE(check)) {
@@ -97,6 +101,8 @@ choice_parameters <- function(
       )
     }
   }
+
+  ### build object
   structure(
     parameters,
     class = c("choice_parameters", "list")
@@ -211,7 +217,10 @@ generate_choice_parameters <- function(
   x <- fixed_parameters
   choice_formula <- attr(choice_effects, "choice_formula")
   error_term <- choice_formula[["error_term"]]
+
+  # TODO: which effect get latent classes?
   latent_classes <- choice_formula[["latent_classes"]]
+
   C <- check_C(C, latent_classes)
   P_f <- compute_P_f(choice_effects)
   P_r <- compute_P_r(choice_effects)
@@ -520,11 +529,18 @@ identify_choice_parameters <- function(
 #'
 #' TODO: order of numeric vector
 
-switch_parameter_space <- function(
+change_format.choice_parameters <- function(
     choice_parameters,
+    new_format,
     choice_effects,
     names = "effect"
   ) {
+
+
+  par <- optimizeR::ParameterSpaces$
+    new()$
+    switch()
+
 
 }
 

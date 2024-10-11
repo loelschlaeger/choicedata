@@ -253,7 +253,7 @@ simulate_choice_data <- function(
 
 #' @rdname choice_data
 
-change_format <- function(
+change_format_old <- function(
     x, row.names = NULL, optional = FALSE, format = "wide", ...
   ) {
 

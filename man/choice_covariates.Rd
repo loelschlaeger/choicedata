@@ -3,9 +3,8 @@
 \name{choice_covariates}
 \alias{choice_covariates}
 \alias{generate_choice_covariates}
-\alias{design_matrices}
-\alias{as.data.frame.design_matrices}
 \alias{covariate_names}
+\alias{change_format.choice_covariates}
 \title{Define choice covariates}
 \usage{
 choice_covariates(
@@ -26,11 +25,9 @@ generate_choice_covariates(
   verbose = FALSE
 )
 
-design_matrices(choice_covariates, choice_effects)
-
-\method{as.data.frame}{design_matrices}(x, row.names, optional, ...)
-
 covariate_names(choice_effects)
+
+\method{change_format}{choice_covariates}(x, new_format, choice_effects)
 }
 \arguments{
 \item{data_frame}{[\code{data.frame}]\cr
@@ -54,9 +51,12 @@ Names of columns in \code{data_frame} that store covariate values.}
 \item{x}{[\code{choice_identifiers}]\cr
 The \code{choice_identifiers} object to be printed.}
 
-\item{row.names, optional}{Currently not used.}
-
-\item{...}{Currently not used.}
+\item{new_format}{[\code{character(1)}]\cr
+\itemize{
+\item \code{"df_wide"}
+\item \code{"df_long"}
+\item \code{"design_matrices"}
+}}
 }
 \value{
 A \code{data.frame}.

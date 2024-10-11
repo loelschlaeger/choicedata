@@ -3,7 +3,7 @@
 \name{choice_data}
 \alias{choice_data}
 \alias{simulate_choice_data}
-\alias{change_format}
+\alias{change_format_old}
 \alias{plot.choice_data}
 \alias{print.choice_data}
 \title{Define choice data}
@@ -32,7 +32,7 @@ simulate_choice_data(
   column_choice = "choice"
 )
 
-change_format(x, row.names = NULL, optional = FALSE, format = "wide", ...)
+change_format_old(x, row.names = NULL, optional = FALSE, format = "wide", ...)
 
 \method{plot}{choice_data}(x, ...)
 

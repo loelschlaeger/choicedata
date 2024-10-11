@@ -2,6 +2,16 @@
 title: Structure of the `{choicedata}` package
 ---
 
+# Models supported
+
+- [ ] probit
+- [ ] logit
+- [ ] normal mixing distribution
+- [ ] log-normal mixing distribution
+- [ ] latent-classes 
+- [ ] ordered
+- [ ] ranked
+
 # Objects
 
 ## `choice_alternatives`
@@ -140,9 +150,90 @@ compute_P_f(choice_effects)
 compute_P_r(choice_effects)
 ```
 
+Documentation on:
+
+- `delimiter`
+
 ## `choice_parameters`
 
 Goal is to define the choice model parameters based on `choice_effects`.
+
+```r
+choice_parameters(
+  s = NULL,
+  alpha = NULL,
+  b = NULL,
+  Omega = NULL,
+  Sigma = NULL,
+  gamma = NULL
+)
+```
+
+`choice_parameters` object is a `list` with elements
+
+- `s`
+- `alpha`
+- `b`
+- `Omega`
+- `Sigma`
+- `gamma`
+
+Related functions:
+
+```r 
+is.choice_parameters(
+  x,
+  error = TRUE,
+  var_name = oeli::variable_name(x)
+)
+
+print.choice_parameters(
+  x,
+  ...,
+  rowdots = 4,
+  coldots = 4,
+  digits = 2,
+  simplify = FALSE,
+  details = !simplify
+)
+
+generate_choice_parameters(
+  choice_effects,
+  C = 1,
+  fixed_parameters = choice_parameters()
+)
+
+validate_choice_parameters(
+  choice_parameters,
+  choice_effects,
+  C = 1,
+  allow_missing = FALSE
+)
+
+identify_choice_parameters(
+  choice_parameters,
+  scale = 1,
+  level = 1
+)
+
+change_format.choice_parameters(
+  choice_parameters,
+  new_format,
+  choice_effects,
+  names = "effect"
+)
+```
+
+Documentation on:
+
+- `C`
+- `s`
+- `alpha`
+- `b`
+- `Omega`
+- `Sigma`
+- `gamma`
+- "Sampling missing choice model parameters"
 
 ## `choice_identifiers`
 
@@ -151,8 +242,6 @@ Goal is to define identifiers for deciders and choice occasions.
 ## `choice_preferences`
 
 Goal is to define choice preferences based on `choice_parameters`, `choice_effects`, and `choice_identifiers`.
-
-
 
 # Helpers
 

@@ -105,6 +105,7 @@ generate_choice_covariates <- function(
   n = nrow(choice_identifiers),
   marginals = list(),
   correlation = diag(length(labels)),
+  # TODO: occasion_constant = ...
   verbose = FALSE
 ) {
 
@@ -147,7 +148,74 @@ generate_choice_covariates <- function(
 
 #' @rdname choice_covariates
 
-design_matrices <- function(choice_covariates, choice_effects) {
+covariate_names <- function(choice_effects) {
+
+  ### input checks
+  is.choice_effects(choice_effects, error = TRUE)
+  choice_formula <- attr(choice_effects, "choice_formula")
+  var_types <- choice_formula$var_types
+  choice_alternatives <- attr(choice_effects, "choice_alternatives")
+  delimiter <- attr(choice_effects, "delimiter")
+
+  ### build covariate names
+  covariate_names <- character()
+  for (cov in unlist(var_types[c(1, 3)])) {
+    covariate_names <- c(
+      covariate_names,
+      paste(cov, as.character(choice_alternatives), sep = delimiter)
+    )
+  }
+  for (cov in var_types[[2]]) {
+    covariate_names <- c(covariate_names, cov)
+  }
+  return(covariate_names)
+
+}
+
+#' @rdname choice_covariates
+#'
+#' @param new_format \[`character(1)`\]\cr
+#' - `"df_wide"`
+#' - `"df_long"`
+#' - `"design_matrices"`
+#'
+#' @exportS3Method
+
+change_format.choice_covariates <- function(
+  x,
+  new_format,
+  choice_effects
+) {
+
+  ### input checks
+
+
+  ### change format of choice covariates
+
+
+  check_not_missing(new_format)
+  check_not_missing(choice_effects)
+
+  cat("changed format to design matrices")
+
+  return(x)
+}
+
+#' @noRd
+
+df_wide_to_df_long <- function() {
+
+}
+
+#' @noRd
+
+df_long_to_df_wide <- function() {
+
+}
+
+#' @noRd
+
+df_to_design_matrices <- function(choice_covariates, choice_effects) {
 
   ### input checks
   is.choice_covariates(choice_covariates, error = TRUE)
@@ -230,14 +298,9 @@ design_matrices <- function(choice_covariates, choice_effects) {
 
 }
 
-#' @rdname choice_covariates
-#'
-#' @param row.names,optional
-#' Currently not used.
-#'
-#' @exportS3Method
+#' @noRd
 
-as.data.frame.design_matrices <- function(x, row.names, optional, ...) {
+design_matrices_to_df <- function(choice_covariates, choice_effects) {
 
   ### input checks
   is.choice_covariates(x, error = TRUE)
@@ -310,32 +373,6 @@ as.data.frame.design_matrices <- function(x, row.names, optional, ...) {
     column_occasion = column_occasion,
     as_cross_section = as_cross_section
   )
-
-}
-
-#' @rdname choice_covariates
-
-covariate_names <- function(choice_effects) {
-
-  ### input checks
-  is.choice_effects(choice_effects, error = TRUE)
-  choice_formula <- attr(choice_effects, "choice_formula")
-  var_types <- choice_formula$var_types
-  choice_alternatives <- attr(choice_effects, "choice_alternatives")
-  delimiter <- attr(choice_effects, "delimiter")
-
-  ### build covariate names
-  covariate_names <- character()
-  for (cov in unlist(var_types[c(1, 3)])) {
-    covariate_names <- c(
-      covariate_names,
-      paste(cov, as.character(choice_alternatives), sep = delimiter)
-    )
-  }
-  for (cov in var_types[[2]]) {
-    covariate_names <- c(covariate_names, cov)
-  }
-  return(covariate_names)
 
 }
 

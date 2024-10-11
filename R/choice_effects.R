@@ -30,9 +30,10 @@
 #' 8. `"mixing"`, a factor with levels `"none"`, `"normal"`,
 #'    and `"log-normal"`, indicating the type of random effect.
 #'
-#' For identification, the effects are ordered as follows:
+#' For identification, the effects are ordered according to the following rules:
 #'
 #' - Non-random effects come before random effects.
+#' - Non-latent-class effects come before latent-class effects.
 #' - Normal random effects come before log-normal random effects.
 #' - Otherwise, the order is determined by occurrence in `formula`.
 #'
@@ -43,7 +44,8 @@
 #' choice_effects(
 #'   choice_formula = choice_formula(
 #'     formula = choice ~ price | income | comfort, error_term = "probit",
-#'     random_effects = c("price+", "income")
+#'     random_effects = c("price+", "income"),
+#'     latent_classes = c("comfort", "income")
 #'   ),
 #'   choice_alternatives = choice_alternatives(J = 3)
 #' )
@@ -131,12 +133,14 @@ choice_effects <- function(
     overview$mixing, levels = c("normal", "log-normal"), ordered = TRUE
   )
 
-  ### sort effects:
+  ### sort effects
   ### - random effects last, log-normal behind normal
   ### - otherwise sort by occurrence in formula
   effect_order <- order(
-    overview$mixing,
-    as.numeric(rownames(overview)),
+    !is.na(overview$mixing),        # non-random effects before random effects
+    overview$lc_effect,             # non-LC effects before LC effects
+    overview$mixing,                # normal before log-normal
+    as.numeric(rownames(overview)), # otherwise sort by occurrence in formula
     decreasing = FALSE,
     na.last = FALSE
   )

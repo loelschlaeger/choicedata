@@ -42,9 +42,10 @@ if the effect is alternative-specific, i.e., varies across alternatives),
 and \code{"log-normal"}, indicating the type of random effect.
 }
 
-For identification, the effects are ordered as follows:
+For identification, the effects are ordered according to the following rules:
 \itemize{
 \item Non-random effects come before random effects.
+\item Non-latent-class effects come before latent-class effects.
 \item Normal random effects come before log-normal random effects.
 \item Otherwise, the order is determined by occurrence in \code{formula}.
 }
@@ -60,7 +61,8 @@ defines the effects of a choice model.
 choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | income | comfort, error_term = "probit",
-    random_effects = c("price+", "income")
+    random_effects = c("price+", "income"),
+    latent_classes = c("comfort", "income")
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )

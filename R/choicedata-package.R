@@ -21,3 +21,28 @@
 #' @importFrom utils head
 ## usethis namespace: end
 NULL
+
+#' Change format of an object
+#'
+#' @description
+#' This generic provides methods for changing the format of various objects
+#' inside the `{choicedata}` package.
+#'
+#' @param x \[any\]\cr
+#' Any `{choicedata}` object.
+#'
+#' @param new_format \[`character(1)`\]\cr
+#' The requested format. Available values depend on the concrete method.
+#'
+#' @param ...
+#' Additional arguments to be passed to the corresponding methods.
+#'
+#' @return
+#' The transformed object.
+#'
+#' @export
+
+change_format <- function(x, new_format, ...) {
+  UseMethod("change_format")
+}
+
