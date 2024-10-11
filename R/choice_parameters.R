@@ -71,6 +71,7 @@
 #' @export
 
 choice_parameters <- function(
+    # TODO: no alpha, b becomes beta, contains every (mean) preferences
     s = NULL,
     alpha = NULL,
     b = NULL,

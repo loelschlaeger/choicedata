@@ -4,13 +4,8 @@ title: Structure of the `{choicedata}` package
 
 # Models supported
 
-- [ ] probit
-- [ ] logit
-- [ ] normal mixing distribution
-- [ ] log-normal mixing distribution
-- [ ] latent-classes 
-- [ ] ordered
-- [ ] ranked
+- [ ] MNP
+- [ ] normally mixed MNP
 
 # Objects
 
@@ -22,8 +17,7 @@ Goal is to define the set of choice alternatives.
 choice_alternatives(
   J = 2, 
   alternatives = LETTERS[1:J], 
-  base = alternatives[1], 
-  ordered = FALSE
+  base = alternatives[1]
 ) 
 ```
 
@@ -31,7 +25,6 @@ choice_alternatives(
 
 - `J`
 - `base`
-- `ordered`
 
 Related functions:
 
@@ -53,9 +46,7 @@ Documentation on:
 - `J`
 - `alternatives`
 - `base`
-- `ordered`
 - "Base alternative"
-- "Ordered choice alternatives"
 
 ## `choice_formula`
 
@@ -65,8 +56,7 @@ Goal is to define the choice model formula.
 choice_formula(
   formula, 
   error_term, 
-  random_effects = character(), 
-  latent_classes = character()
+  random_effects = character()
 )
 ```
 
@@ -78,7 +68,6 @@ choice_formula(
 - `var_types`
 - `ASC`
 - `mixing_types`
-- `latent_classes`
 - `ordered_valid`
 
 Related functions:
@@ -101,9 +90,7 @@ Documentation on:
 - `formula`
 - `error_term`
 - `random_effects`
-- `latent_classes`
-- "The probit and logit model"
-- "The latent class model"
+- "Choice models"
 - "Specifying the model formula"
 
 ## `choice_effects`
@@ -126,7 +113,6 @@ choice_effects(
 - `alternative`
 - `as_covariate`
 - `as_effect`
-- `lc_effect`
 - `mixing`
 
 Related functions:
@@ -160,23 +146,17 @@ Goal is to define the choice model parameters based on `choice_effects`.
 
 ```r
 choice_parameters(
-  s = NULL,
-  alpha = NULL,
-  b = NULL,
+  beta = NULL,
   Omega = NULL,
-  Sigma = NULL,
-  gamma = NULL
+  Sigma = NULL
 )
 ```
 
 `choice_parameters` object is a `list` with elements
 
-- `s`
-- `alpha`
-- `b`
+- `beta`
 - `Omega`
 - `Sigma`
-- `gamma`
 
 Related functions:
 
@@ -199,14 +179,12 @@ print.choice_parameters(
 
 generate_choice_parameters(
   choice_effects,
-  C = 1,
   fixed_parameters = choice_parameters()
 )
 
 validate_choice_parameters(
   choice_parameters,
   choice_effects,
-  C = 1,
   allow_missing = FALSE
 )
 
@@ -226,13 +204,9 @@ change_format.choice_parameters(
 
 Documentation on:
 
-- `C`
-- `s`
-- `alpha`
-- `b`
+- `beta`
 - `Omega`
 - `Sigma`
-- `gamma`
 - "Sampling missing choice model parameters"
 
 ## `choice_identifiers`
