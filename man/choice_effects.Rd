@@ -37,16 +37,17 @@ non-random effects and \code{"b_*"} for random effects),
 if the effect is alternative-specific, i.e., varies across alternatives),
 \item \code{"as_covariate"}, indicator whether the covariate is alternative-specific,
 \item \code{"as_effect"}, indicator whether the effect is alternative-specific,
-\item \code{"lc_effect"}, indicator whether the effect has latent classes,
-\item \code{"mixing"}, a factor with levels \code{"none"}, \code{"normal"},
-and \code{"log-normal"}, indicating the type of random effect.
+\item \code{"mixing"}, a factor with levels
+\itemize{
+\item \code{"normal"} (normal distribution),
+}
+
+indicating the type of random effect.
 }
 
 For identification, the effects are ordered according to the following rules:
-\itemize{
+\enumerate{
 \item Non-random effects come before random effects.
-\item Non-latent-class effects come before latent-class effects.
-\item Normal random effects come before log-normal random effects.
 \item Otherwise, the order is determined by occurrence in \code{formula}.
 }
 
@@ -60,9 +61,9 @@ defines the effects of a choice model.
 \examples{
 choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ price | income | comfort, error_term = "probit",
-    random_effects = c("price+", "income"),
-    latent_classes = c("comfort", "income")
+    formula = choice ~ price | income | comfort,
+    error_term = "probit",
+    random_effects = c("price", "income")
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )

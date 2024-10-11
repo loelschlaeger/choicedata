@@ -5,12 +5,7 @@
 \alias{print.choice_formula}
 \title{Define choice model formula}
 \usage{
-choice_formula(
-  formula,
-  error_term,
-  random_effects = character(),
-  latent_classes = character()
-)
+choice_formula(formula, error_term, random_effects = character())
 
 \method{print}{choice_formula}(x, ...)
 }
@@ -21,7 +16,6 @@ A symbolic description of the choice model, see details.}
 \item{error_term}{[\code{character(1)}]\cr
 Defines the model's error term. Current options are:
 \itemize{
-\item \code{"logit"}: errors are assumed to be iid standard Gumbel distributed
 \item \code{"probit"}: errors are assumed to be multivariate normally distributed
 }}
 
@@ -29,14 +23,9 @@ Defines the model's error term. Current options are:
 The names of covariates in \code{formula} connected to a random effect, i.e.,
 their coefficients follow a random (so-called mixing) distribution.
 
-Per default, the mixing distribution is normal. In addition, the log-normal
-distribution (e.g., for sign-restriction) can be specified via appending
-\code{+} to the corresponding name. To have random effects for the ASCs, add
-\code{ASC} (or \verb{ASC+}) to \code{random_effects}.}
+To have random effects for the ASCs, \code{ASC} to \code{random_effects}.
 
-\item{latent_classes}{[\code{character()}]\cr
-The names of covariates in \code{formula} connected to latent classes, see
-details.}
+Per default, the mixing distribution is normal.}
 
 \item{x}{[\code{choice_formula}]\cr
 The \code{choice_formula} object to be printed.}
@@ -52,14 +41,12 @@ An object of class \code{choice_formula}, which is a \code{list} of the elements
 \item{\code{var_types}}{The three different types of covariates.}
 \item{\code{ASC}}{Does the model have alternative-specific constants?}
 \item{\code{mixing_types}}{The types of random effects (if any).}
-\item{\code{latent_classes}}{Specification of latent classes (if any).}
-\item{\code{ordered_valid}}{Formula valid for ordered case (see details)?}
 }
 }
 \description{
 The \code{choice_formula} object defines the utility equation for a choice model.
 }
-\section{The probit and logit model}{
+\section{Choice models}{
 
 Assume that we know the choices of \eqn{N} deciders choosing between
 \eqn{J \geq 2} alternatives at each of \eqn{T} choice occasions.
@@ -75,9 +62,7 @@ encoding the preferences of \eqn{n}, and
 model's error term vector for \eqn{n} at \eqn{t}.
 
 In the probit model case, the error vector \eqn{(\epsilon_{nt:})} is normally
-distributed with covariance matrix \code{Sigma}. In the logit model case,
-the components \eqn{\epsilon_{ntj}} of the error vector are independently,
-identically distributed extreme value.
+distributed with covariance matrix \code{Sigma}.
 
 The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
 alternative \eqn{j}. It is unobserved by the researcher, but we assume that
@@ -98,30 +83,7 @@ The decider-specific coefficients are assumed to be random effects, i.e.,
 realizations of an underlying mixing distribution and to be independent of
 the characteristics \eqn{X_{ntj}} and the errors \eqn{(\epsilon_{nt:})}.
 This distribution characterizes heterogeneity among the deciders and allows
-for individual sensitivities. Typically, a normal or log-normal distribution
-is imposed.
-}
-
-\section{The latent class model}{
-
-The mixing distribution can be discrete, which results in a discrete latent
-class model where the non-random effects \eqn{\alpha} take a fixed set of
-\code{C} distinct values \eqn{\alpha_c}.
-
-Alternatively, the mixing distribution can be a mixture of
-\eqn{P_r}-variate Gaussian densities \eqn{\phi_{P_r}} with mean vectors
-\eqn{b = (b_c)_{c}} and covariance matrices \eqn{\Omega = (\Omega_c)_{c}}
-using \eqn{C} components:
-\deqn{\beta_n\mid b,\Omega \sim \sum_{c=1}^{C} s_c \phi_{P_r} (\cdot \mid
-b_c,\Omega_c).}
-Here, \eqn{(s_c)_{c}} are weights satisfying \eqn{0 < s_c\leq 1} for
-\eqn{c=1,\dots,C} and \eqn{\sum_c s_c=1}.
-
-One interpretation of the latent class model is obtained by
-introducing variables \eqn{z=(z_n)_n}, allocating each decision maker
-\eqn{n} to class \eqn{c} with probability \eqn{s_c}, i.e.,
-\deqn{\text{Prob}(z_n=c)=s_c \land \beta_n \mid z,b,\Omega \sim
-\phi_{P_r}(\cdot \mid b_{z_n},\Omega_{z_n}).}
+for individual sensitivities.
 }
 
 \section{Specifying the model formula}{
@@ -160,8 +122,7 @@ alternative-specific covariates can be included. Hence, in the ordered case,
 choice_formula(
   formula = choice ~ A | B | C,
   error_term = "probit",
-  random_effects = c("A", "B+"),
-  latent_classes = "C"
+  random_effects = c("A", "B")
 )
 
 }

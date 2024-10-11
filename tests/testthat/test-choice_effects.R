@@ -1,10 +1,10 @@
 test_that("effect overview can be created", {
 
-  ### test 1
+  ### test 1: MMNP with type-1
   choice_formula <- choice_formula(
     formula = choice ~ cov,
-    error_term = "logit",
-    random_effects = c("cov", "ASC+")
+    error_term = "probit",
+    random_effects = c("cov", "ASC")
   )
   choice_alternatives <- choice_alternatives(
     J = 3,
@@ -24,10 +24,9 @@ test_that("effect overview can be created", {
         alternative = c(NA, "A", "C"),
         as_covariate = c(TRUE, FALSE, FALSE),
         as_effect = c(FALSE, TRUE, TRUE),
-        lc_effect = c(FALSE, FALSE, FALSE),
         mixing = structure(
-          c(1L, 2L, 2L),
-          levels = c("normal", "log-normal"),
+          c(1L, 1L, 1L),
+          levels = c("normal"),
           class = c("ordered", "factor")
         )
       ),
@@ -39,7 +38,7 @@ test_that("effect overview can be created", {
     )
   )
 
-  ### test 2
+  ### test 2: MNP with different types
   choice_formula <- choice_formula(
     formula = choice ~ A | B + 0 | C,
     error_term = "probit",
@@ -63,10 +62,9 @@ test_that("effect overview can be created", {
         alternative = c(NA, "B", "A", "B"),
         as_covariate = c(TRUE, FALSE, TRUE, TRUE),
         as_effect = c(FALSE, TRUE, TRUE, TRUE),
-        lc_effect = c(FALSE, FALSE, FALSE, FALSE),
         mixing = structure(
           c(NA_integer_, NA_integer_, NA_integer_, NA_integer_),
-          levels = c("normal", "log-normal"),
+          levels = c("normal"),
           class = c("ordered", "factor")
         )
       ),
@@ -75,81 +73,6 @@ test_that("effect overview can be created", {
       choice_formula = choice_formula,
       choice_alternatives = choice_alternatives,
       delimiter = "*"
-    )
-  )
-
-  ### test 3
-  choice_formula <- choice_formula(
-    formula = choice ~ 0 | A + B + C + 0,
-    error_term = "logit",
-    random_effects = "A+"
-  )
-  choice_alternatives <- choice_alternatives(
-    J = 3, ordered = TRUE
-  )
-  expect_equal(
-    choice_effects(
-      choice_formula = choice_formula,
-      choice_alternatives = choice_alternatives
-    ),
-    structure(
-      list(
-        effect_name = c("B", "C", "A"),
-        generic_name = c("alpha_1", "alpha_2", "b_1"),
-        covariate = c("B", "C", "A"),
-        alternative = c(NA_character_, NA_character_, NA_character_),
-        as_covariate = c(FALSE, FALSE, FALSE),
-        as_effect = c(FALSE, FALSE, FALSE),
-        lc_effect = c(FALSE, FALSE, FALSE),
-        mixing = structure(
-          c(NA_integer_, NA_integer_, 2L),
-          levels = c("normal", "log-normal"),
-          class = c("ordered", "factor")
-        )
-      ),
-      row.names = c(NA, -3L),
-      class = c("choice_effects", "data.frame"),
-      choice_formula = choice_formula,
-      choice_alternatives = choice_alternatives,
-      delimiter = "_"
-    )
-  )
-
-  ### test 4
-  choice_formula <- choice_formula(
-    formula = choice ~ 0 | A + B + C + 0,
-    error_term = "logit",
-    random_effects = "A+",
-    latent_classes = c("A", "B", "C")
-  )
-  choice_alternatives <- choice_alternatives(
-    J = 3, ordered = TRUE
-  )
-  expect_equal(
-    choice_effects(
-      choice_formula = choice_formula,
-      choice_alternatives = choice_alternatives
-    ),
-    structure(
-      list(
-        effect_name = c("B", "C", "A"),
-        generic_name = c("alpha_1", "alpha_2", "b_1"),
-        covariate = c("B", "C", "A"),
-        alternative = c(NA_character_, NA_character_, NA_character_),
-        as_covariate = c(FALSE, FALSE, FALSE),
-        as_effect = c(FALSE, FALSE, FALSE),
-        lc_effect = c(TRUE, TRUE, TRUE),
-        mixing = structure(
-          c(NA_integer_, NA_integer_, 2L),
-          levels = c("normal", "log-normal"),
-          class = c("ordered", "factor")
-        )
-      ),
-      row.names = c(NA, -3L),
-      class = c("choice_effects", "data.frame"),
-      choice_formula = choice_formula,
-      choice_alternatives = choice_alternatives,
-      delimiter = "_"
     )
   )
 })
@@ -171,7 +94,7 @@ test_that("misspecified effects can be detected", {
   )
   expect_error(
     choice_effects(
-      choice_formula = choice_formula(formula = A ~ B, error_term = "logit"),
+      choice_formula = choice_formula(formula = A ~ B, error_term = "probit"),
       choice_alternatives = 2
     ),
     "Input `choice_alternatives` must be an object of class"
@@ -196,7 +119,7 @@ test_that("printing effects works", {
       choice_formula = choice_formula(
         formula = choice ~ price | income | comfort,
         error_term = "probit",
-        random_effects = c("price+", "income")
+        random_effects = c("price", "income")
       ),
       choice_alternatives = choice_alternatives(J = 3)
     )
@@ -207,8 +130,8 @@ test_that("number of effects can be computed", {
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
       formula = choice ~ A | B + 0 | C + D,
-      error_term = "logit",
-      random_effects = c("A", "D+")
+      error_term = "probit",
+      random_effects = c("A", "D")
     ),
     choice_alternatives = choice_alternatives(
       J = 3

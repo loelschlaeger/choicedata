@@ -26,16 +26,15 @@
 #'    if the effect is alternative-specific, i.e., varies across alternatives),
 #' 5. `"as_covariate"`, indicator whether the covariate is alternative-specific,
 #' 6. `"as_effect"`, indicator whether the effect is alternative-specific,
-#' 7. `"lc_effect"`, indicator whether the effect has latent classes,
-#' 8. `"mixing"`, a factor with levels `"none"`, `"normal"`,
-#'    and `"log-normal"`, indicating the type of random effect.
+#' 7. `"mixing"`, a factor with levels
+#'    - `"normal"` (normal distribution),
+#'
+#'    indicating the type of random effect.
 #'
 #' For identification, the effects are ordered according to the following rules:
 #'
-#' - Non-random effects come before random effects.
-#' - Non-latent-class effects come before latent-class effects.
-#' - Normal random effects come before log-normal random effects.
-#' - Otherwise, the order is determined by occurrence in `formula`.
+#' 1. Non-random effects come before random effects.
+#' 2. Otherwise, the order is determined by occurrence in `formula`.
 #'
 #' It contains the arguments `choice_formula`, `choice_alternatives`, and
 #' `delimiter` as attributes.
@@ -43,9 +42,9 @@
 #' @examples
 #' choice_effects(
 #'   choice_formula = choice_formula(
-#'     formula = choice ~ price | income | comfort, error_term = "probit",
-#'     random_effects = c("price+", "income"),
-#'     latent_classes = c("comfort", "income")
+#'     formula = choice ~ price | income | comfort,
+#'     error_term = "probit",
+#'     random_effects = c("price", "income")
 #'   ),
 #'   choice_alternatives = choice_alternatives(J = 3)
 #' )
@@ -69,77 +68,58 @@ choice_effects <- function(
   alt <- as.character(choice_alternatives)
   J <- attr(choice_alternatives, "J")
   base <- attr(choice_alternatives, "base")
-  ordered <- attr(choice_alternatives, "ordered")
   var_types <- choice_formula$var_types
   mixing_types <- choice_formula$mixing_types
-  latent_classes <- choice_formula$latent_classes
 
   ### build choice model effects
-  overview <- data.frame(matrix(ncol = 8, nrow = 0))
-  if (ordered) {
-    check_choice_formula_ordered_valid(choice_formula)
-    for (var in var_types[[2]]) {
-      overview <- rbind(
-        overview,
-        c(
-          var, NA_character_, var, NA_character_, FALSE, FALSE,
-          var %in% latent_classes, mixing_types[var]
-        )
-      )
-    }
-  } else {
-    for (var in var_types[[1]]) {
-      overview <- rbind(
-        overview,
-        c(
-          var, NA_character_, var, NA_character_, TRUE, FALSE,
-          var %in% latent_classes, mixing_types[var]
-        )
-      )
-    }
-    for (var in c(var_types[[2]], if (choice_formula$ASC) "ASC")) {
-      for (j in (1:J)[-which(alt == base)]) {
-        var_name <- paste(var, alt[j], sep = delimiter)
-        overview <- rbind(
-          overview,
-          c(
-            var_name, NA_character_, if (var == "ASC") NA_character_ else var,
-            alt[j], FALSE, TRUE, var %in% latent_classes, mixing_types[var]
-          )
-        )
-      }
-    }
-    for (var in var_types[[3]]) {
-      for (j in 1:J) {
-        var_name <- paste(var, alt[j], sep = delimiter)
-        overview <- rbind(
-          overview,
-          c(
-            var_name, NA_character_, var, alt[j], TRUE, TRUE,
-            var %in% latent_classes, mixing_types[var]
-          )
-        )
-      }
-    }
-  }
+  overview <- data.frame(matrix(ncol = 7, nrow = 0))
   colnames(overview) <- c(
     "effect_name", "generic_name", "covariate", "alternative", "as_covariate",
-    "as_effect", "lc_effect", "mixing"
+    "as_effect", "mixing"
   )
+  for (var in var_types[[1]]) {
+    n <- nrow(overview)
+    overview[n + 1, "effect_name"] <- var
+    overview[n + 1, "generic_name"] <- NA_character_
+    overview[n + 1, "covariate"] <- var
+    overview[n + 1, "alternative"] <- NA_character_
+    overview[n + 1, "as_covariate"] <- TRUE
+    overview[n + 1, "as_effect"] <- FALSE
+    overview[n + 1, "mixing"] <- mixing_types[var]
+  }
+  for (var in c(var_types[[2]], if (choice_formula$ASC) "ASC")) {
+    for (j in (1:J)[-which(alt == base)]) {
+      n <- nrow(overview)
+      overview[n + 1, "effect_name"] <- paste(var, alt[j], sep = delimiter)
+      overview[n + 1, "generic_name"] <- NA_character_
+      overview[n + 1, "covariate"] <- if (var == "ASC") NA_character_ else var
+      overview[n + 1, "alternative"] <- alt[j]
+      overview[n + 1, "as_covariate"] <- FALSE
+      overview[n + 1, "as_effect"] <- TRUE
+      overview[n + 1, "mixing"] <- mixing_types[var]
+    }
+  }
+  for (var in var_types[[3]]) {
+    for (j in 1:J) {
+      n <- nrow(overview)
+      overview[n + 1, "effect_name"] <- paste(var, alt[j], sep = delimiter)
+      overview[n + 1, "generic_name"] <- NA_character_
+      overview[n + 1, "covariate"] <- var
+      overview[n + 1, "alternative"] <- alt[j]
+      overview[n + 1, "as_covariate"] <- TRUE
+      overview[n + 1, "as_effect"] <- TRUE
+      overview[n + 1, "mixing"] <- mixing_types[var]
+    }
+  }
   overview$as_covariate <- as.logical(overview$as_covariate)
   overview$as_effect <- as.logical(overview$as_effect)
-  overview$lc_effect <- as.logical(overview$lc_effect)
   overview$mixing <- factor(
-    overview$mixing, levels = c("normal", "log-normal"), ordered = TRUE
+    overview$mixing, levels = c("normal"), ordered = TRUE
   )
 
   ### sort effects
-  ### - random effects last, log-normal behind normal
-  ### - otherwise sort by occurrence in formula
   effect_order <- order(
     !is.na(overview$mixing),        # non-random effects before random effects
-    overview$lc_effect,             # non-LC effects before LC effects
-    overview$mixing,                # normal before log-normal
     as.numeric(rownames(overview)), # otherwise sort by occurrence in formula
     decreasing = FALSE,
     na.last = FALSE
@@ -216,7 +196,7 @@ print.choice_effects <- function(
 #' @param choice_effects \[`choice_effects`\]\cr
 #' The \code{\link{choice_effects}} object that defines the choice effects.
 #'
-#' @inheritSection choice_formula The probit and logit model
+#' @inheritSection choice_formula Choice models
 #'
 #' @return
 #' An `integer`, the number of model effects.

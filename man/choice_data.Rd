@@ -59,8 +59,7 @@ identifiers for the choice occasions.}
 \item{alternatives}{[\code{character(J)}]\cr
 Labels for the choice alternatives.}
 
-\item{ordered}{[\code{logical(1)}]\cr
-Are the choice alternatives ordered?}
+\item{ordered}{TODO}
 
 \item{ranked}{TODO}
 

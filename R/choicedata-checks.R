@@ -47,40 +47,6 @@ check_base <- function(base, alternatives, J) {
   invisible(base)
 }
 
-check_C <- function(C, latent_classes) {
-  check_not_missing(C)
-  latent_classes <- check_latent_classes(latent_classes)
-  check <- if (length(latent_classes) == 0) {
-    if (C != 1) {
-      "Must be equal to 1 (latent classes undefined)"
-    } else {
-      TRUE
-    }
-  } else {
-    checkmate::check_int(C, lower = 2)
-  }
-  if (!isTRUE(check)) {
-    cli::cli_abort("Input {.var C} is bad: {check}", call = NULL)
-  }
-  C <- as.integer(C)
-  invisible(C)
-}
-
-check_choice_formula_ordered_valid <- function(choice_formula) {
-  is.choice_formula(choice_formula, error = TRUE, var_name = "choice_formula")
-  check <- if (isFALSE(choice_formula$ordered_valid)) {
-    "In the ordered case, {.var formula} must be of the form
-    {.code choice ~ 0 | A + B + 0} (i.e., no alternative-specific covariates and
-    no ASCs)"
-  } else {
-    TRUE
-  }
-  if (!isTRUE(check)) {
-    cli::cli_abort(paste("Input {.var choice_formula} is bad:", check), call = NULL)
-  }
-  invisible(choice_formula)
-}
-
 check_column_alternatives <- function(column_alternatives, na.ok = TRUE) {
   check_not_missing(column_alternatives)
   check <- checkmate::check_string(column_alternatives, min.chars = 1, na.ok = na.ok, null.ok = FALSE)
@@ -216,7 +182,7 @@ check_delimiter <- function(delimiter) {
   invisible(delimiter)
 }
 
-check_error_term <- function(error_term, choices = c("logit", "probit")) {
+check_error_term <- function(error_term, choices = c("probit")) {
   check_not_missing(error_term)
   check <- checkmate::check_choice(error_term, choices = choices)
   if (!isTRUE(check)) {
@@ -252,24 +218,6 @@ check_J <- function(J) {
   invisible(J)
 }
 
-check_latent_classes <- function(latent_classes) {
-  check_not_missing(latent_classes)
-  check <- checkmate::check_names(latent_classes, type = "unique")
-  if (!isTRUE(check)) {
-    cli::cli_abort("Input {.var latent_classes} is bad: {check}", call = NULL)
-  }
-  invisible(latent_classes)
-}
-
-check_model_type <- function(model_type) {
-  check_not_missing(model_type)
-  check <- checkmate::check_choice(model_type, choices = c("probit", "logit"))
-  if (!isTRUE(check)) {
-    cli::cli_abort("Input {.var model_type} is bad: {check}", call = NULL)
-  }
-  invisible(model_type)
-}
-
 check_N <- function(N) {
   check_not_missing(N)
   check <- checkmate::check_int(N, lower = 1)
@@ -287,24 +235,6 @@ check_not_missing <- function(x, var_name = oeli::variable_name(x)) {
     cli::cli_abort("Please specify the input {.var {var_name}}", call = NULL)
   }
   invisible(x)
-}
-
-check_ordered <- function(ordered) {
-  check_not_missing(ordered)
-  check <- checkmate::check_flag(ordered)
-  if (!isTRUE(check)) {
-    cli::cli_abort("Input {.var ordered} is bad: {check}", call = NULL)
-  }
-  invisible(ordered)
-}
-
-check_ranked <- function(ranked) {
-  check_not_missing(ranked)
-  check <- checkmate::check_flag(ranked)
-  if (!isTRUE(check)) {
-    cli::cli_abort("Input {.var ranked} is bad: {check}", call = NULL)
-  }
-  invisible(ranked)
 }
 
 check_random_effects <- function(random_effects) {

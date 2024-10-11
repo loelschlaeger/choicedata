@@ -8,21 +8,15 @@
 #'
 #' @param error_term \[`character(1)`\]\cr
 #' Defines the model's error term. Current options are:
-#' - `"logit"`: errors are assumed to be iid standard Gumbel distributed
 #' - `"probit"`: errors are assumed to be multivariate normally distributed
 #'
 #' @param random_effects \[`character()`\]\cr
 #' The names of covariates in `formula` connected to a random effect, i.e.,
 #' their coefficients follow a random (so-called mixing) distribution.
 #'
-#' Per default, the mixing distribution is normal. In addition, the log-normal
-#' distribution (e.g., for sign-restriction) can be specified via appending
-#' `+` to the corresponding name. To have random effects for the ASCs, add
-#' `ASC` (or `ASC+`) to `random_effects`.
+#' To have random effects for the ASCs, `ASC` to `random_effects`.
 #'
-#' @param latent_classes \[`character()`\]\cr
-#' The names of covariates in `formula` connected to latent classes, see
-#' details.
+#' Per default, the mixing distribution is normal.
 #'
 #' @return
 #' An object of class `choice_formula`, which is a `list` of the elements:
@@ -33,11 +27,9 @@
 #'   \item{`var_types`}{The three different types of covariates.}
 #'   \item{`ASC`}{Does the model have alternative-specific constants?}
 #'   \item{`mixing_types`}{The types of random effects (if any).}
-#'   \item{`latent_classes`}{Specification of latent classes (if any).}
-#'   \item{`ordered_valid`}{Formula valid for ordered case (see details)?}
 #' }
 #'
-#' @section The probit and logit model:
+#' @section Choice models:
 #' Assume that we know the choices of \eqn{N} deciders choosing between
 #' \eqn{J \geq 2} alternatives at each of \eqn{T} choice occasions.
 #' Specific to each decider, alternative and choice occasion, we observe \eqn{P}
@@ -52,9 +44,7 @@
 #' model's error term vector for \eqn{n} at \eqn{t}.
 #'
 #' In the probit model case, the error vector \eqn{(\epsilon_{nt:})} is normally
-#' distributed with covariance matrix `Sigma`. In the logit model case,
-#' the components \eqn{\epsilon_{ntj}} of the error vector are independently,
-#' identically distributed extreme value.
+#' distributed with covariance matrix `Sigma`.
 #'
 #' The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
 #' alternative \eqn{j}. It is unobserved by the researcher, but we assume that
@@ -75,28 +65,7 @@
 #' realizations of an underlying mixing distribution and to be independent of
 #' the characteristics \eqn{X_{ntj}} and the errors \eqn{(\epsilon_{nt:})}.
 #' This distribution characterizes heterogeneity among the deciders and allows
-#' for individual sensitivities. Typically, a normal or log-normal distribution
-#' is imposed.
-#'
-#' @section The latent class model:
-#' The mixing distribution can be discrete, which results in a discrete latent
-#' class model where the non-random effects \eqn{\alpha} take a fixed set of
-#' `C` distinct values \eqn{\alpha_c}.
-#'
-#' Alternatively, the mixing distribution can be a mixture of
-#' \eqn{P_r}-variate Gaussian densities \eqn{\phi_{P_r}} with mean vectors
-#' \eqn{b = (b_c)_{c}} and covariance matrices \eqn{\Omega = (\Omega_c)_{c}}
-#' using \eqn{C} components:
-#' \deqn{\beta_n\mid b,\Omega \sim \sum_{c=1}^{C} s_c \phi_{P_r} (\cdot \mid
-#' b_c,\Omega_c).}
-#' Here, \eqn{(s_c)_{c}} are weights satisfying \eqn{0 < s_c\leq 1} for
-#' \eqn{c=1,\dots,C} and \eqn{\sum_c s_c=1}.
-#'
-#' One interpretation of the latent class model is obtained by
-#' introducing variables \eqn{z=(z_n)_n}, allocating each decision maker
-#' \eqn{n} to class \eqn{c} with probability \eqn{s_c}, i.e.,
-#' \deqn{\text{Prob}(z_n=c)=s_c \land \beta_n \mid z,b,\Omega \sim
-#' \phi_{P_r}(\cdot \mid b_{z_n},\Omega_{z_n}).}
+#' for individual sensitivities.
 #'
 #' @section Specifying the model formula:
 #' The structure of `formula` is `choice ~ A | B | C`, where
@@ -132,8 +101,7 @@
 #' choice_formula(
 #'   formula = choice ~ A | B | C,
 #'   error_term = "probit",
-#'   random_effects = c("A", "B+"),
-#'   latent_classes = "C"
+#'   random_effects = c("A", "B")
 #' )
 #'
 #' @export
@@ -141,15 +109,13 @@
 choice_formula <- function(
     formula,
     error_term,
-    random_effects = character(),
-    latent_classes = character()
+    random_effects = character()
   ) {
 
   ### input checks
   formula <- check_formula(formula)
   error_term <- check_error_term(error_term)
   random_effects <- check_random_effects(random_effects)
-  latent_classes <- check_latent_classes(latent_classes)
 
   ### read formula
   formula_parts <- as.character(formula)
@@ -199,19 +165,8 @@ choice_formula <- function(
   ### determine mixing types
   mixing_types <- character()
   for (random_effect in random_effects) {
-    if (endsWith(random_effect, "+")) {
-      random_effect <- sub(".{1}$", "", random_effect)
-      mixing_type <- "log-normal"
-    } else {
-      mixing_type <- "normal"
-    }
-    if (random_effect %in% names(mixing_types)) {
-      cli::cli_abort(
-        "Multiple random effects specifications for {.val {random_effect}}
-        detected",
-        call = NULL
-      )
-    } else if (!random_effect %in% c(unlist(var_types), if(ASC) "ASC")) {
+    mixing_type <- "normal"
+    if (!random_effect %in% c(unlist(var_types), if(ASC) "ASC")) {
       cli::cli_abort(
         "Input {.var random_effects} contains {.val {random_effect}}, but it is
         not on the right hand side of {.var formula}",
@@ -219,17 +174,6 @@ choice_formula <- function(
       )
     } else {
       mixing_types[random_effect] <- mixing_type
-    }
-  }
-
-  ### determine latent classes
-  for (latent_class in latent_classes) {
-    if (!latent_class %in% c(unlist(var_types), if(ASC) "ASC")) {
-      cli::cli_abort(
-        "Input {.var latent_classes} contains {.val {latent_class}}, but it is
-        not on the right hand side of {.var formula}",
-        call = NULL
-      )
     }
   }
 
@@ -242,7 +186,6 @@ choice_formula <- function(
       var_types = var_types,
       ASC = ASC,
       mixing_types = mixing_types,
-      latent_classes = latent_classes,
       ordered_valid = all(sapply(var_types[c(1, 3)], length) == 0) & !ASC
     ),
     class = c("choice_formula", "list")
@@ -293,12 +236,6 @@ print.choice_formula <- function(
     cli::cli_li("random effects:")
     ul2 <- cli::cli_ul()
     cli::cli_li(paste0(names(x$mixing_types), ": ", x$mixing_types))
-    cli::cli_end(ul2)
-  }
-  if (length(x$latent_classes) > 0) {
-    cli::cli_li("latent classes:")
-    ul2 <- cli::cli_ul()
-    cli::cli_li(x$latent_classes)
     cli::cli_end(ul2)
   }
   cli::cli_end(ul)

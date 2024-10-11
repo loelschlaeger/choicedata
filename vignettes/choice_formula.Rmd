@@ -16,7 +16,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library("choicedata")
+# library("choicedata")
+devtools::load_all() # TODO: remove
 ```
 
 The choice formula describes the choice model to be fitted to choice data. In the `{choicedata}` package, the choice formula is represented as a `choice_formula` S3 object [@Chambers1992]. 
@@ -50,10 +51,10 @@ Thus, the choice model equation becomes $$U = X\beta + \varepsilon,$$ where the 
 These details can be specified by defining a `choice_formula` object via the following call:
 
 ```r
-choice_formula(formula, error_term, random_effects = NULL, latent_classes = NULL)
+choice_formula(formula, error_term, random_effects = NULL)
 ```
 
-Note that only the arguments `formula` and `error_term` are required. The arguments `random_effects` and `latent_classes` have default values, indicating no random effects and no latent classes by default.
+Note that only the arguments `formula` and `error_term` are required. The argument `random_effects` per default indicates no random effects.
 
 ### Specifying included covariates via `formula`
 
@@ -83,9 +84,7 @@ The following rules apply:
 
 ### Specifying the error distribution via `error_term`
 
-Different distributional assumptions about the error term $\varepsilon$ lead to different choice models. The most commonly used models are the logit and the probit model:
-
-- **Logit model**: This model is specified by setting `error_term = "logit"`. Here, the entries of the error vector $\varepsilon$ are assumed to be independently and identically distributed according to a standard Gumbel distribution. The primary advantage of the logit model is that the choice probabilities have a closed-form expression, making them easier to calculate. However, a limitation is the independence from irrelevant alternatives (IIA) property. This implies that the relative odds of choosing one alternative over another are unaffected by the presence of other alternatives, leading to proportional substitution effects that may not be realistic.
+Different distributional assumptions about the error term $\varepsilon$ lead to different choice models. Currently available options are:
 
 - **Probit model**: This model is specified by setting `error_term = "probit"`. In the probit model, the error vector $\varepsilon$ is assumed to follow a multivariate normal distribution. This allows the probit model to avoid the restrictive IIA assumption of the logit model by accommodating flexible correlations among alternatives. The main drawback is that the choice probabilities do not have a closed-form expression. Instead, computing these probabilities requires evaluating a multivariate integral whose dimensionality is determined by the number of choice alternatives, resulting in increased computational time.
 
@@ -93,15 +92,9 @@ Different distributional assumptions about the error term $\varepsilon$ lead to 
 
 ### Specifying random effects via `random_effects`
 
-Optionally, covariates can have random effects, meaning their coefficients can follow a random distribution (known as a mixing distribution). The `{choicedata}` package currently supports normal and log-normal mixing distributions:
+Optionally, covariates can have random effects, meaning their coefficients can follow a random distribution (known as a mixing distribution). Currently available options are:
 
 - **Normal mixing distribution**: To specify a normal mixing distribution for a covariate `A` contained in `formula`, include `"A"` in the `random_effects` argument.
-
-- **Log-normal mixing distribution**: To specify a log-normal mixing distribution for a covariate `A` contained in `formula`, include `"A+"` in the `random_effects` argument.
-
-### Specifying latent classes via `latent_classes`
-
-Covariates can optionally be linked to latent classes, meaning their coefficients vary according to an underlying and unobserved class of the decider. This can be specified for both random and non-random effects by including a covariate `A` from the `formula` in the `latent_class` argument.
 
 <!-- TODO: general example -->
 

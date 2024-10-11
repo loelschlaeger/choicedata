@@ -27,7 +27,7 @@ These helper functions count the number of model effects:
 \item \code{compute_P_r()} returns the number \code{P_r} of random effects.
 }
 }
-\section{The probit and logit model}{
+\section{Choice models}{
 
 Assume that we know the choices of \eqn{N} deciders choosing between
 \eqn{J \geq 2} alternatives at each of \eqn{T} choice occasions.
@@ -43,9 +43,7 @@ encoding the preferences of \eqn{n}, and
 model's error term vector for \eqn{n} at \eqn{t}.
 
 In the probit model case, the error vector \eqn{(\epsilon_{nt:})} is normally
-distributed with covariance matrix \code{Sigma}. In the logit model case,
-the components \eqn{\epsilon_{ntj}} of the error vector are independently,
-identically distributed extreme value.
+distributed with covariance matrix \code{Sigma}.
 
 The value \eqn{U_{ntj}} can be interpreted as the decider's utility for
 alternative \eqn{j}. It is unobserved by the researcher, but we assume that
@@ -66,7 +64,6 @@ The decider-specific coefficients are assumed to be random effects, i.e.,
 realizations of an underlying mixing distribution and to be independent of
 the characteristics \eqn{X_{ntj}} and the errors \eqn{(\epsilon_{nt:})}.
 This distribution characterizes heterogeneity among the deciders and allows
-for individual sensitivities. Typically, a normal or log-normal distribution
-is imposed.
+for individual sensitivities.
 }
 

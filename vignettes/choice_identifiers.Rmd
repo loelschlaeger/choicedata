@@ -16,7 +16,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library("choicedata")
+# library("choicedata")
+devtools::load_all() # TODO: remove
 ```
 
 ## References

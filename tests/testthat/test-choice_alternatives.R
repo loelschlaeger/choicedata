@@ -38,17 +38,6 @@ test_that("choice_alternatives can be specified and validated", {
   expect_true(
     is.choice_alternatives(choice_alternatives(J = 3, base = "C"))
   )
-  expect_error(
-    choice_alternatives(J = 3, ordered = "not_a_logical"),
-    "Input `ordered` is bad: Must be of type 'logical flag', not 'character'"
-  )
-  expect_s3_class(
-    choice_alternatives(J = 3, ordered = TRUE),
-    "choice_alternatives"
-  )
-  expect_true(
-    is.choice_alternatives(choice_alternatives(J = 3, ordered = TRUE))
-  )
   expect_s3_class(
     choice_alternatives(J = 3, alternatives = c("la", "le", "lu")),
     "choice_alternatives"
@@ -62,8 +51,5 @@ test_that("choice_alternatives can be printed", {
   )
   expect_snapshot(
     choice_alternatives(J = 3, alternatives = c("la", "le", "lu"))
-  )
-  expect_snapshot(
-    choice_alternatives(J = 4, ordered = TRUE)
   )
 })

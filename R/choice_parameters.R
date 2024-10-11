@@ -10,7 +10,7 @@
 #' - `identify_choice_parameters()` applies scale and level normalization.
 #' - `change_format.choice_parameters()` transforms between parameter spaces.
 #'
-#' @inheritSection choice_formula The probit and logit model
+#' @inheritSection choice_formula Choice models
 #'
 #' @param C \[`integer(1)`\]\cr
 #' The number of latent classes (if any specified in `choice_formula`).
