@@ -31,8 +31,11 @@ NULL
 #' @param x \[any\]\cr
 #' Any `{choicedata}` object.
 #'
-#' @param new_format \[`character(1)`\]\cr
+#' @param new_format \[`character(1)` | `NULL`\]\cr
 #' The requested format. Available values depend on the concrete method.
+#'
+#' Can be `NULL` in which case the requested format is guessed based on the
+#' current format of `x`.
 #'
 #' @param ...
 #' Additional arguments to be passed to the corresponding methods.
@@ -42,7 +45,7 @@ NULL
 #'
 #' @export
 
-change_format <- function(x, new_format, ...) {
+change_format <- function(x, new_format = NULL, ...) {
   UseMethod("change_format")
 }
 

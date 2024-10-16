@@ -4,9 +4,12 @@
 \alias{change_format.choice_parameters}
 \title{TODO: inherit choice_effects and error_term}
 \usage{
-\method{change_format}{choice_parameters}(choice_parameters, new_format, choice_effects, names = "effect")
+\method{change_format}{choice_parameters}(x, new_format = NULL, choice_effects, names = "effect")
 }
 \arguments{
+\item{x}{[\code{choice_parameters} | \code{numeric()}]\cr
+The choice_parameters.}
+
 \item{names}{[\code{character(1)}]\cr
 \itemize{
 \item \code{"effect"}
@@ -15,9 +18,6 @@
 }
 
 TODO: order of numeric vector}
-
-\item{x}{[\code{choice_parameters} | \code{numeric}()]\cr
-The choice parameters.}
 }
 \description{
 TODO: inherit choice_effects and error_term

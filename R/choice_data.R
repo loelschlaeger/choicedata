@@ -328,7 +328,7 @@ change_format_old <- function(
 #' @exportS3Method
 
 plot.choice_data <- function(x, ...) {
-
+  plot(1)
 }
 
 #' @rdname choice_data

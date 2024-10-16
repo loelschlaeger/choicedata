@@ -4,14 +4,17 @@
 \alias{change_format}
 \title{Change format of an object}
 \usage{
-change_format(x, new_format, ...)
+change_format(x, new_format = NULL, ...)
 }
 \arguments{
 \item{x}{[any]\cr
 Any \code{{choicedata}} object.}
 
-\item{new_format}{[\code{character(1)}]\cr
-The requested format. Available values depend on the concrete method.}
+\item{new_format}{[\code{character(1)} | \code{NULL}]\cr
+The requested format. Available values depend on the concrete method.
+
+Can be \code{NULL} in which case the requested format is guessed based on the
+current format of \code{x}.}
 
 \item{...}{Additional arguments to be passed to the corresponding methods.}
 }

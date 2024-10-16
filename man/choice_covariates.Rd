@@ -27,7 +27,7 @@ generate_choice_covariates(
 
 covariate_names(choice_effects)
 
-\method{change_format}{choice_covariates}(x, new_format, choice_effects)
+\method{change_format}{choice_covariates}(x, new_format = NULL, choice_effects)
 }
 \arguments{
 \item{data_frame}{[\code{data.frame}]\cr

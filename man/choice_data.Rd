@@ -59,8 +59,6 @@ identifiers for the choice occasions.}
 \item{alternatives}{[\code{character(J)}]\cr
 Labels for the choice alternatives.}
 
-\item{ordered}{TODO}
-
 \item{ranked}{TODO}
 
 \item{delimiter}{TODO}

@@ -183,7 +183,7 @@ covariate_names <- function(choice_effects) {
 
 change_format.choice_covariates <- function(
   x,
-  new_format,
+  new_format = NULL,
   choice_effects
 ) {
 

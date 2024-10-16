@@ -8,7 +8,7 @@ source("panel_probit_code.R")
 
 J <- 3  # number alternatives
 K <- 3  # number coefficients
-N <- 100 # number deciders
+N <- 1000 # number deciders
 T <- 1 # number choice occasions
 
 
@@ -45,4 +45,3 @@ true_pars <- x_2_pars(x, J, K, mix)
 
 result <- list("estimation" = estimation, "true" = true_pars)
 
-#saveRDS(result, "result.rds")

@@ -8,14 +8,7 @@
 \alias{identify_choice_parameters}
 \title{Define choice model parameters}
 \usage{
-choice_parameters(
-  s = NULL,
-  alpha = NULL,
-  b = NULL,
-  Omega = NULL,
-  Sigma = NULL,
-  gamma = NULL
-)
+choice_parameters(alpha = NULL, b = NULL, Omega = NULL, Sigma = NULL)
 
 \method{print}{choice_parameters}(
   x,
@@ -29,59 +22,35 @@ choice_parameters(
 
 generate_choice_parameters(
   choice_effects,
-  C = 1,
   fixed_parameters = choice_parameters()
 )
 
 validate_choice_parameters(
   choice_parameters,
   choice_effects,
-  C = 1,
   allow_missing = FALSE
 )
 
-identify_choice_parameters(choice_parameters, scale = 1, level = 1)
+identify_choice_parameters(choice_parameters, scale = 1)
 }
 \arguments{
-\item{s}{[\code{numeric(C)}]\cr
-The latent class weights. Only relevant if latent classes are specified.
-
-Must be non-negative and sum-up to 1.}
-
-\item{alpha}{[\code{numeric(P_f)} | \code{matrix(nrow = P_f, ncol = C)}]\cr
+\item{alpha}{[\code{numeric(P_f)}]\cr
 The non-random coefficients. Only relevant if non-random coefficients are
-specified.
+specified.}
 
-In the case of latent classes, different values are stored column-wise.}
-
-\item{b}{[\code{numeric(P_r)} | \code{matrix(nrow = P_r, ncol = C)}]\cr
+\item{b}{[\code{numeric(P_r)}]\cr
 The mean of random effects. Only relevant if random coefficients are
-specified.
+specified.}
 
-In the case of latent classes, different values are stored column-wise.}
-
-\item{Omega}{[\code{matrix(P_r)} | \code{matrix(nrow = P_r^2, ncol = C)}]\cr
+\item{Omega}{[`matrix(P_r)``]\cr
 The covariance matrix of random effects. Only relevant if random coefficients
-are specified.
+are specified.}
 
-In the case of latent classes, different covariance matrices are stored
-column-wise in vector form.}
-
-\item{Sigma}{[\code{matrix(nrow = J, ncol = J)} | \code{numeric(1)}]\cr
-The error term covariance matrix. Only relevant in the probit model.
-
-In the ordered probit model, \code{Sigma} is \code{numeric(1)}.}
-
-\item{gamma}{[\code{numeric(J - 1)}]\cr
-The utility thresholds. Only relevant in the ordered model case.
-Must be strictly ascending.
-
-\code{gamma} corresponds to \eqn{\gamma_1, \dots, \gamma_{J-1}}, while the
-lower and upper bounds are \eqn{\gamma_0 = -\infty} and
-\eqn{\gamma_J = +\infty}.}
+\item{Sigma}{[\code{matrix(nrow = J, ncol = J)}]\cr
+The error term covariance matrix. Only relevant in the probit model.}
 
 \item{x}{[\code{choice_parameters}]\cr
-The \code{choice_parameters} object to be printed.}
+A \code{choice_parameters} object.}
 
 \item{...}{Currently not used.}
 
@@ -103,30 +72,22 @@ Print the type and dimension of \code{x}?}
 \item{choice_effects}{[\code{choice_effects}]\cr
 The \code{\link{choice_effects}} object that defines the choice effects.}
 
-\item{C}{[\code{integer(1)}]\cr
-The number of latent classes (if any specified in \code{choice_formula}).
-
-By default, \code{C = 1}, which effectively means no latent classes.}
-
 \item{fixed_parameters}{[\code{choice_parameters}]\cr
 Optionally a \code{choice_parameters} object of parameters to keep
 fixed when sampling other parameters.}
 
-\item{choice_parameters}{TODO}
+\item{choice_parameters}{[\code{choice_parameters}]\cr
+A \code{choice_parameters} object.}
 
 \item{scale}{TODO}
-
-\item{level}{TODO}
 }
 \value{
 An object of class \code{choice_parameters}, which is a \code{list} with the elements:
 \describe{
-\item{\code{s}}{The latent class weights (if any).}
 \item{\code{alpha}}{The non-random coefficients (if any).}
 \item{\code{b}}{The mean of random effects (if any).}
 \item{\code{Omega}}{The covariance of random effects (if any).}
 \item{\code{Sigma}}{The error term covariance (if any).}
-\item{\code{gamma}}{The utility thresholds (if any).}
 }
 }
 \description{
@@ -136,8 +97,10 @@ These functions construct, validate, and transform an object of class
 \item \code{choice_parameters()} constructs a \code{choice_parameters} object.
 \item \code{generate_choice_parameters()} samples parameters at random, see details.
 \item \code{validate_choice_parameters()} validates a \code{choice_parameters} object.
-\item \code{identify_choice_parameters()} applies scale and level normalization.
-\item \code{change_format.choice_parameters()} transforms between parameter spaces.
+\item \code{identify_choice_parameters()} applies scale and level normalization, see
+details.
+\item \code{change_format.choice_parameters()} transforms between the interpretation
+and optimization parameter space, see details.
 }
 }
 \section{Sampling missing choice model parameters}{
@@ -146,19 +109,14 @@ These functions construct, validate, and transform an object of class
 Unspecified choice model parameters (if required for the model) are drawn
 independently from the following distributions:
 \describe{
-\item{\code{s}}{drawn from a Dirichlet distribution with concentration 1}
-\item{\code{alpha}}{drawn from a multivariate normal distribution with
-zero mean and a diagonal covariance matrix with value 10 on the diagonal}
-\item{\code{b}}{drawn from a multivariate normal distribution with zero
-mean and a diagonal covariance matrix with value 10 on the diagonal}
-\item{\code{Omega}}{drawn from an Inverse-Wishart distribution with degrees
-of freedom equal to \code{P_r} + 2 and scale matrix equal to the identity}
-\item{\code{Sigma}}{drawn from an Inverse-Wishart distribution with degrees
-of freedom equal to \code{J} + 2 and scale matrix equal to the identity,
-in the ordered probit case drawn from a standard normal distribution}
-\item{\code{gamma}}{derived from the logarithmic increases of the utility
-thresholds \code{d}, which are drawn from a multivariate normal
-distribution with zero mean and covariance matrix equal to the identity}
+\item{\code{alpha}}{Drawn from a multivariate normal distribution with
+zero mean and a diagonal covariance matrix with value 10 on the diagonal.}
+\item{\code{b}}{Drawn from a multivariate normal distribution with zero
+mean and a diagonal covariance matrix with value 10 on the diagonal.}
+\item{\code{Omega}}{Drawn from an Inverse-Wishart distribution with degrees
+of freedom equal to \code{P_r} + 2 and scale matrix equal to the identity.}
+\item{\code{Sigma}}{Drawn from an Inverse-Wishart distribution with degrees
+of freedom equal to \code{J} + 2 and scale matrix equal to the identity.}
 }
 }
 
@@ -167,30 +125,12 @@ distribution with zero mean and covariance matrix equal to the identity}
 Choice models are invariant towards the level and scale of utility, hence
 a transformation is required for identifiability.
 
-For level normalization, we take utility differences:
-\deqn{\tilde{U}_{ntj} = \tilde{X}_{ntj}' \tilde{\beta}_n +
-\tilde{\epsilon}_{ntj},}
-where (choosing some alternative \eqn{k \in \{1,\dots,J\}} as the reference)
-\eqn{\tilde{U}_{ntj} = U_{ntj} - U_{ntk}},
-\eqn{\tilde{X}_{ntj} = X_{ntj} - X_{ntk}}, and
-\eqn{\tilde{\epsilon}_{ntj} = \epsilon_{ntj} - \epsilon_{ntk}} for
-\eqn{j\neq k}.
+For level normalization, we replace the first row and the first column of
+\code{Sigma} with zeros, which corresponds to taking utility differences with
+respect to alternative \code{1}.
 
-In the probit model case, the error term differences
-\eqn{(\tilde{\epsilon}_{nt:})} again are
-multivariate normally distributed with mean \eqn{0} but transformed
-covariance matrix \eqn{\tilde{\Sigma}}, also denoted by \code{Sigma_diff}.
-See \code{\link[oeli]{diff_cov}} for computing \code{Sigma_diff} from
-\code{Sigma}, and \code{\link[oeli]{undiff_cov}} for the other way around.
-
-For level normalization in the ordered model case, we fix
-\eqn{\gamma_1 = 0}.
-
-For scale normalization, we fix the top left element of \code{Sigma_diff} to
-the value \code{scale} (or fix \code{Sigma = scale} in the ordered probit case).
-In the logit model case, the scale normalization is already implied by the
-assumption that the errors are independently extreme value distributed with
-variance \eqn{\pi^2/6}.
+For scale normalization, we fix the \eqn{(2, 2)}-value of \code{Sigma} to a
+positive value \code{scale}.
 }
 
 \section{Choice models}{
@@ -234,12 +174,16 @@ for individual sensitivities.
 }
 
 \examples{
-choice_formula <- choice_formula(
-  formula = choice ~ A | B, error_term = "probit", random_effects = "A"
+### generate choice parameters at random
+choice_effects <- choice_effects(
+  choice_formula = choice_formula(
+    formula = choice ~ A | B, error_term = "probit", random_effects = "A"
+  ),
+  choice_alternatives = choice_alternatives(J = 3)
 )
-choice_alternatives <- choice_alternatives(J = 3)
-generate_choice_parameters(
-  choice_effects = choice_effects(choice_formula, choice_alternatives)
+choice_parameters <- generate_choice_parameters(
+  choice_effects = choice_effects,
+  fixed_parameters = choice_parameters("b" = 1)
 )
 
 }

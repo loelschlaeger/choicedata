@@ -1,38 +1,106 @@
 
+rm(list=ls())
+J <- 3
+P <- 3
+N <- 1000
+T <- 1
 
+beta <- rnorm(P)
+Omega <- matrix(0, P, P)
+Sigma <- oeli::sample_covariance_matrix(J)
 
-data_sim_tmp <- function(
-    parameters
-  ) {
-  # TODO
-  J <- 3  # number alternatives
-  K <- 3  # number coefficients
-  N <- 1000 # number deciders
-  T <- 1 # number choice occasions
+true_pars <- list("beta" = beta, "Sigma" = Sigma)
 
-  beta <- parameters$beta
-  Omega <- parameters$Omega
-  Sigma <- parameters$Sigma
-  mix <- parameters$mix
+Sigma <- rbind(0, cbind(0, oeli::diff_cov(Sigma, ref = 1)))
 
-  data <- list("X" = list(), "y" = list())
-  for (n in seq_len(N)) {
-    X_nt_mats <- lapply(1:T, function(t) matrix(rnorm(J * K, sd = 3), nrow = J, ncol = K))
-    b_n <- beta
-    V_nt_vecs <- lapply(X_nt_mats, function(x) x %*% b_n)
-    eps_nt_vecs <- lapply(1:T, function(t) matrix(oeli::rmvnorm(mean = rep(0, J), Sigma = Sigma)))
-    U_nt_vecs <- mapply(function(V, e) V + e, V_nt_vecs, eps_nt_vecs, SIMPLIFY = FALSE)
-    y_nt_vecs <- lapply(U_nt_vecs, which.max)
-    data[["X"]][[n]] <- X_nt_mats
-    data[["y"]][[n]] <- y_nt_vecs
-  }
-  structure(
-    data,
-    "N" = N,
-    "J" = J,
-    "K" = K
-  )
+scale <- sqrt(Sigma[2, 2])
+beta <- beta / scale
+Sigma <- Sigma / scale^2
+
+data <- list("X" = list(), "y" = list())
+
+preferences <- list()
+for (n in seq_len(N)) {
+  preferences[[n]] <- oeli::rmvnorm(mean = beta, Sigma = Omega)
 }
+
+for (n in seq_len(N)) {
+  X_nt <- matrix(rnorm(J * P, sd = 2), nrow = J, ncol = P)
+  V_nt <- X_nt %*% preferences[[n]]
+  eps_nt <- oeli::rmvnorm(n = 1, mean = 0, Sigma = Sigma + 1)
+  U_nt <- V_nt + eps_nt
+  y_nt <- which.max(U_nt)
+  data[["X"]][[n]] <- X_nt
+  data[["y"]][[n]] <- y_nt
+}
+
+theta_true <- c(beta, oeli::cov_to_chol(oeli::diff_cov(Sigma))[-1])
+ind_Sigma <- P + (1:(J * (J - 1) / 2 - 1))
+
+
+
+mnp_probs <- function(y, X, J, beta, Sigma) {
+  sapply(1:length(y), function(n) {
+    D_n <- oeli::delta(ref = y[n], dim = J)
+    mvtnorm::pmvnorm(
+      upper = as.numeric(D_n %*% (-X[[n]] %*% beta)),
+      sigma = as.matrix(D_n %*% Sigma %*% t(D_n))
+    )
+  })
+}
+
+mnp_panel_probs <- function(y, X, J, beta, Sigma, Omega, CML = FALSE) {
+
+}
+
+nll <- function(theta, data) {
+
+  beta <- theta[1:P]
+  Sigma <- oeli::undiff_cov(oeli::chol_to_cov(c(1, theta[ind_Sigma])))
+  J <- nrow(Sigma)
+  ll <- 0
+  J <- nrow(Sigma)
+
+  ### calculate MNP probabilities
+  probs <- mnp_probs(
+    y = unlist(data[["y"]]),
+    X = data[["X"]],
+    J = J,
+    beta = beta,
+    Sigma = Sigma
+  )
+
+  ### avoid numerical issues
+  probs <- sapply(probs, max, 1e-6)
+
+  ### return negative log-likelihood
+  -sum(log(probs))
+}
+
+out <- nlm(nll, theta_true, data, print.level = 2, iterlim = 1000)
+
+round(cbind(theta_true, out$estimate), 1)
+cbind(
+  Sigma,
+  oeli::undiff_cov(oeli::chol_to_cov(c(1, out$estimate[ind_Sigma])))
+)
+
+
+cbind(
+  true_pars$beta,
+  out$estimate[1:3] * scale
+)
+
+cbind(
+  rbind(0, cbind(0, oeli::diff_cov(true_pars$Sigma, ref = 1))),
+  oeli::undiff_cov(oeli::chol_to_cov(c(1, out$estimate[ind_Sigma]))) * scale^2
+)
+
+
+
+
+
+
 
 choice_probabilities <- function(
 

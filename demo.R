@@ -3,20 +3,20 @@ rm(list = ls())
 devtools::load_all()
 devtools::document()
 
+# specify choice formula, types of covariates and random effects
+
+(choice_formula <- choice_formula(
+  formula = transport ~ cost | income | time,
+  error_term = "probit"
+  # re = c("income", "cost")
+))
+
 # specify number and names of alternatives and base alternative
 
 (choice_alternatives <- choice_alternatives(
   J = 3,
   alternatives = c("bike", "bus", "car"),
   base = "bike"
-))
-
-# specify choice formula, types of covariates and random effects
-
-(choice_formula <- choice_formula(
-  formula = transport ~ cost | income | time,
-  error_term = "probit"
-  # re = c("income", "cost+")
 ))
 
 # use formula and alternatives to derive model effects
@@ -28,11 +28,14 @@ devtools::document()
 
 # using the formula and the alternatives, generate covariates
 
-choice_covariates <- generate_choice_covariates(choice_effects)
+choice_covariates <- generate_choice_covariates(
+  choice_effects,
+  choice_identifiers = generate_choice_identifiers(N = 5, Tp = 2)
+)
 
 head(choice_covariates)
 
-design_matrices <- df_to_design_matrices(choice_covariates, choice_effects)
+(design_matrices <- df_to_design_matrices(choice_covariates, choice_effects))
 
 # generate choice parameters
 
@@ -42,15 +45,11 @@ choice_parameters <- generate_choice_parameters(
 
 print(choice_parameters)
 
-# TODO
-# transform_choice_parameters(
-#   choice_parameters, choice_effects = choice_effects, mode = "vector"
-# )
-
 # simulate choice preferences
 
-choice_preferences <- simulate_choice_preferences(
-  choice_parameters, choice_effects
+choice_preferences <- generate_choice_preferences(
+  choice_parameters = choice_parameters,
+  choice_effects = choice_effects
 )
 
 # simulate choices

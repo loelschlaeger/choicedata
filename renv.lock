@@ -21,6 +21,19 @@
       ],
       "Hash": "8a2c9815ca03694a530518f4749dbe30"
     },
+    "ContourFunctions": {
+      "Package": "ContourFunctions",
+      "Version": "0.1.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "ggplot2",
+        "lhs",
+        "rlang",
+        "rmarkdown"
+      ],
+      "Hash": "b6493f307feb2cb4964896d6cea457c8"
+    },
     "DT": {
       "Package": "DT",
       "Version": "0.33",
@@ -224,6 +237,18 @@
       ],
       "Hash": "cb55f7894279a8900eb62962011acbd0"
     },
+    "TestFunctions": {
+      "Package": "TestFunctions",
+      "Version": "0.2.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "ContourFunctions",
+        "numDeriv",
+        "rmarkdown"
+      ],
+      "Hash": "1f777b5105f5f5d141e5af92c3e39a07"
+    },
     "VGAM": {
       "Package": "VGAM",
       "Version": "1.1-12",
@@ -240,13 +265,13 @@
     },
     "askpass": {
       "Package": "askpass",
-      "Version": "1.2.0",
+      "Version": "1.2.1",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "sys"
       ],
-      "Hash": "cad6cf7f1d5f6e906700b9d3e718c796"
+      "Hash": "c39f4155b3ceb1a9a2799d700fbd4b6a"
     },
     "assertthat": {
       "Package": "assertthat",
@@ -334,9 +359,9 @@
     },
     "bslib": {
       "Package": "bslib",
-      "Version": "0.7.0",
+      "Version": "0.8.0",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "base64enc",
@@ -352,7 +377,7 @@
         "rlang",
         "sass"
       ],
-      "Hash": "8644cc53f43828f19133548195d7e59e"
+      "Hash": "b299c6741ca9746fb227debcb0f9fb6c"
     },
     "cachem": {
       "Package": "cachem",
@@ -486,9 +511,9 @@
     },
     "credentials": {
       "Package": "credentials",
-      "Version": "2.0.1",
+      "Version": "2.0.2",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "askpass",
         "curl",
@@ -496,7 +521,7 @@
         "openssl",
         "sys"
       ],
-      "Hash": "c7844b32098dcbd1c59cbd8dddb4ecc6"
+      "Hash": "09fd631e607a236f8cc7f9604db32cb8"
     },
     "crosstalk": {
       "Package": "crosstalk",
@@ -676,13 +701,13 @@
     },
     "evaluate": {
       "Package": "evaluate",
-      "Version": "1.0.0",
+      "Version": "1.0.1",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R"
       ],
-      "Hash": "6b567375113ceb7d9f800de4dd42218e"
+      "Hash": "3fd29944b231036ad67c3edb32e02201"
     },
     "fansi": {
       "Package": "fansi",
@@ -759,7 +784,7 @@
     },
     "gert": {
       "Package": "gert",
-      "Version": "2.1.2",
+      "Version": "2.1.4",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -770,7 +795,7 @@
         "sys",
         "zip"
       ],
-      "Hash": "347d104ed332650b737f509a703c9c7f"
+      "Hash": "ae855ad6d7be20dd7b05d43d25700398"
     },
     "ggfun": {
       "Package": "ggfun",
@@ -1168,6 +1193,31 @@
       ],
       "Hash": "d908914ae53b04d4c0c0fd72ecc35370"
     },
+    "lbfgsb3c": {
+      "Package": "lbfgsb3c",
+      "Version": "2024-3.5",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "RcppArmadillo",
+        "methods",
+        "numDeriv"
+      ],
+      "Hash": "05e74805a3d801b41ac949e7aeb25e17"
+    },
+    "lhs": {
+      "Package": "lhs",
+      "Version": "1.2.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "Rcpp"
+      ],
+      "Hash": "6d18e58d3d1de31b6e5415c1fe291113"
+    },
     "lifecycle": {
       "Package": "lifecycle",
       "Version": "1.0.4",
@@ -1383,16 +1433,26 @@
       "Repository": "CRAN",
       "Hash": "2f436f0a4e224ae7542c68f1896a00d9"
     },
+    "numDeriv": {
+      "Package": "numDeriv",
+      "Version": "2016.8-1.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "df58958f293b166e4ab885ebcad90e02"
+    },
     "oeli": {
       "Package": "oeli",
-      "Version": "0.6.0.9003",
+      "Version": "0.7.0",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "oeli",
       "RemoteUsername": "loelschlaeger",
       "RemoteRef": "HEAD",
-      "RemoteSha": "c116ba5b9c1d9766989616a9d203d6ee5fa7afbe",
+      "RemoteSha": "5c51e0da475cbfeb5c29f73db2a4275e98a04c17",
       "Requirements": [
         "Rcpp",
         "RcppArmadillo",
@@ -1411,7 +1471,7 @@
         "usethis",
         "utils"
       ],
-      "Hash": "28c24ae4da701a90d6449571e9a2a2bd"
+      "Hash": "4e2b3cfab8bb37c52e81864d0d03dbc8"
     },
     "openssl": {
       "Package": "openssl",
@@ -1422,6 +1482,30 @@
         "askpass"
       ],
       "Hash": "d413e0fef796c9401a4419485f709ca1"
+    },
+    "optimizeR": {
+      "Package": "optimizeR",
+      "Version": "1.1.1.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "optimizeR",
+      "RemoteUsername": "loelschlaeger",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "3dff14e4f1c8b49d1b5b26f349da64fd747497b3",
+      "Requirements": [
+        "R",
+        "R6",
+        "TestFunctions",
+        "checkmate",
+        "cli",
+        "lbfgsb3c",
+        "oeli",
+        "stats",
+        "ucminf",
+        "utils"
+      ],
+      "Hash": "7a28e9ffdbdc01da71757889dd45b8bd"
     },
     "pillar": {
       "Package": "pillar",
@@ -1997,10 +2081,10 @@
     },
     "sys": {
       "Package": "sys",
-      "Version": "3.4.2",
+      "Version": "3.4.3",
       "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "3a1be13d68d47a8cd0bfd74739ca1555"
+      "Repository": "RSPM",
+      "Hash": "de342ebfebdbf40477d0758d05426646"
     },
     "sysfonts": {
       "Package": "sysfonts",
@@ -2123,13 +2207,13 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.51",
+      "Version": "0.53",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "xfun"
       ],
-      "Hash": "d44e2fcd2e4e076f0aac540208559d1d"
+      "Hash": "9db859e8aabbb474293dde3097839420"
     },
     "triangle": {
       "Package": "triangle",
@@ -2143,6 +2227,16 @@
         "stats4"
       ],
       "Hash": "bb53ec299ffd2f74d64157f7f9f162b1"
+    },
+    "ucminf": {
+      "Package": "ucminf",
+      "Version": "1.2.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "e0750b911c01c3e5aaab143a86e9e478"
     },
     "urlchecker": {
       "Package": "urlchecker",
@@ -2261,15 +2355,16 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.45",
+      "Version": "0.48",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
+        "R",
         "grDevices",
         "stats",
         "tools"
       ],
-      "Hash": "ca59c87fe305b16a9141a5874c3a7889"
+      "Hash": "89e455b87c84e227eb7f60a1b4e5fe1f"
     },
     "xml2": {
       "Package": "xml2",
@@ -2309,10 +2404,10 @@
     },
     "yaml": {
       "Package": "yaml",
-      "Version": "2.3.9",
+      "Version": "2.3.10",
       "Source": "Repository",
       "Repository": "RSPM",
-      "Hash": "9cb28d11799d93c953f852083d55ee9e"
+      "Hash": "51dab85c6c98e50a18d7551e9d49f76c"
     },
     "yulab.utils": {
       "Package": "yulab.utils",

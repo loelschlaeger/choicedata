@@ -153,7 +153,10 @@ print.choice_identifiers <- function(x, rows = NULL, row.names = FALSE, ...) {
 #' @inheritParams expand_Tp
 
 generate_choice_identifiers <- function(
-  N, Tp = 1, column_decider = "deciderID", column_occasion = "occasionID"
+  N,
+  Tp = 1,
+  column_decider = "deciderID",
+  column_occasion = "occasionID"
 ) {
 
   ### input checks

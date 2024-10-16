@@ -4,53 +4,27 @@
 \alias{choice_response}
 \alias{simulate_choice_response}
 \alias{is.choice_response}
-\alias{validate_choice_response}
-\alias{as.data.frame.choice_response}
-\alias{as.list.choice_response}
 \title{Define choice response}
 \usage{
-choice_response(
-  choices,
-  choice_identifiers,
-  ranked = FALSE,
-  ordered = FALSE,
-  column_choice = "choice",
-  delimiter = "_"
-)
+choice_response(choices, choice_identifiers, column_choice = "choice")
 
 simulate_choice_response(
   choice_effects,
   choice_covariates,
   choice_parameters,
   choice_preferences,
-  ranked = FALSE,
-  column_choice = "choice",
-  delimiter = "_"
+  column_choice = "choice"
 )
 
 is.choice_response(x, error = TRUE)
-
-validate_choice_response()
-
-\method{as.data.frame}{choice_response}(x, ...)
-
-\method{as.list}{choice_response}(x, ...)
 }
 \arguments{
-\item{choices}{A \code{list}, where the \code{n}-th element is a \code{vector} of choices
-for the \code{n}-th decider, where the \code{t}-th element is a
-\code{character} that defines the choice at their \code{t}-th occasion.}
+\item{choices}{TODO}
 
 \item{choice_identifiers}{TODO}
 
-\item{ranked}{TODO}
-
-\item{ordered}{TODO}
-
 \item{column_choice}{A \code{character}, the column name of the \code{data.frame} with the
 choices.}
-
-\item{delimiter}{TODO}
 
 \item{choice_covariates}{[\code{choice_covariates}]\cr
 The choice covariates used for the choice data simulation.}
@@ -64,9 +38,9 @@ parameters used for the choice data simulation.}
 
 \item{error}{TODO}
 
-\item{...}{TODO}
-
 \item{choice_formula}{TODO}
+
+\item{...}{TODO}
 }
 \value{
 A \code{\link{choice_response}} object. It can be a \code{data.frame} or
@@ -87,36 +61,12 @@ The \code{\link{choice_response}} object has the following attributes:
 }
 }
 \description{
-These functions construct and validate an object of class
-\code{\link{choice_response}}, which defines the observed choices.
-
-\code{\link{simulate_choices}} simulates choices based on
-\code{\link{choice_parameters}} and \code{\link{choice_covariates}}:
+These functions construct, simulate, and transform an object of class
+\code{choice_response}, which defines the observed discrete choices.
 \itemize{
-\item If \code{\link{choice_formula}} is not specified, it is taken from
-\code{\link{choice_covariates}} (if available).
-\item If \code{\link{choice_preferences}} is not specified, it is sampled
-from \code{\link{choice_parameters}} and the implied
-\code{\link{choice_effects}}.
+\item \code{choice_response()} constructs a \code{choice_response} object.
+\item \code{simulate_choice_response()} simulates choices.
+\item \code{change_format.choice_parameters()} transforms between \code{list} and
+\code{data.frame} format, see details.
 }
 }
-\section{Ranked choices}{
-
-Ranked choices are yet another model variation: rather than recording only
-the single most preferred alternative, some surveys ask for a full ranking of
-all the alternatives, which reveals far more about the underlying
-preferences. Ranked choices can by analyzed by setting \code{ranked = TRUE}.
-The choice column of the data set must provide the full ranking for each
-choice occasion (from most preferred to least preferred), where the
-alternatives are separated by the \code{delimiter} string.
-
-The ranked probit model follows directly from the general unordered case
-noting that the ranking implies that the highest ranked alternative is chosen
-in any case, while the second highest ranked alternative is chosen, if the
-highest ranked alternative is not available and so forth. The only difference
-is that we take flexible utility differences such that the differenced
-utility vector is always negative, in contrast to the general case where we
-difference with respect to a fixed reference alternative. Thereby, we
-incorporate information of the full ranking.
-}
-
