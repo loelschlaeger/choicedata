@@ -5,12 +5,11 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/loelschlaeger/choicedata/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/loelschlaeger/choicedata/actions/workflows/R-CMD-check.yaml)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/choicedata)](https://CRAN.R-project.org/package=choicedata)
+[![R-CMD-check](https://github.com/loelschlaeger/choicedata/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/loelschlaeger/choicedata/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/loelschlaeger/choicedata/branch/master/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/choicedata?branch=master)
-
+coverage](https://codecov.io/gh/loelschlaeger/choicedata/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/choicedata)
 <!-- badges: end -->
 
 The `{choicedata}` package simplifies working with choice data in
