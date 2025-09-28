@@ -1,0 +1,30 @@
+template:
+  bootstrap: 5
+  bootswatch: simplex
+
+url: http://loelschlaeger.de/choicedata/
+
+home:
+  title: Working with Choice Data in R
+
+authors:
+  Lennart Oelschläger:
+    href: https://loelschlaeger.de
+
+reference:
+- subtitle: Data helpers
+  desc: Functions that help to work with choice data.
+- contents:
+  - has_keyword("data")
+- subtitle: Data sets
+  desc: Choice data sets contained in the package.
+- contents:
+  - has_keyword("dataset")
+- subtitle: Model specification
+  desc: Functions to define a choice model.
+- contents:
+  - has_keyword("model")
+- subtitle: Choice probabilities
+  desc: Functions to calculate choice probabilities and model likelihoods.
+- contents:
+  - has_keyword("probability")
