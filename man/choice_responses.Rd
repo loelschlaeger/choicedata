@@ -73,22 +73,13 @@ preserved so they can be merged with covariates downstream.
 }
 }
 \examples{
-data(train_choice)
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | time,
     error_term = "probit"
   ),
-  choice_alternatives = choice_alternatives(J = 2, alternatives = c("A", "B"))
+  choice_alternatives = choice_alternatives(J = 5)
 )
-generate_choice_responses(
-  choice_effects = choice_effects,
-  choice_covariates = choice_covariates(
-    data_frame = train_choice,
-    format = "wide",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
-  )
-)
+generate_choice_responses(choice_effects = choice_effects)
 }
 \keyword{data}

@@ -23,23 +23,14 @@
 #' @keywords data
 #'
 #' @examples
-#' data(train_choice)
 #' choice_effects <- choice_effects(
 #'   choice_formula = choice_formula(
 #'     formula = choice ~ price | time,
 #'     error_term = "probit"
 #'   ),
-#'   choice_alternatives = choice_alternatives(J = 2, alternatives = c("A", "B"))
+#'   choice_alternatives = choice_alternatives(J = 5)
 #' )
-#' generate_choice_responses(
-#'   choice_effects = choice_effects,
-#'   choice_covariates = choice_covariates(
-#'     data_frame = train_choice,
-#'     format = "wide",
-#'     column_decider = "deciderID",
-#'     column_occasion = "occasionID"
-#'   )
-#' )
+#' generate_choice_responses(choice_effects = choice_effects)
 
 choice_responses <- function(
     data_frame,
@@ -72,14 +63,15 @@ choice_responses <- function(
   choice_cols <- setdiff(names(data_frame), id_cols)
   if (!column_choice %in% choice_cols) {
     cli::cli_abort(
-      "Column {.val {column_choice}} must be present in {.var data_frame} to build {.cls choice_responses}.",
+      "Column {.val {column_choice}} must be present in {.var data_frame} to
+      build {.cls choice_responses}.",
       call = NULL
     )
   }
   choices <- data_frame[choice_cols]
   structure(
     cbind(choice_identifiers, choices),
-    class = c("choice_responses", "data.frame"),
+    class = tibble_class("choice_responses", class(data_frame)),
     column_decider = attr(choice_identifiers, "column_decider"),
     column_occasion = attr(choice_identifiers, "column_occasion"),
     cross_section = attr(choice_identifiers, "cross_section"),

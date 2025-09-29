@@ -288,33 +288,3 @@ check_Tp <- function(Tp, N) {
   )
   invisible(Tp)
 }
-
-validate_choice_object <- function(
-  x,
-  class_name,
-  error = FALSE,
-  var_name = oeli::variable_name(x)
-) {
-  check_not_missing(x, var_name = var_name)
-  oeli::input_check_response(
-    check = checkmate::check_class(x, class_name),
-    var_name = var_name,
-    error = error
-  )
-}
-
-validate_choice_class_union <- function(
-  x,
-  class_names,
-  error = TRUE,
-  var_name = oeli::variable_name(x)
-) {
-  check_not_missing(x, var_name = var_name)
-  oeli::input_check_response(
-    check = lapply(class_names, function(class_name) {
-      checkmate::check_class(x, class_name)
-    }),
-    var_name = var_name,
-    error = error
-  )
-}
