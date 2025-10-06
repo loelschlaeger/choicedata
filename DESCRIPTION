@@ -1,6 +1,6 @@
 Package: choicedata
 Type: Package
-Title: Working with Choice Data in R
+Title: Working with Choice Data
 Version: 0.1.0
 Authors@R: 
     person("Lennart", "Oelschl\u00e4ger", 
@@ -8,7 +8,7 @@ Authors@R:
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5421-9313"))
 Description: Offers a set of objects tailored to simplify working with choice 
-    data in R. It enables the computation of choice probabilities and the 
+    data. It enables the computation of choice probabilities and the 
     likelihood of various types of choice models based on given data.
 License: GPL (>= 3)
 Encoding: UTF-8

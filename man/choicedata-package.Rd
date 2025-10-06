@@ -4,11 +4,11 @@
 \name{choicedata-package}
 \alias{choicedata}
 \alias{choicedata-package}
-\title{choicedata: Working with Choice Data in R}
+\title{choicedata: Working with Choice Data}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Offers a set of objects tailored to simplify working with choice data in R. It enables the computation of choice probabilities and the likelihood of various types of choice models based on given data.
+Offers a set of objects tailored to simplify working with choice data. It enables the computation of choice probabilities and the likelihood of various types of choice models based on given data.
 }
 \seealso{
 Useful links:

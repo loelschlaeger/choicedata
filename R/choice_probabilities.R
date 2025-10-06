@@ -37,7 +37,9 @@
 #'     formula = choice ~ price | time,
 #'     error_term = "probit"
 #'   ),
-#'   choice_alternatives = choice_alternatives(J = 2, alternatives = c("A", "B"))
+#'   choice_alternatives = choice_alternatives(
+#'     J = 2, alternatives = c("A", "B")
+#'   )
 #' )
 #' choice_parameters <- generate_choice_parameters(choice_effects)
 #' choice_data <- choice_data(
@@ -69,7 +71,9 @@ choice_probabilities <- function(
   check_column_decider(column_decider, null.ok = FALSE)
   check_column_occasion(column_occasion, column_decider, null.ok = TRUE)
   check_cross_section(cross_section)
-  check_column_probabilities(column_probabilities, len = if (choice_only) 1L, null.ok = FALSE)
+  check_column_probabilities(
+    column_probabilities, len = if (choice_only) 1L, null.ok = FALSE
+  )
   data_frame <- check_data_frame(
     data_frame,
     required_columns = c(column_decider, column_occasion, column_probabilities)
@@ -269,7 +273,8 @@ evaluate_choice_probabilities <- function(
     cli::cli_abort(
       c(
         "Probability evaluation returned a mismatched number of rows.",
-        "x" = "Expected {expected_rows} rows based on the choice identifiers but received {actual_rows}."
+        "x" = "Expected {expected_rows} rows based on the choice identifiers but
+        received {actual_rows}."
       ),
       call = NULL
     )
@@ -763,13 +768,17 @@ choiceprob_probit_input_checks <- function(
       P_r <- nrow(Omega)
     } else if (checkmate::test_list(Omega)) {
       if (!length(Omega)) {
-        cli::cli_abort("Latent class covariance list {.var Omega} must not be empty.", call = NULL)
+        cli::cli_abort(
+          "Latent class covariance list {.var Omega} must not be empty.",
+          call = NULL
+        )
       }
       dims <- vapply(Omega, function(omega_c) {
         omega_check <- oeli::check_covariance_matrix(omega_c)
         if (!isTRUE(omega_check)) {
           cli::cli_abort(
-            "Each latent class covariance in {.var Omega} must be a valid covariance matrix (problem: {omega_check}).",
+            "Each latent class covariance in {.var Omega} must be a valid
+            covariance matrix (problem: {omega_check}).",
             call = NULL
           )
         }
@@ -777,14 +786,16 @@ choiceprob_probit_input_checks <- function(
       }, integer(1))
       if (length(unique(dims)) != 1L) {
         cli::cli_abort(
-          "Latent class covariance matrices in {.var Omega} must share the same dimensions.",
+          "Latent class covariance matrices in {.var Omega} must share the same
+          dimensions.",
           call = NULL
         )
       }
       P_r <- dims[1]
     } else {
       cli::cli_abort(
-        "{.var Omega} must be NULL, a covariance matrix, or a list of covariance matrices.",
+        "{.var Omega} must be NULL, a covariance matrix, or a list of covariance
+        matrices.",
         call = NULL
       )
     }
@@ -817,19 +828,22 @@ choiceprob_probit_input_checks <- function(
       C <- length(weights)
       if (!checkmate::test_list(beta, len = C)) {
         cli::cli_abort(
-          "Latent class weights must match the number of coefficient vectors supplied in {.var beta}.",
+          "Latent class weights must match the number of coefficient vectors
+          supplied in {.var beta}.",
           call = NULL
         )
       }
       if (checkmate::test_list(Omega) && length(Omega) != C) {
         cli::cli_abort(
-          "Latent class weights must match the number of covariance matrices supplied in {.var Omega}.",
+          "Latent class weights must match the number of covariance matrices
+          supplied in {.var Omega}.",
           call = NULL
         )
       }
       weight_sum <- sum(weights)
       if (weight_sum <= 0) {
-        cli::cli_abort("Latent class weights must sum to a positive value.", call = NULL)
+        cli::cli_abort("Latent class weights must sum to a positive value.",
+                       call = NULL)
       }
       if (!isTRUE(all.equal(weight_sum, 1))) {
         result$weights <- weights / weight_sum
@@ -859,14 +873,16 @@ choiceprob_probit_input_checks <- function(
         for (c in seq_along(beta_lengths)) {
           if (beta_lengths[c] < max(re_position)) {
             cli::cli_abort(
-              "Random effect positions in {.var re_position} must not exceed the coefficient length in latent class {c}.",
+              "Random effect positions in {.var re_position} must not exceed the
+              coefficient length in latent class {c}.",
               call = NULL
             )
           }
         }
       } else if (beta_dim < max(re_position)) {
         cli::cli_abort(
-          "Random effect positions in {.var re_position} must not exceed the length of {.var beta}.",
+          "Random effect positions in {.var re_position} must not exceed the
+          length of {.var beta}.",
           call = NULL
         )
       }
@@ -896,20 +912,24 @@ choiceprob_probit_input_checks <- function(
     panel_model <- model_type %in% c(12, 13, 14, 28, 29, 30)
     if (panel_model) {
       if (is.null(Tp)) {
-        cli::cli_abort("Panel models require {.var Tp} to be supplied.", call = NULL)
+        cli::cli_abort("Panel models require {.var Tp} to be supplied.",
+                       call = NULL)
       }
       if (!length(Tp) || sum(Tp) != length(X)) {
         cli::cli_abort(
-          "Panel models require {.var Tp} whose sum matches the number of observations in {.var X}.",
+          "Panel models require {.var Tp} whose sum matches the number of
+          observations in {.var X}.",
           call = NULL
         )
       }
       if (!isTRUE(all(Tp >= 1))) {
-        cli::cli_abort("Panel counts {.var Tp} must be at least one.", call = NULL)
+        cli::cli_abort("Panel counts {.var Tp} must be at least one.",
+                       call = NULL)
       }
       if (!checkmate::test_choice(cml, choices = c("no", "fp", "ap"))) {
         cli::cli_abort(
-          "Composite marginal likelihood specification {.val {cml}} is unsupported.",
+          "Composite marginal likelihood specification {.val {cml}} is
+          unsupported.",
           call = NULL
         )
       }
@@ -1422,7 +1442,8 @@ choiceprob_logit_input_checks <- function(
     )
     if (!checkmate::test_list(beta)) {
       cli::cli_abort(
-        "Latent class logit probabilities require class-specific coefficient lists.",
+        "Latent class logit probabilities require class-specific coefficient
+        lists.",
         call = NULL
       )
     }
@@ -1435,7 +1456,8 @@ choiceprob_logit_input_checks <- function(
     if (!is.null(Omega)) {
       if (!checkmate::test_list(Omega, len = length(weights))) {
         cli::cli_abort(
-          "Latent class random effects {.var Omega} must be a list matching the number of classes.",
+          "Latent class random effects {.var Omega} must be a list matching the
+          number of classes.",
           call = NULL
         )
       }
@@ -1448,7 +1470,8 @@ choiceprob_logit_input_checks <- function(
       }, integer(1))
       if (length(unique(dims)) != 1L) {
         cli::cli_abort(
-          "Latent class covariance matrices in {.var Omega} must share the same dimensions.",
+          "Latent class covariance matrices in {.var Omega} must share the same
+          dimensions.",
           call = NULL
         )
       }
@@ -1702,7 +1725,8 @@ prepare_lc_draws <- function(draws, n_draws, Omega_list) {
       draw_mat <- as.matrix(draws[[idx]])
       if (nrow(draw_mat) == 0) {
         cli::cli_abort(
-          "At least one draw is required to evaluate mixed logit probabilities.",
+          "At least one draw is required to evaluate mixed logit
+          probabilities.",
           call = NULL
         )
       }

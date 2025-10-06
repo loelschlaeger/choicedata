@@ -8,49 +8,49 @@
 #'   implied by `choice_data` and `choice_effects`. The returned object stores
 #'   these quantities so that repeated likelihood evaluations during maximum
 #'   likelihood estimation avoid redundant work.
-#' - `compute_choice_likelihood()` evaluates the (log-)likelihood for a given set
-#'   of `choice_parameters`. It can either take the original choice objects or a
+#' - `compute_choice_likelihood()` evaluates the (log-)likelihood for given
+#'   `choice_parameters`. It can either take the original choice objects or a
 #'   pre-computed `choice_likelihood` object.
 #'
 #' @param choice_data \[`choice_data`\]\cr
-#'   A \code{\link{choice_data}} object with the observed choices.
+#' A \code{\link{choice_data}} object with the observed choices.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
-#'   A \code{\link{choice_effects}} object that determines the model effects.
+#' A \code{\link{choice_effects}} object that determines the model effects.
 #'
 #' @param choice_identifiers \[`choice_identifiers`\]\cr
-#'   A \code{\link{choice_identifiers}} object. The default extracts identifiers
-#'   from `choice_data`.
+#' A \code{\link{choice_identifiers}} object. The default extracts identifiers
+#' from `choice_data`.
 #'
 #' @param choice_parameters \[`choice_parameters` | `list`\]\cr
-#'   A \code{\link{choice_parameters}} object or a list as returned by
-#'   \code{\link{switch_parameter_space}}. When a numeric vector in optimization
-#'   space is supplied, it is converted via `switch_parameter_space()`.
+#' A \code{\link{choice_parameters}} object or a list as returned by
+#' \code{\link{switch_parameter_space}}. When a numeric vector in optimization
+#' space is supplied, it is converted via `switch_parameter_space()`.
 #'
 #' @param logarithm \[`logical(1)`\]\cr
-#'   Return the log-likelihood? If `FALSE`, the likelihood is returned.
+#' Return the log-likelihood? If `FALSE`, the likelihood is returned.
 #'
 #' @param negative \[`logical(1)`\]\cr
-#'   Return the negative (log-)likelihood? Useful for minimization routines.
+#' Return the negative (log-)likelihood? Useful for minimization routines.
 #'
 #' @param input_checks \[`logical(1)`\]\cr
-#'   Forwarded to \code{\link{choiceprob_probit}} or
-#'   \code{\link{choiceprob_logit}} to control additional input validation.
+#' Forwarded to \code{\link{choiceprob_probit}} or
+#' \code{\link{choiceprob_logit}} to control additional input validation.
 #'
 #' @param lower_bound \[`numeric(1)`\]\cr
-#'   The minimum probability used when computing the log-likelihood. Values below
-#'   this bound are truncated to avoid taking the logarithm of zero.
+#' The minimum probability used when computing the log-likelihood. Values below
+#' this bound are truncated to avoid taking the logarithm of zero.
 #'
 #' @param ...
-#'   Additional arguments passed to \code{\link{choiceprob_probit}} or
-#'   \code{\link{choiceprob_logit}}.
+#' Additional arguments passed to \code{\link{choiceprob_probit}} or
+#' \code{\link{choiceprob_logit}}.
 #'
 #' @return
-#' `choice_likelihood()` returns an object of class `choice_likelihood`, which is
-#' a `list` containing the design matrices, the choice indices, and the
-#' identifiers. `compute_choice_likelihood()` returns a single numeric value with
-#' the (negative) log-likelihood or likelihood, depending on `logarithm` and
-#' `negative`.
+#' `choice_likelihood()` returns an object of class `choice_likelihood`, which
+#' is a `list` containing the design matrices, the choice indices, and the
+#' identifiers. `compute_choice_likelihood()` returns a single numeric value
+#' with the (negative) log-likelihood or likelihood, depending on `logarithm`
+#' and `negative`.
 #'
 #' @export
 #'

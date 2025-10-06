@@ -169,7 +169,8 @@ generate_choice_responses <- function(
   }
   if (identical(choice_type, "ordered") && !ordered_alternatives) {
     cli::cli_abort(
-      "Simulating ordered responses requires {.code ordered = TRUE} alternatives.",
+      "Simulating ordered responses requires {.code ordered = TRUE}
+      alternatives.",
       call = NULL
     )
   }
@@ -194,7 +195,8 @@ generate_choice_responses <- function(
     Sigma <- choice_parameters$Sigma
     if (is.null(Sigma)) {
       cli::cli_abort(
-        "Input {.var choice_parameters} must include {.field Sigma} to simulate probit choices.",
+        "Input {.var choice_parameters} must include {.field Sigma} to simulate
+        probit choices.",
         call = NULL
       )
     }
@@ -203,7 +205,8 @@ generate_choice_responses <- function(
       gamma <- choice_parameters$gamma
       if (is.null(gamma)) {
         cli::cli_abort(
-          "Ordered probit simulation requires threshold parameters {.field gamma}.",
+          "Ordered probit simulation requires threshold parameters
+          {.field gamma}.",
           call = NULL
         )
       }
@@ -216,7 +219,8 @@ generate_choice_responses <- function(
       gamma <- choice_parameters$gamma
       if (is.null(gamma)) {
         cli::cli_abort(
-          "Ordered logit simulation requires threshold parameters {.field gamma}.",
+          "Ordered logit simulation requires threshold parameters
+          {.field gamma}.",
           call = NULL
         )
       }
@@ -252,7 +256,9 @@ generate_choice_responses <- function(
         } else {
           utility <- mean_val + stats::rlogis(n = 1L)
         }
-        idx <- findInterval(utility, gamma_augmented, all.inside = TRUE, left.open = TRUE)
+        idx <- findInterval(
+          utility, gamma_augmented, all.inside = TRUE, left.open = TRUE
+        )
         top_choices[[id]] <- choice_alternatives[idx]
       } else {
         if (identical(error_term, "probit")) {

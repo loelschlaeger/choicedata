@@ -83,7 +83,9 @@ choice_effects <- choice_effects(
     formula = choice ~ price | time,
     error_term = "probit"
   ),
-  choice_alternatives = choice_alternatives(J = 2, alternatives = c("A", "B"))
+  choice_alternatives = choice_alternatives(
+    J = 2, alternatives = c("A", "B")
+  )
 )
 choice_parameters <- generate_choice_parameters(choice_effects)
 choice_data <- choice_data(

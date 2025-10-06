@@ -6,11 +6,11 @@
 #'
 #' @details
 #' `choice_data()` acts as the main entry point for observed data. It accepts
-#' either long or wide layouts and performs extensive validation before
+#' either long or wide layouts and performs validation before
 #' returning a tidy tibble with consistent identifiers. Columns that refer to
 #' the same alternative are aligned using `delimiter` so that downstream helpers
 #' can detect them automatically. When used with ranked or ordered choices the
-#' function checks that rankings are complete and warns early about inconsistencies.
+#' function checks that rankings are complete and warns about inconsistencies.
 #'
 #' Internally the helper converts long inputs to wide format. This guarantees
 #' that subsequent steps (such as computing probabilities) receive the same
@@ -234,7 +234,9 @@ choice_data <- function(
         column_choice %in% names(data_frame)) {
       data_frame[column_choice]
     }
-    choice_covariate_cols <- data_frame[, c(column_ac_covariates, column_as_covariates_wide), drop = FALSE]
+    choice_covariate_cols <- data_frame[
+      , c(column_ac_covariates, column_as_covariates_wide), drop = FALSE
+    ]
     choice_data <- cbind(
       choice_identifiers, choice_choice_cols, choice_covariate_cols
     )
@@ -295,8 +297,8 @@ is.choice_data <- function(
 #' or `"ranked"` outcomes.
 #'
 #' @details
-#' The generated `choice_data` object inherits a `choice_type` attribute that
-#' matches the requested simulation mode. Ordered alternatives (`ordered = TRUE`)
+#' The generated `choice_data` object inherits a `choice_type` attribute for
+#' the requested simulation mode. Ordered alternatives (`ordered = TRUE`)
 #' yield ordered responses, unordered alternatives default to discrete
 #' multinomial outcomes, and ranked simulations return complete rankings for
 #' every observation.
@@ -345,13 +347,15 @@ generate_choice_data <- function(
   }
   if (identical(choice_type, "ordered") && !ordered_alternatives) {
     cli::cli_abort(
-      "Simulating ordered choice data requires {.code ordered = TRUE} alternatives.",
+      "Simulating ordered choice data requires {.code ordered = TRUE}
+      alternatives.",
       call = NULL
     )
   }
   if (identical(choice_type, "ranked") && ordered_alternatives) {
     cli::cli_abort(
-      "Ranked simulations are not available when alternatives encode an ordering.",
+      "Ranked simulations are not available when alternatives encode an
+      ordering.",
       call = NULL
     )
   }
@@ -372,12 +376,18 @@ generate_choice_data <- function(
   column_occasion <- attr(choice_identifiers, "column_occasion")
   choice_responses_df <- tibble::as_tibble(choice_responses)
   choice_covariates_df <- tibble::as_tibble(choice_covariates)
-  if (!is.null(column_choice) && column_choice %in% names(choice_covariates_df)) {
+  if (
+    !is.null(column_choice) && column_choice %in% names(choice_covariates_df)
+  ) {
     choice_covariates_df[[column_choice]] <- NULL
   }
 
-  if (!is.null(column_choice) && column_choice %in% names(choice_responses_df)) {
-    choice_responses_df[[column_choice]] <- as.character(choice_responses_df[[column_choice]])
+  if (
+    !is.null(column_choice) && column_choice %in% names(choice_responses_df)
+  ) {
+    choice_responses_df[[column_choice]] <- as.character(
+      choice_responses_df[[column_choice]]
+    )
   }
 
   join_columns <- c(column_decider, column_occasion)
@@ -437,11 +447,13 @@ generate_choice_data <- function(
 
     bullets <- c(
       "x" = sprintf(
-        "Join between simulated responses and covariates must be one-to-one on %s.",
+        "Join between simulated responses and covariates must be one-to-one on
+        %s.",
         key_label
       ),
       "i" = sprintf(
-        "Join produced %d rows; expected %d from responses and %d from covariates.",
+        "Join produced %d rows; expected %d from responses and %d from
+        covariates.",
         nrow(data_frame), nrow(choice_responses_df), nrow(choice_covariates_df)
       )
     )
@@ -689,11 +701,14 @@ wide_to_long <- function(
     data_frame[[column_choice]] <- NULL
   }
   if (!is.null(column_choice) && identical(choice_type, "ranked")) {
-    rank_pattern <- paste0("^", esc(column_choice), esc(delimiter), "(", alt_rx, ")$")
+    rank_pattern <- paste0(
+      "^", esc(column_choice), esc(delimiter), "(", alt_rx, ")$"
+    )
     rank_cols <- grep(rank_pattern, names(data_frame), value = TRUE)
     if (length(rank_cols) != length(alternatives)) {
       cli::cli_abort(
-        "Ranked choice data in wide format must include a ranking column for each alternative.",
+        "Ranked choice data in wide format must include a ranking column for
+        each alternative.",
         call = NULL
       )
     }
@@ -705,7 +720,8 @@ wide_to_long <- function(
   if (length(cols_to_pivot) == 0L) {
     if (!is.null(column_choice) && identical(choice_type, "ranked")) {
       cli::cli_abort(
-        "Ranked choice data in wide format must provide rankings for every alternative.",
+        "Ranked choice data in wide format must provide rankings for every
+        alternative.",
         call = NULL
       )
     }
@@ -732,7 +748,9 @@ wide_to_long <- function(
         .after = dplyr::all_of(column_choice)
       )
     } else { # ordered
-      if (is.factor(long[[column_choice]]) && is.ordered(long[[column_choice]])) {
+      if (
+        is.factor(long[[column_choice]]) && is.ordered(long[[column_choice]])
+      ) {
         long[[column_choice]] <- as.integer(long[[column_choice]])
       }
     }

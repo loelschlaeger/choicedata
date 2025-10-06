@@ -70,7 +70,9 @@ choice_preferences <- function(
   }
 
   ### ensure that 'column_decider' is first column
-  column_order <- c(column_decider, setdiff(colnames(data_frame), column_decider))
+  column_order <- c(
+    column_decider, setdiff(colnames(data_frame), column_decider)
+  )
   data_frame <- data_frame[, column_order]
 
   ### build 'choice_preferences' object

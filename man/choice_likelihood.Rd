@@ -59,11 +59,11 @@ Return the log-likelihood? If \code{FALSE}, the likelihood is returned.}
 Return the negative (log-)likelihood? Useful for minimization routines.}
 }
 \value{
-\code{choice_likelihood()} returns an object of class \code{choice_likelihood}, which is
-a \code{list} containing the design matrices, the choice indices, and the
-identifiers. \code{compute_choice_likelihood()} returns a single numeric value with
-the (negative) log-likelihood or likelihood, depending on \code{logarithm} and
-\code{negative}.
+\code{choice_likelihood()} returns an object of class \code{choice_likelihood}, which
+is a \code{list} containing the design matrices, the choice indices, and the
+identifiers. \code{compute_choice_likelihood()} returns a single numeric value
+with the (negative) log-likelihood or likelihood, depending on \code{logarithm}
+and \code{negative}.
 }
 \description{
 These functions prepare and evaluate the likelihood contribution of observed
@@ -73,8 +73,8 @@ choices for a given choice model.
 implied by \code{choice_data} and \code{choice_effects}. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
 likelihood estimation avoid redundant work.
-\item \code{compute_choice_likelihood()} evaluates the (log-)likelihood for a given set
-of \code{choice_parameters}. It can either take the original choice objects or a
+\item \code{compute_choice_likelihood()} evaluates the (log-)likelihood for given
+\code{choice_parameters}. It can either take the original choice objects or a
 pre-computed \code{choice_likelihood} object.
 }
 }

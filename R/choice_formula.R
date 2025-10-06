@@ -151,7 +151,8 @@ choice_formula <- function(
   for (random_effect in names(random_effects)) {
     if (identical(random_effect, ".")) {
       cli::cli_abort(
-        "Input {.var random_effects} cannot use '.'; specify the covariates explicitly in {.var formula}.",
+        "Input {.var random_effects} cannot use '.'; specify the covariates
+        explicitly in {.var formula}.",
         call = NULL
       )
     }

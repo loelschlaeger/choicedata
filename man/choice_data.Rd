@@ -128,11 +128,11 @@ The \code{choice_data} object defines the choice data, it is a combination of
 }
 \details{
 \code{choice_data()} acts as the main entry point for observed data. It accepts
-either long or wide layouts and performs extensive validation before
+either long or wide layouts and performs validation before
 returning a tidy tibble with consistent identifiers. Columns that refer to
 the same alternative are aligned using \code{delimiter} so that downstream helpers
 can detect them automatically. When used with ranked or ordered choices the
-function checks that rankings are complete and warns early about inconsistencies.
+function checks that rankings are complete and warns about inconsistencies.
 
 Internally the helper converts long inputs to wide format. This guarantees
 that subsequent steps (such as computing probabilities) receive the same
@@ -142,8 +142,8 @@ structure regardless of the original layout and keeps the workflow concise.
 \item \code{wide_to_long()} and \code{long_to_wide()} transform to wide and long format.
 }
 
-The generated \code{choice_data} object inherits a \code{choice_type} attribute that
-matches the requested simulation mode. Ordered alternatives (\code{ordered = TRUE})
+The generated \code{choice_data} object inherits a \code{choice_type} attribute for
+the requested simulation mode. Ordered alternatives (\code{ordered = TRUE})
 yield ordered responses, unordered alternatives default to discrete
 multinomial outcomes, and ranked simulations return complete rankings for
 every observation.

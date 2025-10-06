@@ -10,25 +10,32 @@
 #' @param data_frame \[`data.frame`\]\cr
 #' Contains the choice covariates.
 #'
-#' @inheritParams choice_identifiers
 #' @param format \[`character(1)`\]\cr
 #' Format of `data_frame`. Use `"wide"` when covariates for all alternatives are
 #' stored in a single row per occasion and `"long"` when each alternative forms
 #' a separate row.
+#'
 #' @param column_decider \[`character(1)`\]\cr
 #' Column name with decider identifiers.
+#'
 #' @param column_occasion \[`character(1)` | `NULL`\]\cr
 #' Column name with occasion identifiers. Set to `NULL` for cross-sectional
 #' data.
+#'
 #' @param column_alternative \[`character(1)` | `NULL`\]\cr
 #' Column name with alternative identifiers when `format = "long"`.
+#'
 #' @param column_ac_covariates \[`character()` | `NULL`\]\cr
 #' Column names with alternative-constant covariates.
+#'
 #' @param column_as_covariates \[`character()` | `NULL`\]\cr
 #' Column names with alternative-specific covariates in `data_frame`.
+#'
 #' @param delimiter \[`character(1)`\]\cr
 #' Delimiter separating alternative identifiers from covariate names in wide
 #' format. May consist of one or more characters.
+#'
+#' @inheritParams choice_identifiers
 #'
 #' @return
 #' A `tibble`.
@@ -324,10 +331,15 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
     column_alternative_long <- "alternative"
   } else {
     x_long <- x
-    column_alternative_long <- if (is.null(column_alternative)) "alternative" else column_alternative
+    column_alternative_long <- if (is.null(column_alternative)) {
+      "alternative"
+    } else {
+      column_alternative
+    }
     if (!column_alternative_long %in% names(x_long)) {
       cli::cli_abort(
-        "Missing {.val {column_alternative_long}} column in {.var x} (long format expected).",
+        "Missing {.val {column_alternative_long}} column in {.var x}
+        (long format expected).",
         call = NULL
       )
     }
@@ -380,7 +392,8 @@ subset_choice_observation <- function(prep, index) {
   dec_val <- prep$ids_df[[prep$cd_id]][index]
   occ_val <- prep$co_vals[index]
   if (is.null(prep$column_occasion)) {
-    df_nt <- prep$x_long[prep$x_long[[prep$column_decider]] == dec_val, , drop = FALSE]
+    id_prep <- prep$x_long[[prep$column_decider]] == dec_val
+    df_nt <- prep$x_long[id_prep, , drop = FALSE]
   } else {
     df_nt <- prep$x_long[
       prep$x_long[[prep$column_decider]] == dec_val &
@@ -467,7 +480,8 @@ design_matrices <- function(
       } else if (e_as_eff && !e_as_cov) {
         if (ordered_type) {
           cli::cli_abort(
-            "Ordered choice models cannot include alternative-specific effects.",
+            "Ordered choice models cannot include alternative-specific
+            effects.",
             call = NULL
           )
         }
@@ -480,7 +494,8 @@ design_matrices <- function(
       } else {
         if (ordered_type) {
           cli::cli_abort(
-            "Ordered choice models cannot include alternative-specific effects.",
+            "Ordered choice models cannot include alternative-specific
+            effects.",
             call = NULL
           )
         }
@@ -514,11 +529,14 @@ extract_choice_indices <- function(
   is.choice_effects(choice_effects, error = TRUE)
   is.choice_identifiers(choice_identifiers, error = TRUE)
 
-  prep <- prepare_choice_long_data(choice_data, choice_effects, choice_identifiers)
+  prep <- prepare_choice_long_data(
+    choice_data, choice_effects, choice_identifiers
+  )
   column_choice <- prep$column_choice
   if (is.null(column_choice) || !column_choice %in% names(prep$x_long)) {
     cli::cli_abort(
-      "Cannot extract choices because column {.val {column_choice}} is missing.",
+      "Cannot extract choices because column {.val {column_choice}} is
+      missing.",
       call = NULL
     )
   }
@@ -553,7 +571,8 @@ extract_choice_indices <- function(
       non_missing <- !is.na(values_raw)
       if (!any(non_missing)) {
         cli::cli_abort(
-          "Ordered choice data must contain an observed category for each observation.",
+          "Ordered choice data must contain an observed category for each
+          observation.",
           call = NULL
         )
       }
@@ -574,7 +593,7 @@ extract_choice_indices <- function(
       }
       if (is.na(idx) || idx < 1L || idx > prep$J) {
         cli::cli_abort(
-          "Ordered choice categories must align with the declared alternatives.",
+          "Ordered choice categories must align with declared alternatives.",
           call = NULL
         )
       }
@@ -583,7 +602,8 @@ extract_choice_indices <- function(
       chosen_idx <- which(values == 1)
       if (length(chosen_idx) != 1) {
         cli::cli_abort(
-          "Choice data must contain exactly one chosen alternative per observation.",
+          "Choice data must contain exactly one chosen alternative per
+          observation.",
           call = NULL
         )
       }

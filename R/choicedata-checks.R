@@ -70,7 +70,9 @@ check_column_alternative <- function(column_alternative, null.ok = TRUE) {
 
 check_column_choice <- function(column_choice, null.ok = TRUE) {
   check_not_missing(column_choice)
-  check <- checkmate::check_string(column_choice, min.chars = 1, null.ok = null.ok)
+  check <- checkmate::check_string(
+    column_choice, min.chars = 1, null.ok = null.ok
+  )
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var column_choice} is bad: {check}", call = NULL)
   }
@@ -99,7 +101,9 @@ check_column_covariates <- function(
 check_column_decider <- function(column_decider, null.ok = TRUE) {
   check_not_missing(column_decider)
   oeli::input_check_response(
-    check = checkmate::check_string(column_decider, min.chars = 1, null.ok = null.ok),
+    check = checkmate::check_string(
+      column_decider, min.chars = 1, null.ok = null.ok
+    ),
     var_name = "column_decider"
   )
   invisible(column_decider)
@@ -122,23 +126,30 @@ check_column_effects <- function(column_effects, len = NULL, null.ok = TRUE) {
   invisible(column_effects)
 }
 
-check_column_occasion <- function(column_occasion, column_decider, null.ok = TRUE) {
+check_column_occasion <- function(
+    column_occasion, column_decider, null.ok = TRUE
+  ) {
   check_not_missing(column_occasion)
   column_decider <- check_column_decider(column_decider)
   oeli::input_check_response(
-    check = checkmate::check_string(column_occasion, min.chars = 1, null.ok = null.ok),
+    check = checkmate::check_string(
+      column_occasion, min.chars = 1, null.ok = null.ok
+    ),
     var_name = "column_occasion"
   )
   if (identical(column_decider, column_occasion)) {
     cli::cli_abort(
-      "Inputs {.var column_decider} and {.var column_occasion} must be different",
+      "Inputs {.var column_decider} and {.var column_occasion} must be
+      different",
       call = NULL
     )
   }
   invisible(column_occasion)
 }
 
-check_column_probabilities <- function(column_probabilities, len = NULL, null.ok = TRUE) {
+check_column_probabilities <- function(
+    column_probabilities, len = NULL, null.ok = TRUE
+  ) {
   check_not_missing(column_probabilities)
   oeli::input_check_response(
     check = checkmate::check_character(

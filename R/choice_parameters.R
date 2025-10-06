@@ -177,7 +177,9 @@ generate_choice_parameters <- function(
       x$Sigma <- 1
     } else {
       Sigma <- matrix(0, J, J)
-      Sigma[-1, -1] <- oeli::rwishart(df = J + 1, scale = diag(J - 1), inv = TRUE)
+      Sigma[-1, -1] <- oeli::rwishart(
+        df = J + 1, scale = diag(J - 1), inv = TRUE
+      )
       Sigma <- Sigma / Sigma[2, 2]
       x$Sigma <- Sigma
     }
@@ -316,7 +318,8 @@ validate_choice_parameters <- function(
         if (required_len > 0 && length(gamma_vec) > 0 &&
             !isTRUE(all.equal(gamma_vec[1], 0))) {
           cli::cli_abort(
-            "The first ordered threshold must be fixed at zero for identification.",
+            "The first ordered threshold must be fixed at zero for
+            identification.",
             call = NULL
           )
         }
@@ -492,6 +495,3 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
     class = unique(c("choice_parameters", class(choice_parameters_transformed)))
   )
 }
-
-
-
