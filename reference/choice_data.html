@@ -198,17 +198,17 @@ Unique labels for the choice alternatives.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>choice_data()</code> acts as the main entry point for observed data. It accepts
-either long or wide layouts and performs extensive validation before
+either long or wide layouts and performs validation before
 returning a tidy tibble with consistent identifiers. Columns that refer to
 the same alternative are aligned using <code>delimiter</code> so that downstream helpers
 can detect them automatically. When used with ranked or ordered choices the
-function checks that rankings are complete and warns early about inconsistencies.</p>
+function checks that rankings are complete and warns about inconsistencies.</p>
 <p>Internally the helper converts long inputs to wide format. This guarantees
 that subsequent steps (such as computing probabilities) receive the same
 structure regardless of the original layout and keeps the workflow concise.</p><ul><li><p><code>generate_choice_data()</code> simulates choice data.</p></li>
 <li><p><code>wide_to_long()</code> and <code>long_to_wide()</code> transform to wide and long format.</p></li>
-</ul><p>The generated <code>choice_data</code> object inherits a <code>choice_type</code> attribute that
-matches the requested simulation mode. Ordered alternatives (<code>ordered = TRUE</code>)
+</ul><p>The generated <code>choice_data</code> object inherits a <code>choice_type</code> attribute for
+the requested simulation mode. Ordered alternatives (<code>ordered = TRUE</code>)
 yield ordered responses, unordered alternatives default to discrete
 multinomial outcomes, and ranked simulations return complete rankings for
 every observation.</p>

@@ -5,8 +5,8 @@ choice_likelihood() pre-computes the design matrices and choice indices
 implied by choice_data and choice_effects. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
 likelihood estimation avoid redundant work.
-compute_choice_likelihood() evaluates the (log-)likelihood for a given set
-of choice_parameters. It can either take the original choice objects or a
+compute_choice_likelihood() evaluates the (log-)likelihood for given
+choice_parameters. It can either take the original choice objects or a
 pre-computed choice_likelihood object.
 
 "><meta property="og:description" content="These functions prepare and evaluate the likelihood contribution of observed
@@ -15,8 +15,8 @@ choice_likelihood() pre-computes the design matrices and choice indices
 implied by choice_data and choice_effects. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
 likelihood estimation avoid redundant work.
-compute_choice_likelihood() evaluates the (log-)likelihood for a given set
-of choice_parameters. It can either take the original choice objects or a
+compute_choice_likelihood() evaluates the (log-)likelihood for given
+choice_parameters. It can either take the original choice objects or a
 pre-computed choice_likelihood object.
 
 "><meta property="og:image" content="http://loelschlaeger.de/choicedata/logo.png"></head><body>
@@ -58,8 +58,8 @@ choices for a given choice model.</p><ul><li><p><code>choice_likelihood()</code>
 implied by <code>choice_data</code> and <code>choice_effects</code>. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
 likelihood estimation avoid redundant work.</p></li>
-<li><p><code>compute_choice_likelihood()</code> evaluates the (log-)likelihood for a given set
-of <code>choice_parameters</code>. It can either take the original choice objects or a
+<li><p><code>compute_choice_likelihood()</code> evaluates the (log-)likelihood for given
+<code>choice_parameters</code>. It can either take the original choice objects or a
 pre-computed <code>choice_likelihood</code> object.</p></li>
 </ul></div>
 
@@ -142,11 +142,11 @@ Return the negative (log-)likelihood? Useful for minimization routines.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>choice_likelihood()</code> returns an object of class <code>choice_likelihood</code>, which is
-a <code>list</code> containing the design matrices, the choice indices, and the
-identifiers. <code>compute_choice_likelihood()</code> returns a single numeric value with
-the (negative) log-likelihood or likelihood, depending on <code>logarithm</code> and
-<code>negative</code>.</p>
+    <p><code>choice_likelihood()</code> returns an object of class <code>choice_likelihood</code>, which
+is a <code>list</code> containing the design matrices, the choice indices, and the
+identifiers. <code>compute_choice_likelihood()</code> returns a single numeric value
+with the (negative) log-likelihood or likelihood, depending on <code>logarithm</code>
+and <code>negative</code>.</p>
     </div>
 
     <div class="section level2">
