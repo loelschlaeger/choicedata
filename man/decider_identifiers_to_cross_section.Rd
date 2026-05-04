@@ -18,7 +18,7 @@ An \code{atomic} \code{vector} of identifiers.}
 An \code{atomic} \code{vector} of unique identifiers.
 }
 \description{
-This helper function makes unique decider identifiers for a given combination
-of decider and occasion identifiers.
+This helper function makes unique decider identifiers for a given
+combination of decider and occasion identifiers.
 }
 \keyword{internal}

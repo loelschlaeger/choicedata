@@ -28,7 +28,9 @@ The `{choicedata}` package simplifies working with choice data in [R](https://ww
 
 ## Package design
 
-The package breaks down the process of modeling choice data into a series of steps. Each step is represented by an object that contains the necessary information for the subsequent step.
+The package breaks down the process of modeling choice data into a series of
+steps. Each step is represented by an object that contains the necessary
+information for the subsequent step.
 
 ![](man/figures/choicedata_flowchart.png)
 
@@ -50,17 +52,20 @@ The package breaks down the process of modeling choice data into a series of ste
 
 - [`choice_data`](https://loelschlaeger.de/choicedata/reference/choice_data.html): the choice data, built by `choice_covariates` and `choice_responses`.
 
-- [`choice_probabilities`](https://loelschlaeger.de/choicedata/reference/choice_probabilities.html): the choice probabilities, computed from `choice_data` and `choice_parameters`.
+- [`choice_probabilities`](https://loelschlaeger.de/choicedata/reference/choice_probabilities.html): the choice probabilities, computed from `choice_data`, `choice_effects`, and `choice_parameters`.
 
 - [`choice_likelihood`](https://loelschlaeger.de/choicedata/reference/choice_likelihood.html): the likelihood of the choice model, formed by `choice_probabilities`.
 
-The objects are designed to be modular and can be combined in various ways to create a range of modeling workflows.
+The objects are designed to be modular and can be combined in various ways to
+create a range of modeling workflows.
 
 ## Examples
 
 ### Empirical data
 
-The `travel_mode_choice` data set contains the revealed preferences of 210 travelers choosing between plane, train, bus, and car. We can transform the data from long to wide format, or construct model design matrices:
+The `travel_mode_choice` data set contains the revealed preferences of 210
+travelers choosing between plane, train, bus, and car. We can transform the
+data from long to wide format, or construct model design matrices:
 
 ```{r travel-example}
 library("choicedata")
@@ -100,8 +105,9 @@ design_matrices[[1]]
 
 ### Simulated choice
 
-`generate_choice_data()` makes it straightforward to simulate choice data. The example below simulates 200 ranking tasks with three alternatives and recovers the data-generating parameters via numerical optimization of the
-likelihood:
+`generate_choice_data()` makes it straightforward to simulate choice data. The
+example below simulates 200 ranking tasks with three alternatives and recovers
+the data-generating parameters via numerical optimization of the likelihood:
 
 ```{r simulate-example}
 library("choicedata")
@@ -164,7 +170,8 @@ install.packages("choicedata")
 
 ## Related work
 
-`{Rprobit}` [@Bauer2023] provides maximum approximated composite marginal likelihood estimation for efficient probit choice modeling.  
+`{Rprobit}` [@Bauer2023] provides maximum approximated composite marginal
+likelihood estimation for efficient probit choice modeling.
 
 `{RprobitB}` [@Oelschlaeger2025] provides Bayesian tools for estimating probit models.
 

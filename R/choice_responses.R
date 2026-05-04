@@ -1,11 +1,11 @@
-#' Define choice response
+#' Define choice responses
 #'
 #' @description
-#' The `choice_responses` object defines the observed discrete responses.
+#' The `choice_responses` object defines the observed choice responses.
 #' Additional response columns (for example ranked choice indicators) are
 #' preserved so they can be merged with covariates downstream.
 #'
-#' - `generate_choice_responses()` simulates choices
+#' - `generate_choice_responses()` simulates choices.
 #'
 #' @param data_frame \[`data.frame`\]\cr
 #' Contains the choice responses.

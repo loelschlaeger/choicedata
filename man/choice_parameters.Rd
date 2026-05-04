@@ -114,7 +114,8 @@ can be optimized:
 normalization and the second diagonal element is fixed to 1 for scale
 normalization
 \item the covariance matrices (\code{Omega} and \code{Sigma}) are transformed to their
-vectorized Cholesky factor (diagonal fixed to be positive for uniqueness)
+vectorized Cholesky factor, with the diagonal fixed to be positive for
+uniqueness
 }
 }
 }

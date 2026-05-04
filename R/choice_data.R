@@ -1,16 +1,16 @@
 #' Define choice data
 #'
 #' @description
-#' The `choice_data` object defines the choice data, it is a combination of
-#' `choice_responses` and `choice_covariates`.
+#' The `choice_data` object combines `choice_responses` and
+#' `choice_covariates`.
 #'
 #' @details
 #' `choice_data()` acts as the main entry point for observed data. It accepts
 #' either long or wide layouts and performs validation before
 #' returning a tidy tibble with consistent identifiers. Columns that refer to
-#' the same alternative are aligned using `delimiter` so that downstream helpers
-#' can detect them automatically. When used with ranked or ordered choices the
-#' function checks that rankings are complete and warns about inconsistencies.
+#' the same alternative are aligned using `delimiter` so that downstream
+#' helpers can detect them automatically. When used with ranked or ordered
+#' choices, the function rejects incomplete or inconsistent responses.
 #'
 #' Internally the helper converts long inputs to wide format. This guarantees
 #' that subsequent steps (such as computing probabilities) receive the same
@@ -29,14 +29,14 @@
 #' @param column_choice \[`character(1)`\]\cr
 #' Column name with the observed choices. In wide layout this column should
 #' contain a single value per observation: for discrete data the value is the
-#' label of the chosen alternative, for ordered data it is the ordered factor or
-#' integer score, and for ranked data it is omitted in favour of one column per
-#' alternative (see `choice_type`). In long layout the same column is evaluated
-#' once per alternative: discrete data must use a binary indicator (1 for the
-#' chosen alternative, 0 otherwise), ordered data repeats the ordinal value for
-#' every alternative, and ranked data stores the integer rank `1:J` for each
-#' alternative within an observation. Set to `NULL` when no observed choices are
-#' available (e.g., for purely covariate tables).
+#' label of the chosen alternative, for ordered data it is the ordered factor
+#' or integer score, and for ranked data it is omitted in favor of one column
+#' per alternative (see `choice_type`). In long layout the same column is
+#' evaluated once per alternative: discrete data must use a binary indicator
+#' (1 for the chosen alternative, 0 otherwise), ordered data repeats the
+#' ordinal value for every alternative, and ranked data stores the integer rank
+#' `1:J` for each alternative within an observation. Set to `NULL` when no
+#' observed choices are available (e.g., for purely covariate tables).
 #'
 #' @param column_as_covariates \[`character()`\]\cr
 #' Column names of `data_frame` with alternative-specific covariates.
@@ -45,7 +45,8 @@
 #' Column name with decider identifiers.
 #'
 #' @param column_occasion \[`character(1)` | `NULL`\]\cr
-#' Column name with occasion identifiers. Set to `NULL` in cross-sectional data.
+#' Column name with occasion identifiers. Set to `NULL` in cross-sectional
+#' data.
 #'
 #' @param column_alternative \[`character(1)` | `NULL`\]\cr
 #' Column name with alternative identifiers when `format = "long"`.
@@ -837,7 +838,8 @@ check_as_covariates <- function(
       wrong_as <- setdiff(column_as_covariates, column_as)
       if (length(wrong_as)) {
         cli::cli_abort(
-          "Found constant alternative-specific covariate(s): {.val {wrong_as}}",
+          "Found constant alternative-specific covariate(s):
+          {.val {wrong_as}}",
           call = NULL
         )
       }
@@ -880,7 +882,9 @@ check_as_covariates <- function(
       regmatches(x = names(data_frame))
     is_as <- vapply(matches, function(z) length(z) == 3L, logical(1))
     column_as_wide_detected <- names(data_frame)[is_as]
-    base_vars_detected <- vapply(matches[is_as], function(z) z[2], character(1))
+    base_vars_detected <- vapply(
+      matches[is_as], function(z) z[2], character(1)
+    )
     column_as <- sort(unique(base_vars_detected))
     column_as_wide <- column_as_wide_detected
     id_cols <- c(column_decider, column_occasion)

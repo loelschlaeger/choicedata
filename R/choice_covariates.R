@@ -11,9 +11,9 @@
 #' Contains the choice covariates.
 #'
 #' @param format \[`character(1)`\]\cr
-#' Format of `data_frame`. Use `"wide"` when covariates for all alternatives are
-#' stored in a single row per occasion and `"long"` when each alternative forms
-#' a separate row.
+#' Format of `data_frame`. Use `"wide"` when covariates for all alternatives
+#' are stored in a single row per occasion and `"long"` when each alternative
+#' forms a separate row.
 #'
 #' @param column_decider \[`character(1)`\]\cr
 #' Column name with decider identifiers.
@@ -560,7 +560,8 @@ extract_choice_indices <- function(
           !isTRUE(all.equal(rank_values, rank_integers)) ||
           !identical(sort(rank_integers), expected)) {
         cli::cli_abort(
-          "Ranked choice data must contain a full ranking of all alternatives.",
+          "Ranked choice data must contain a full ranking of all
+          alternatives.",
           call = NULL
         )
       }

@@ -17,20 +17,22 @@
 #'   \item{occasionID \[`integer`\]}{The identifier for the choice occasion.}
 #'   \item{choice \[`character`\]}{The chosen alternative, either \code{"A"} or
 #'   \code{"B"}.}
-#'   \item{price_A \[`numeric`\]}{The price for alternative \code{"A"} in Euro.}
+#'   \item{price_A \[`numeric`\]}{The price for alternative \code{"A"} in
+#'   Euro.}
 #'   \item{time_A \[`numeric`\]}{The travel time for alternative \code{"A"} in
 #'   hours.}
 #'   \item{change_A \[`integer`\]}{The number of changes for alternative
 #'   \code{"A"}.}
-#'   \item{comfort_A \[`factor`\]}{The comfort level for alternative \code{"A"},
-#'   where `0` is the best comfort and `2` the worst.}
-#'   \item{price_B \[`numeric`\]}{The price for alternative \code{"B"} in Euro.}
+#'   \item{comfort_A \[`factor`\]}{The comfort level for alternative
+#'   \code{"A"}, where `0` is the best comfort and `2` the worst.}
+#'   \item{price_B \[`numeric`\]}{The price for alternative \code{"B"} in
+#'   Euro.}
 #'   \item{time_B \[`numeric`\]}{The travel time for alternative \code{"B"} in
 #'   hours.}
 #'   \item{change_B \[`integer`\]}{The number of changes for alternative
 #'   \code{"B"}.}
-#'   \item{comfort_B \[`factor`\]}{The comfort level for alternative \code{"B"},
-#'   where `0` is the best comfort and `2` the worst.}
+#'   \item{comfort_B \[`factor`\]}{The comfort level for alternative
+#'   \code{"B"}, where `0` is the best comfort and `2` the worst.}
 #' }
 #'
 #' @references

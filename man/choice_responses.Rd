@@ -3,7 +3,7 @@
 \name{choice_responses}
 \alias{choice_responses}
 \alias{generate_choice_responses}
-\title{Define choice response}
+\title{Define choice responses}
 \usage{
 choice_responses(
   data_frame,
@@ -65,11 +65,11 @@ from \code{choice_alternatives}, or explicitly request \code{"discrete"},
 A \code{data.frame}.
 }
 \description{
-The \code{choice_responses} object defines the observed discrete responses.
+The \code{choice_responses} object defines the observed choice responses.
 Additional response columns (for example ranked choice indicators) are
 preserved so they can be merged with covariates downstream.
 \itemize{
-\item \code{generate_choice_responses()} simulates choices
+\item \code{generate_choice_responses()} simulates choices.
 }
 }
 \examples{

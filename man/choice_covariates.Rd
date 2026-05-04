@@ -43,9 +43,9 @@ design_matrices(
 Contains the choice covariates.}
 
 \item{format}{[\code{character(1)}]\cr
-Format of \code{data_frame}. Use \code{"wide"} when covariates for all alternatives are
-stored in a single row per occasion and \code{"long"} when each alternative forms
-a separate row.}
+Format of \code{data_frame}. Use \code{"wide"} when covariates for all alternatives
+are stored in a single row per occasion and \code{"long"} when each alternative
+forms a separate row.}
 
 \item{column_decider}{[\code{character(1)}]\cr
 Column name with decider identifiers.}

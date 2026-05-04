@@ -65,8 +65,8 @@ probabilities?}
 }
 \value{
 A \code{choice_probabilities} S3 object (a data frame) that stores additional
-metadata in attributes such as \code{column_probabilities}, \code{choice_only}, and the
-identifier columns. These attributes are used by downstream helpers to
+metadata in attributes such as \code{column_probabilities}, \code{choice_only}, and
+the identifier columns. These attributes are used by downstream helpers to
 reconstruct the original structure.
 }
 \description{

@@ -64,20 +64,21 @@ of an occasion and \code{"long"} when each row contains a single alternative.}
 \item{column_choice}{[\code{character(1)}]\cr
 Column name with the observed choices. In wide layout this column should
 contain a single value per observation: for discrete data the value is the
-label of the chosen alternative, for ordered data it is the ordered factor or
-integer score, and for ranked data it is omitted in favour of one column per
-alternative (see \code{choice_type}). In long layout the same column is evaluated
-once per alternative: discrete data must use a binary indicator (1 for the
-chosen alternative, 0 otherwise), ordered data repeats the ordinal value for
-every alternative, and ranked data stores the integer rank \code{1:J} for each
-alternative within an observation. Set to \code{NULL} when no observed choices are
-available (e.g., for purely covariate tables).}
+label of the chosen alternative, for ordered data it is the ordered factor
+or integer score, and for ranked data it is omitted in favor of one column
+per alternative (see \code{choice_type}). In long layout the same column is
+evaluated once per alternative: discrete data must use a binary indicator
+(1 for the chosen alternative, 0 otherwise), ordered data repeats the
+ordinal value for every alternative, and ranked data stores the integer rank
+\code{1:J} for each alternative within an observation. Set to \code{NULL} when no
+observed choices are available (e.g., for purely covariate tables).}
 
 \item{column_decider}{[\code{character(1)}]\cr
 Column name with decider identifiers.}
 
 \item{column_occasion}{[\code{character(1)} | \code{NULL}]\cr
-Column name with occasion identifiers. Set to \code{NULL} in cross-sectional data.}
+Column name with occasion identifiers. Set to \code{NULL} in cross-sectional
+data.}
 
 \item{column_alternative}{[\code{character(1)} | \code{NULL}]\cr
 Column name with alternative identifiers when \code{format = "long"}.}
@@ -123,16 +124,16 @@ Unique labels for the choice alternatives.}
 A \code{tibble} that inherits from \code{choice_data}.
 }
 \description{
-The \code{choice_data} object defines the choice data, it is a combination of
-\code{choice_responses} and \code{choice_covariates}.
+The \code{choice_data} object combines \code{choice_responses} and
+\code{choice_covariates}.
 }
 \details{
 \code{choice_data()} acts as the main entry point for observed data. It accepts
 either long or wide layouts and performs validation before
 returning a tidy tibble with consistent identifiers. Columns that refer to
-the same alternative are aligned using \code{delimiter} so that downstream helpers
-can detect them automatically. When used with ranked or ordered choices the
-function checks that rankings are complete and warns about inconsistencies.
+the same alternative are aligned using \code{delimiter} so that downstream
+helpers can detect them automatically. When used with ranked or ordered
+choices, the function rejects incomplete or inconsistent responses.
 
 Internally the helper converts long inputs to wide format. This guarantees
 that subsequent steps (such as computing probabilities) receive the same

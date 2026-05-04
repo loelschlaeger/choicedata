@@ -281,7 +281,9 @@ validate_choice_parameters <- function(
     if ("Sigma" %in% names(x)) {
       if (ordered_alternatives) {
         oeli::input_check_response(
-          check = checkmate::check_number(x$Sigma, lower = .Machine$double.eps),
+          check = checkmate::check_number(
+            x$Sigma, lower = .Machine$double.eps
+          ),
           var_name = "Sigma"
         )
       } else {
@@ -358,7 +360,8 @@ validate_choice_parameters <- function(
 #'     normalization and the second diagonal element is fixed to 1 for scale
 #'     normalization
 #'   - the covariance matrices (`Omega` and `Sigma`) are transformed to their
-#'     vectorized Cholesky factor (diagonal fixed to be positive for uniqueness)
+#'     vectorized Cholesky factor, with the diagonal fixed to be positive for
+#'     uniqueness
 #'
 #' @export
 
@@ -492,6 +495,8 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
   choice_parameters_transformed <- par$switch(choice_parameters)
   structure(
     choice_parameters_transformed,
-    class = unique(c("choice_parameters", class(choice_parameters_transformed)))
+    class = unique(c(
+      "choice_parameters", class(choice_parameters_transformed)
+    ))
   )
 }

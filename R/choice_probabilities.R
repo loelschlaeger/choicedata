@@ -22,8 +22,8 @@
 #'
 #' @return
 #' A `choice_probabilities` S3 object (a data frame) that stores additional
-#' metadata in attributes such as `column_probabilities`, `choice_only`, and the
-#' identifier columns. These attributes are used by downstream helpers to
+#' metadata in attributes such as `column_probabilities`, `choice_only`, and
+#' the identifier columns. These attributes are used by downstream helpers to
 #' reconstruct the original structure.
 #'
 #' @export
@@ -273,8 +273,8 @@ evaluate_choice_probabilities <- function(
     cli::cli_abort(
       c(
         "Probability evaluation returned a mismatched number of rows.",
-        "x" = "Expected {expected_rows} rows based on the choice identifiers but
-        received {actual_rows}."
+        "x" = "Expected {expected_rows} rows based on the choice identifiers
+        but received {actual_rows}."
       ),
       call = NULL
     )
@@ -404,7 +404,8 @@ compute_ordered_panel_probability <- function(
 #'
 #' - in the regular (`choiceprob_mnp_*`), ordered (`*_ordered`), and
 #'   ranked (`ranked = TRUE`) case,
-#' - in the normally mixed (`choiceprob_mmnp_*`) and latent class (`*_lc`) case,
+#' - in the normally mixed (`choiceprob_mmnp_*`) and latent class (`*_lc`)
+#'   case,
 #' - for panel data (`*_panel`),
 #' - based on the full likelihood (`cml = "no"`), the full pairwise composite
 #'   marginal likelihood (`cml = "fp"`), and the adjacent pairwise composite
@@ -443,8 +444,8 @@ compute_ordered_panel_probability <- function(
 #' Can be `NULL` for no panel data.
 #'
 #' @param cml \[`character(1)`\]\cr
-#' The composite marginal likelihood (CML) type for panel data. It can be one of
-#' `"no"` (full likelihood), `"fp"` (full pairwise), or `"ap"` (adjacent
+#' The composite marginal likelihood (CML) type for panel data. It can be one
+#' of `"no"` (full likelihood), `"fp"` (full pairwise), or `"ap"` (adjacent
 #' pairwise).
 #'
 #' @param beta \[`numeric(P)` | `list`\]\cr
@@ -524,7 +525,8 @@ compute_ordered_panel_probability <- function(
 #' @export
 
 choiceprob_probit <- function(
-    X, y = NULL, Tp = NULL, cml = "no", beta, Omega = NULL, Sigma, gamma = NULL,
+    X, y = NULL, Tp = NULL, cml = "no", beta, Omega = NULL, Sigma,
+    gamma = NULL,
     weights = NULL, re_position = utils::tail(seq_along(beta), nrow(Omega)),
     gcdf = pmvnorm_cdf_default, lower_bound = 0, input_checks = TRUE,
     ordered = !is.null(gamma),
@@ -722,11 +724,15 @@ choiceprob_probit_input_checks <- function(
         var_name = "Tp"
       )
       if (length(Tp) == 0) {
-        cli::cli_abort("Panel counts {.var Tp} must not be empty.", call = NULL)
+        cli::cli_abort(
+          "Panel counts {.var Tp} must not be empty.",
+          call = NULL
+        )
       }
       if (sum(Tp) != length(X)) {
         cli::cli_abort(
-          "Sum of {.var Tp} must match the number of observations in {.var X}.",
+          "Sum of {.var Tp} must match the number of observations in
+          {.var X}.",
           call = NULL
         )
       }
@@ -794,8 +800,8 @@ choiceprob_probit_input_checks <- function(
       P_r <- dims[1]
     } else {
       cli::cli_abort(
-        "{.var Omega} must be NULL, a covariance matrix, or a list of covariance
-        matrices.",
+        "{.var Omega} must be NULL, a covariance matrix, or a list of
+        covariance matrices.",
         call = NULL
       )
     }
@@ -873,8 +879,8 @@ choiceprob_probit_input_checks <- function(
         for (c in seq_along(beta_lengths)) {
           if (beta_lengths[c] < max(re_position)) {
             cli::cli_abort(
-              "Random effect positions in {.var re_position} must not exceed the
-              coefficient length in latent class {c}.",
+              "Random effect positions in {.var re_position} must not exceed
+              the coefficient length in latent class {c}.",
               call = NULL
             )
           }
@@ -1273,7 +1279,8 @@ choiceprob_mmnp_ordered_panel_lc <- function(
 #'   `NULL`. A matrix provides shared draws for all classes; a list can supply
 #'   class-specific draw matrices.
 #' @param n_draws \[`integer(1)`\]\cr
-#'   Number of draws to generate when `draws` is `NULL` and `Omega` is provided.
+#'   Number of draws to generate when `draws` is `NULL` and `Omega` is
+#'   provided.
 #'
 #' @param ordered,ranked,panel,lc \[`logical(1)`\]\cr
 #'   Flags indicating whether the specification is ordered, ranked, panel, or

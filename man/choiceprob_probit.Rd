@@ -188,8 +188,8 @@ and so on.
 Can be \code{NULL} for no panel data.}
 
 \item{cml}{[\code{character(1)}]\cr
-The composite marginal likelihood (CML) type for panel data. It can be one of
-\code{"no"} (full likelihood), \code{"fp"} (full pairwise), or \code{"ap"} (adjacent
+The composite marginal likelihood (CML) type for panel data. It can be one
+of \code{"no"} (full likelihood), \code{"fp"} (full pairwise), or \code{"ap"} (adjacent
 pairwise).}
 
 \item{beta}{[\code{numeric(P)} | \code{list}]\cr
@@ -270,7 +270,8 @@ scenarios:
 \itemize{
 \item in the regular (\verb{choiceprob_mnp_*}), ordered (\verb{*_ordered}), and
 ranked (\code{ranked = TRUE}) case,
-\item in the normally mixed (\verb{choiceprob_mmnp_*}) and latent class (\verb{*_lc}) case,
+\item in the normally mixed (\verb{choiceprob_mmnp_*}) and latent class (\verb{*_lc})
+case,
 \item for panel data (\verb{*_panel}),
 \item based on the full likelihood (\code{cml = "no"}), the full pairwise composite
 marginal likelihood (\code{cml = "fp"}), and the adjacent pairwise composite

@@ -57,8 +57,8 @@
 #'   `+ 0` in the second part, e.g., `choice ~ A | B + 0 | C`. To not include
 #'   any covariates of the second type but to estimate ASCs, add `1` in the
 #'   second part, e.g., `choice ~ A | 1 | C`. The expression
-#'   `choice ~ A | 0 | C` is interpreted as no covariates of the second type and
-#'   no ASCs.
+#'   `choice ~ A | 0 | C` is interpreted as no covariates of the second type
+#'   and no ASCs.
 #'   \item To not include covariates of any type, add `0` in the respective
 #'   part, e.g., `choice ~ 0 | B | C`.
 #'   \item Some parts of the formula can be omitted when there is no ambiguity.

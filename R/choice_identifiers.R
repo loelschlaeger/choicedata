@@ -92,7 +92,8 @@ choice_identifiers <- function(
     if (anyDuplicated(decider_identifiers)) {
       cli::cli_abort(
         "Column {.val {column_decider}} of {.var data_frame} must not have
-        duplicated values if there are no identifiers for the choice occasions",
+        duplicated values if there are no identifiers for the choice
+        occasions",
         call = NULL
       )
     }
@@ -111,9 +112,9 @@ choice_identifiers <- function(
       ids <- which(decider_identifiers == decider_identifier)
       if (anyDuplicated(occasion_identifiers[ids])) {
         cli::cli_abort(
-          "Column {.val {column_occasion}} of {.var data_frame} must have unique
-          values for any decider, but decider {.val {decider_identifier}} has
-          duplicates",
+          "Column {.val {column_occasion}} of {.var data_frame} must have
+          unique values for any decider, but decider
+          {.val {decider_identifier}} has duplicates",
           call = NULL
         )
       }
@@ -202,8 +203,8 @@ generate_choice_identifiers <- function(
 #' Unique decider identifiers in cross-sectional case
 #'
 #' @description
-#' This helper function makes unique decider identifiers for a given combination
-#' of decider and occasion identifiers.
+#' This helper function makes unique decider identifiers for a given
+#' combination of decider and occasion identifiers.
 #'
 #' @param decider_identifiers,occasion_identifiers \[`atomic()`\]\cr
 #' An `atomic` `vector` of identifiers.

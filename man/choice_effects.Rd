@@ -44,7 +44,8 @@ covariate and alternative name,
 \item \code{"covariate"}, the (transformed) covariate name connected to the effect,
 \item \code{"alternative"}, the alternative name connected to the effect (only
 if the effect is alternative-specific),
-\item \code{"as_covariate"}, indicator whether the covariate is alternative-specific,
+\item \code{"as_covariate"}, indicator whether the covariate is
+alternative-specific,
 \item \code{"as_effect"}, indicator whether the effect is alternative-specific,
 \item \code{"mixing"}, a factor with levels in the order
 \enumerate{
@@ -54,8 +55,8 @@ if the effect is alternative-specific),
 indicating the type of random effect.
 }
 
-For identification, the choice effects are ordered according to the following
-rules:
+For identification, the choice effects are ordered according to the
+following rules:
 \enumerate{
 \item Non-random effects come before random effects.
 \item According to the ordering of the factor \code{mixing}.

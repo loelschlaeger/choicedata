@@ -90,7 +90,8 @@ Optional simulation draws for the random coefficients when \code{Omega} is not
 class-specific draw matrices.}
 
 \item{n_draws}{[\code{integer(1)}]\cr
-Number of draws to generate when \code{draws} is \code{NULL} and \code{Omega} is provided.}
+Number of draws to generate when \code{draws} is \code{NULL} and \code{Omega} is
+provided.}
 }
 \value{
 A numeric vector with the choice probabilities for the observed choices when

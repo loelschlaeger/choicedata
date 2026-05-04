@@ -53,8 +53,8 @@ necessary information for the subsequent step.
   the choice data, built by `choice_covariates` and `choice_responses`.
 
 - [`choice_probabilities`](https://loelschlaeger.de/choicedata/reference/choice_probabilities.html):
-  the choice probabilities, computed from `choice_data` and
-  `choice_parameters`.
+  the choice probabilities, computed from `choice_data`,
+  `choice_effects`, and `choice_parameters`.
 
 - [`choice_likelihood`](https://loelschlaeger.de/choicedata/reference/choice_likelihood.html):
   the likelihood of the choice model, formed by `choice_probabilities`.

@@ -1,7 +1,7 @@
 Package: choicedata
 Type: Package
 Title: Working with Choice Data
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: 
     person("Lennart", "Oelschl\u00e4ger", 
            email = "oelschlaeger.lennart@gmail.com", 
@@ -29,7 +29,7 @@ Imports:
     ggplot2,
     Matrix,
     mvtnorm,
-    optimizeR,
+    optimizeR (>= 1.2.1),
     oeli (>= 0.7.5),
     patchwork,
     Rdpack,
