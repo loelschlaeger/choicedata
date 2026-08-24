@@ -6,6 +6,8 @@
 * Improved input validations. Internal validation failures now use descriptive 
   `cli` messages.
 
+* Probability calculations now use Rcpp.
+
 # choicedata 0.1.0
 
 * Initial CRAN submission.

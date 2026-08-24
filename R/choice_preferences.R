@@ -130,23 +130,23 @@ generate_choice_preferences <- function(
   Tp <- read_Tp(choice_identifiers)
   N <- length(Tp)
   P <- compute_P(choice_effects)
-  P_r <- compute_P_r(choice_effects)
 
   ### extract (unique) decider identifiers
   decider_identifiers <- get_decider_identifiers(choice_identifiers)
   column_decider <- attr(choice_identifiers, "column_decider")
 
-  preferences <- as.data.frame(matrix(NA_real_, nrow = N, ncol = P))
-  colnames(preferences) <- choice_effects[, "effect_name"]
-  re_position <- utils::tail(seq_len(P), P_r)
-  Omega_completed <- matrix(0, nrow = P, ncol = P)
-  Omega_completed[re_position, re_position] <- choice_parameters$Omega
-  for (n in seq_len(N)) {
-    preferences[n, ] <- oeli::rmvnorm(
-      mean = choice_parameters$beta,
-      Sigma = Omega_completed
+  beta <- choice_parameters$beta
+  preferences <- matrix(beta, nrow = N, ncol = P, byrow = TRUE)
+  re_position <- which(!is.na(choice_effects$mixing))
+  if (length(re_position)) {
+    preferences[, re_position] <- oeli::rmvnorm(
+      n = N,
+      mean = beta[re_position],
+      Sigma = choice_parameters$Omega
     )
   }
+  preferences <- as.data.frame(preferences)
+  colnames(preferences) <- choice_effects[, "effect_name"]
 
   ### build 'choice_preferences' object
   data_frame <- cbind(decider_identifiers, preferences)

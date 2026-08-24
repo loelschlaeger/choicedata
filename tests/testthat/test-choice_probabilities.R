@@ -53,6 +53,14 @@ test_that("MNP probabilities can be computed", {
     probs,
     probs_all[cbind(seq_len(nrow(probs_all)), unlist(data$y))]
   )
+  expect_equal(rowSums(probs_all), rep(1, N))
+
+  X0 <- list(matrix(c(0, 1), ncol = 1))
+  S0 <- diag(c(1, 4))
+  expect_equal(
+    choiceprob_mnp(X0, list(1L), beta = 1, Sigma = S0),
+    stats::pnorm(-1 / sqrt(5))
+  )
 })
 
 test_that("MNP ordered probabilities can be computed", {
@@ -112,6 +120,8 @@ test_that("MNP ordered probabilities can be computed", {
   checkmate::expect_matrix(
     probs_all, mode = "numeric", any.missing = FALSE, nrows = N, ncols = J
   )
+  expect_equal(rowSums(probs_all), rep(1, N))
+
   expect_equal(
     probs,
     probs_all[cbind(seq_len(nrow(probs_all)), unlist(data$y))]
@@ -168,6 +178,27 @@ test_that("MNP ranked probabilities can be computed", {
   )
   checkmate::expect_matrix(
     probs_all, mode = "numeric", any.missing = FALSE, nrows = N, ncols = J
+  )
+  expect_equal(rowSums(probs_all), rep(1, N))
+
+  X0 <- list(matrix(c(1, 0, 0, 1, 1, 1), nrow = 3))
+  b0 <- c(0.4, -0.2)
+  S0 <- diag(c(1, 2, 3))
+  rank0 <- 1:3
+  M0 <- oeli::M(ranking = rank0, dim = 3)
+  ref <- mvtnorm::pmvnorm(
+    upper = as.numeric(-M0 %*% X0[[1]] %*% b0),
+    sigma = M0 %*% S0 %*% t(M0)
+  )
+  expect_equal(
+    choiceprob_mnp(X0, list(rank0), b0, S0, ranked = TRUE),
+    as.numeric(ref)
+  )
+  expect_error(
+    choiceprob_probit(
+      X = rep(X0, 2), y = list(1L, rank0), beta = b0, Sigma = S0
+    ),
+    "scalar"
   )
 })
 
@@ -448,6 +479,12 @@ test_that("logit ranked probabilities honour rankings", {
 
   expect_equal(probs, expected, tolerance = 1e-10)
   expect_true(all(probs > 0 & probs <= 1))
+  expect_error(
+    choiceprob_logit(
+      X = X, y = lapply(rankings, utils::head, 2), beta = beta
+    ),
+    "permutations"
+  )
 })
 
 test_that("logit panel probabilities respect Tp", {
@@ -539,6 +576,17 @@ test_that("latent class logit probabilities combine class panels correctly", {
     rep(1, length(X)),
     tolerance = 1e-10
   )
+  expect_warning(
+    normalized <- choiceprob_logit(
+      X = X, beta = beta, weights = 10 * weights
+    ),
+    "normalized"
+  )
+  expect_equal(normalized, alt_probs)
+  expect_error(
+    choiceprob_logit(X = X, beta = beta, weights = c(0, 0)),
+    "positive"
+  )
 })
 
 test_that("mixed logit probabilities average over draws", {
@@ -622,6 +670,33 @@ test_that("mixed logit panel probabilities average products over draws", {
 
   expect_equal(panel_probs, manual, tolerance = 1e-10)
   expect_true(all(panel_probs > 0 & panel_probs <= 1))
+
+  X_ord <- lapply(X, function(x) x[1, , drop = FALSE])
+  y_ord <- list(1L, 2L, 3L)
+  gamma <- c(-0.5, 0.5)
+  ordered <- choiceprob_logit(
+    X = X_ord, y = y_ord, Tp = Tp, beta = beta,
+    Omega = Omega, gamma = gamma, draws = draws
+  )
+  expected_ordered <- choiceprob_mmnl_ordered_panel(
+    X_ord, y_ord, Tp, beta, Omega, gamma, 2L, draws
+  )
+  expect_equal(ordered, expected_ordered)
+
+  beta_lc <- list(beta, -beta)
+  omega_lc <- list(Omega, Omega)
+  draw_lc <- list(draws, draws)
+  weights <- c(0.4, 0.6)
+  ordered_lc <- choiceprob_logit(
+    X = X_ord, y = y_ord, Tp = Tp, beta = beta_lc,
+    Omega = omega_lc, gamma = gamma, weights = weights,
+    draws = draw_lc
+  )
+  expected_lc <- choiceprob_mmnl_ordered_panel_lc(
+    X_ord, y_ord, Tp, beta_lc, omega_lc, gamma, weights, 2L,
+    draw_lc
+  )
+  expect_equal(ordered_lc, expected_lc)
 })
 
 test_that("choice probability computation supports ordered data", {
@@ -738,6 +813,7 @@ test_that("MMNP probabilities can be computed", {
   checkmate::expect_matrix(
     probs_all, mode = "numeric", any.missing = FALSE, nrows = N, ncols = J
   )
+  expect_equal(rowSums(probs_all), rep(1, N))
 })
 
 test_that("MMNP ranked probabilities can be computed", {
@@ -968,6 +1044,43 @@ test_that("MMNP latent class probabilities can be computed", {
       re_position = seq_len(P_r)
     )
   )
+  default_probs <- choiceprob_probit(
+    X = data$X, y = data$y, beta = beta, Omega = Omega,
+    Sigma = Sigma, weights = weights
+  )
+  default_ref <- choiceprob_mmnp_lc(
+    X = data$X, y = data$y, beta = beta, Omega = Omega,
+    Sigma = Sigma, weights = weights, re_position = P
+  )
+  expect_equal(default_probs, default_ref)
+
+  fixed <- choiceprob_probit(
+    X = data$X, y = data$y, beta = beta,
+    Sigma = Sigma, weights = weights
+  )
+  fixed_ref <- choiceprob_mmnp_lc(
+    X = data$X, y = data$y, beta = beta, Omega = NULL,
+    Sigma = Sigma, weights = weights, re_position = NULL
+  )
+  expect_equal(fixed, fixed_ref)
+
+  fixed_all <- choiceprob_probit(
+    X = data$X, beta = beta, Sigma = Sigma, weights = weights
+  )
+  expect_equal(rowSums(fixed_all), rep(1, N))
+
+  rank_X <- data$X[1]
+  ranking <- list(seq_len(J))
+  fixed_rank <- choiceprob_probit(
+    X = rank_X, y = ranking, beta = beta,
+    Sigma = Sigma, weights = weights
+  )
+  rank_ref <- choiceprob_mmnp_lc(
+    X = rank_X, y = ranking, beta = beta, Omega = NULL,
+    Sigma = Sigma, weights = weights, re_position = NULL,
+    ranked = TRUE
+  )
+  expect_equal(fixed_rank, rank_ref)
 })
 
 test_that("latent class weights are validated", {
@@ -1109,6 +1222,17 @@ test_that("MMNP ordered latent class probabilities can be computed", {
       re_position = seq_len(P_r)
     )
   )
+
+  fixed <- choiceprob_probit(
+    X = data$X, y = data$y, beta = beta, Sigma = Sigma,
+    gamma = gamma, weights = weights
+  )
+  fixed_ref <- choiceprob_mmnp_ordered_lc(
+    X = data$X, y = data$y, beta = beta, Omega = NULL,
+    Sigma = Sigma, gamma = gamma, weights = weights,
+    re_position = NULL
+  )
+  expect_equal(fixed, fixed_ref)
 })
 
 test_that("MMNP panel probabilities can be computed", {
@@ -1176,6 +1300,36 @@ test_that("MMNP panel probabilities can be computed", {
       probs, lower = 0, upper = 1, any.missing = FALSE, len = N
     )
   }
+
+  dx <- c(1, 2, 0.5)
+  X0 <- lapply(dx, function(d) matrix(c(0, d), ncol = 1))
+  y0 <- rep(list(1L), 3)
+  cov0 <- 0.7 * tcrossprod(dx) + diag(3) * 5
+  corr0 <- stats::cov2cor(cov0)
+  rho <- corr0[lower.tri(corr0)]
+  pair <- 0.25 + asin(rho) / (2 * pi)
+  ref <- c(
+    no = 0.125 + sum(asin(rho)) / (4 * pi),
+    fp = prod(pair), ap = prod(pair[c(1, 3)])
+  )
+  gcdf0 <- function(upper, corr) {
+    mvtnorm::pmvnorm(upper = upper, sigma = corr,
+                     algorithm = mvtnorm::Miwa())
+  }
+  got <- vapply(c("no", "fp", "ap"), function(cml) {
+    choiceprob_mmnp_panel(
+      X0, y0, 3L, cml, 0, matrix(0.7), diag(c(1, 4)), 1L,
+      gcdf = gcdf0
+    )
+  }, numeric(1))
+  expect_equal(got, ref, tolerance = 1e-7)
+
+  all_probs <- choiceprob_probit(
+    X = X0, y = NULL, Tp = 3L, beta = 0,
+    Omega = matrix(0.7), Sigma = diag(c(1, 4))
+  )
+  checkmate::expect_matrix(all_probs, nrows = 3, ncols = 2)
+  expect_equal(rowSums(all_probs), rep(1, 3))
 })
 
 test_that("MMNP ranked panel probabilities can be computed", {
@@ -1313,6 +1467,36 @@ test_that("MMNP ordered panel probabilities can be computed", {
       probs, lower = 0, upper = 1, any.missing = FALSE, len = N
     )
   }
+
+  X0 <- lapply(c(1, 2), matrix, nrow = 1)
+  y0 <- rep(list(2L), 2)
+  X_mat <- do.call(rbind, X0)
+  V0 <- as.numeric(X_mat * 0.3)
+  cov0 <- X_mat %*% 0.7 %*% t(X_mat) + diag(2) * 2
+  lower0 <- -V0
+  upper0 <- 1 - V0
+  gcdf0 <- function(upper, corr, lower = -Inf) {
+    mvtnorm::pmvnorm(
+      lower = lower, upper = upper, sigma = corr,
+      algorithm = mvtnorm::Miwa()
+    )
+  }
+  ref <- mvtnorm::pmvnorm(
+    lower = lower0, upper = upper0, sigma = cov0,
+    algorithm = mvtnorm::Miwa()
+  )
+  got <- choiceprob_mmnp_ordered_panel(
+    X0, y0, 2L, "no", 0.3, matrix(0.7), 2, c(0, 1), 1L,
+    gcdf = gcdf0
+  )
+  expect_equal(got, as.numeric(ref))
+
+  all_probs <- choiceprob_probit(
+    X = X0, y = NULL, Tp = 2L, beta = 0.3,
+    Omega = matrix(0.7), Sigma = 2, gamma = c(0, 1)
+  )
+  checkmate::expect_matrix(all_probs, nrows = 2, ncols = 3)
+  expect_equal(rowSums(all_probs), rep(1, 2))
 })
 
 test_that("MMNP panel latent class probabilities can be computed", {
@@ -1380,20 +1564,22 @@ test_that("MMNP panel latent class probabilities can be computed", {
   ind_weights <- P * C + C * P_r * (P_r + 1) / 2 + J * (J - 1) / 2 - 1 + (1:(C - 1))
 
   ### calculate MMNP probabilities
-  for (cml in c("no", "fp", "ap")) {
-    probs <- choiceprob_mmnp_panel_lc(
-      X = data$X,
-      y = data$y,
-      Tp = Tp,
-      cml = cml,
-      beta = beta,
-      Omega = Omega,
-      Sigma = Sigma,
-      weights = weights,
-      re_position = seq_len(P_r)
-    )
-    checkmate::expect_numeric(
-      probs, lower = 0, upper = 1, any.missing = FALSE, len = N
+  lc_args <- list(
+    X = data$X, y = data$y, Tp = Tp, cml = "no", beta = beta,
+    Omega = Omega, Sigma = Sigma, weights = weights,
+    re_position = seq_len(P_r)
+  )
+  probs <- do.call(choiceprob_mmnp_panel_lc, lc_args)
+  checkmate::expect_numeric(
+    probs, lower = 0, upper = 1, any.missing = FALSE, len = N
+  )
+  for (cml in c("fp", "ap")) {
+    expect_error(
+      do.call(
+        choiceprob_mmnp_panel_lc,
+        utils::modifyList(lc_args, list(cml = cml))
+      ),
+      "only.*no.*CML"
     )
   }
 })
@@ -1499,40 +1685,38 @@ test_that("MMNP ordered panel latent class probabilities can be computed", {
   ind_weights <- P * C + C * P_r * (P_r + 1) / 2 + J - 2 + (1:(C - 1))
 
   ### calculate MMNP probabilities
-  for (cml in c("no", "fp", "ap")) {
-    probs <- choiceprob_mmnp_ordered_panel_lc(
-      X = data$X,
-      y = data$y,
-      Tp = Tp,
-      cml = cml,
-      beta = beta,
-      Omega = Omega,
-      Sigma = Sigma,
-      gamma = gamma,
-      weights = weights,
-      re_position = seq_len(P_r)
-    )
-    checkmate::expect_numeric(
-      probs, lower = 0, upper = 1, any.missing = FALSE, len = N
+  lc_args <- list(
+    X = data$X, y = data$y, Tp = Tp, cml = "no", beta = beta,
+    Omega = Omega, Sigma = Sigma, gamma = gamma, weights = weights,
+    re_position = seq_len(P_r)
+  )
+  probs <- do.call(choiceprob_mmnp_ordered_panel_lc, lc_args)
+  checkmate::expect_numeric(
+    probs, lower = 0, upper = 1, any.missing = FALSE, len = N
+  )
+  for (cml in c("fp", "ap")) {
+    expect_error(
+      do.call(
+        choiceprob_mmnp_ordered_panel_lc,
+        utils::modifyList(lc_args, list(cml = cml))
+      ),
+      "only.*no.*CML"
     )
   }
 })
 
 test_that("default Gaussian CDF helper relies on covariance matrices", {
-
-  skip_if_not_installed("Matrix")
-
   corr <- matrix(c(1, 0.3, 0.3, 1), nrow = 2)
   upper <- c(0.5, -0.2)
   expect_equal(
-    as.numeric(choicedata:::pmvnorm_cdf_default(upper = upper, corr = corr)),
+    as.numeric(pmvnorm_cdf_default(upper = upper, corr = corr)),
     as.numeric(mvtnorm::pmvnorm(
       upper = upper, sigma = corr, algorithm = mvtnorm::GenzBretz()
     ))
   )
 
   expect_equal(
-    as.numeric(choicedata:::pmvnorm_cdf_default(
+    as.numeric(pmvnorm_cdf_default(
       upper = 0.7,
       corr = Matrix::Matrix(1)
     )),
@@ -1540,7 +1724,7 @@ test_that("default Gaussian CDF helper relies on covariance matrices", {
   )
 
   expect_identical(
-    choicedata:::pmvnorm_cdf_default(
+    pmvnorm_cdf_default(
       upper = numeric(),
       corr = matrix(numeric(0), nrow = 0)
     ),
@@ -1550,17 +1734,26 @@ test_that("default Gaussian CDF helper relies on covariance matrices", {
 
 test_that("panel helper utilities cover edge cases", {
 
-  expect_error(choicedata:::build_panel_chunks(Tp_n = 2, cml_type = 3L))
+  expect_error(build_panel_chunks(Tp_n = 2, cml_type = 3L))
 
   expect_identical(
-    choicedata:::compute_chunk_product(
+    compute_chunk_product(
       upper = numeric(),
       corr = matrix(numeric(0), nrow = 0),
       gcdf = function(...) 0,
-      lower_bound = 0,
       chunk_indices = list()
     ),
     1
+  )
+  expect_equal(
+    compute_chunk_product(
+      upper = 0,
+      corr = matrix(1),
+      gcdf = function(...) 0,
+      chunk_indices = list(1L),
+      logarithm = TRUE
+    ),
+    log(.Machine$double.xmin)
   )
 })
 
@@ -1595,6 +1788,44 @@ test_that("choiceprob_probit validates random effect covariance inputs", {
       Sigma = Sigma
     ),
     NA
+  )
+
+  expect_error(
+    choiceprob_probit(
+      X = X, y = y, beta = list(beta, -beta), Omega = good_Omega,
+      Sigma = Sigma, weights = c(0.5, 0.5)
+    ),
+    "must be a list"
+  )
+  expect_error(
+    choiceprob_probit(
+      X = X, y = y, beta = list(beta, -beta), Sigma = Sigma
+    ),
+    "weights"
+  )
+  expect_error(
+    choiceprob_probit(
+      X = X, y = y, beta = beta, Omega = list(good_Omega),
+      Sigma = Sigma
+    ),
+    "weights"
+  )
+  expect_error(
+    choiceprob_probit(X = X, y = y, beta = beta, Sigma = 1),
+    "Sigma"
+  )
+  expect_error(
+    choiceprob_probit(
+      X = list(matrix(beta, nrow = 1)), y = y, beta = beta,
+      Sigma = Sigma, gamma = 0
+    ),
+    "Sigma"
+  )
+  expect_error(
+    choiceprob_probit(
+      X = X, y = y, cml = "fp", beta = beta, Sigma = Sigma
+    ),
+    "panel"
   )
 })
 

@@ -138,6 +138,7 @@ test_that("simulation of probit choice data works for wide covariates", {
     choice_identifiers = choice_identifiers
   )
 
+  set.seed(1)
   simulated_data <- generate_choice_data(
     choice_effects = choice_effects,
     choice_identifiers = choice_identifiers,
@@ -146,8 +147,13 @@ test_that("simulation of probit choice data works for wide covariates", {
     choice_preferences = choice_preferences,
     column_choice = "choice"
   )
+  set.seed(1)
+  simulated_default <- generate_choice_data(choice_effects)
+  set.seed(1)
+  repeated_default <- generate_choice_data(choice_effects)
 
   expect_true(is.choice_data(simulated_data))
+  expect_identical(simulated_default, repeated_default)
   expect_identical(attr(simulated_data, "format"), "wide")
   expect_equal(nrow(simulated_data), nrow(choice_covariates))
   checkmate::expect_subset(
@@ -707,7 +713,7 @@ test_that("choice_data respects custom delimiters in long format", {
 test_that("ordered simulations propagate the choice type", {
 
   for (error_term in c("logit", "probit")) {
-    set.seed(if (error_term == "logit") 1 else 2)
+    set.seed(1)
 
     choice_effects <- choice_effects(
       choice_formula = choice_formula(
@@ -762,7 +768,7 @@ test_that("ordered simulations propagate the choice type", {
 test_that("ranked simulations support logit and probit error terms", {
 
   for (error_term in c("logit", "probit")) {
-    set.seed(if (error_term == "logit") 11 else 12)
+    set.seed(1)
 
     choice_effects <- choice_effects(
       choice_formula = choice_formula(

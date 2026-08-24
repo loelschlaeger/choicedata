@@ -151,7 +151,6 @@ generate_choice_responses <- function(
   ### extract objects
   choice_alternatives <- attr(choice_effects, "choice_alternatives")
   Tp <- read_Tp(choice_identifiers)
-  N <- length(Tp)
   design_list <- design_matrices(
     x = choice_covariates,
     choice_effects = choice_effects,
@@ -163,6 +162,11 @@ generate_choice_responses <- function(
   )
   column_decider <- attr(choice_identifiers, "column_decider")
   column_occasion <- attr(choice_identifiers, "column_occasion")
+  decider_ids <- get_decider_identifiers(choice_identifiers)
+  preference_index <- match(
+    choice_identifiers[[column_decider]],
+    decider_ids
+  )
   ordered_alternatives <- isTRUE(attr(choice_alternatives, "ordered"))
   inferred_type <- if (ordered_alternatives) "ordered" else "discrete"
   if (identical(choice_type, "auto")) {
@@ -212,8 +216,6 @@ generate_choice_responses <- function(
         )
       }
       gamma_augmented <- c(-Inf, gamma, +Inf)
-    } else {
-      Sigma_draw <- Sigma + diag(nrow(Sigma))
     }
   } else if (identical(error_term, "logit")) {
     if (identical(choice_type, "ordered")) {
@@ -243,43 +245,39 @@ generate_choice_responses <- function(
   ranked_matrix <- if (identical(choice_type, "ranked")) {
     matrix(NA_integer_, nrow = total_obs, ncol = length(choice_alternatives))
   }
-  for (n in seq_len(N)) {
+  for (id in seq_len(total_obs)) {
+    n <- preference_index[id]
     preference_n <- choice_preferences[[n]]
-    for (t in seq_len(Tp[n])) {
-      id <- get_position_from_identifier(
-        N = N, Tp = Tp, decider_number = n, occasion_number = t
-      )
-      design_matrix_nt <- design_list[[id]]
-      if (identical(choice_type, "ordered")) {
-        mean_val <- as.numeric(design_matrix_nt %*% preference_n)
-        if (identical(error_term, "probit")) {
-          utility <- stats::rnorm(n = 1L, mean = mean_val, sd = Sigma_sd)
-        } else {
-          utility <- mean_val + stats::rlogis(n = 1L)
-        }
-        idx <- findInterval(
-          utility, gamma_augmented, all.inside = TRUE, left.open = TRUE
-        )
-        top_choices[[id]] <- choice_alternatives[idx]
+    design_matrix_nt <- design_list[[id]]
+    if (identical(choice_type, "ordered")) {
+      mean_val <- as.numeric(design_matrix_nt %*% preference_n)
+      if (identical(error_term, "probit")) {
+        utility <- stats::rnorm(n = 1L, mean = mean_val, sd = Sigma_sd)
       } else {
-        if (identical(error_term, "probit")) {
-          U_id <- oeli::rmvnorm(
-            mean = as.vector(design_matrix_nt %*% preference_n),
-            Sigma = Sigma_draw
-          )
-        } else {
-          V_id <- as.vector(design_matrix_nt %*% preference_n)
-          eps <- -log(-log(stats::runif(length(V_id))))
-          U_id <- V_id + eps
-        }
-        if (identical(choice_type, "ranked")) {
-          order_idx <- order(U_id, decreasing = TRUE)
-          ranking <- choice_alternatives[order_idx]
-          top_choices[id] <- ranking[1]
-          ranked_matrix[id, ] <- match(choice_alternatives, ranking)
-        } else {
-          top_choices[id] <- choice_alternatives[which.max(U_id)]
-        }
+        utility <- mean_val + stats::rlogis(n = 1L)
+      }
+      idx <- findInterval(
+        utility, gamma_augmented, all.inside = TRUE, left.open = TRUE
+      )
+      top_choices[[id]] <- choice_alternatives[idx]
+    } else {
+      if (identical(error_term, "probit")) {
+        U_id <- oeli::rmvnorm(
+          mean = as.vector(design_matrix_nt %*% preference_n),
+          Sigma = Sigma
+        )
+      } else {
+        V_id <- as.vector(design_matrix_nt %*% preference_n)
+        eps <- -log(-log(stats::runif(length(V_id))))
+        U_id <- V_id + eps
+      }
+      if (identical(choice_type, "ranked")) {
+        order_idx <- order(U_id, decreasing = TRUE)
+        ranking <- choice_alternatives[order_idx]
+        top_choices[id] <- ranking[1]
+        ranked_matrix[id, ] <- match(choice_alternatives, ranking)
+      } else {
+        top_choices[id] <- choice_alternatives[which.max(U_id)]
       }
     }
   }

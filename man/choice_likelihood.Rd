@@ -10,7 +10,6 @@ choice_likelihood(
   choice_effects,
   choice_identifiers = extract_choice_identifiers(choice_data),
   input_checks = TRUE,
-  lower_bound = 1e-10,
   ...
 )
 
@@ -37,10 +36,6 @@ from \code{choice_data}.}
 Forwarded to the underlying probability engine to control additional input
 validation.}
 
-\item{lower_bound}{[\code{numeric(1)}]\cr
-The minimum probability used when computing the log-likelihood. Values below
-this bound are truncated to avoid taking the logarithm of zero.}
-
 \item{...}{Additional arguments passed to the underlying probability engine.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{list}]\cr
@@ -59,10 +54,10 @@ Return the negative (log-)likelihood? Useful for minimization routines.}
 }
 \value{
 \code{choice_likelihood()} returns an object of class \code{choice_likelihood}, which
-is a \code{list} containing the design matrices, the choice indices, and the
-identifiers. \code{compute_choice_likelihood()} returns a single numeric value
-with the (negative) log-likelihood or likelihood, depending on \code{logarithm}
-and \code{negative}.
+is a \code{list} containing the design matrices, choice indices, and identifiers.
+\code{compute_choice_likelihood()} returns a single numeric value with the
+(negative) log-likelihood or likelihood, depending on \code{logarithm} and
+\code{negative}.
 }
 \description{
 These functions prepare and evaluate the likelihood contribution of observed

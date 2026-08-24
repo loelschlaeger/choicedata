@@ -1,4 +1,5 @@
 test_that("simulation of probit choice responses works", {
+  set.seed(1)
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
       formula = choice ~ X | Y | Z, error_term = "probit"
@@ -20,6 +21,7 @@ test_that("simulation of probit choice responses works", {
     choice_effects = choice_effects,
     choice_identifiers = choice_identifiers
   )
+  set.seed(1)
   choice_responses <- generate_choice_responses(
     choice_effects = choice_effects,
     choice_covariates = choice_covariates,
@@ -28,11 +30,32 @@ test_that("simulation of probit choice responses works", {
     choice_preferences = choice_preferences,
     column_choice = "choice"
   )
+  design <- design_matrices(
+    choice_covariates,
+    choice_effects,
+    choice_identifiers
+  )
+  preferences <- split_choice_preferences(
+    choice_preferences,
+    choice_identifiers
+  )
+  preferences <- rep(
+    preferences,
+    times = read_Tp(choice_identifiers)
+  )
+  alternatives <- as.character(attr(choice_effects, "choice_alternatives"))
+  set.seed(1)
+  expected <- vapply(seq_along(design), function(i) {
+    mean <- as.vector(design[[i]] %*% preferences[[i]])
+    utility <- oeli::rmvnorm(mean = mean, Sigma = choice_parameters$Sigma)
+    alternatives[which.max(utility)]
+  }, character(1))
   expect_s3_class(choice_responses, "choice_responses")
   expect_true(is.choice_responses(choice_responses))
+  expect_identical(choice_responses$choice, expected)
   expect_equal(
     nrow(choice_responses),
-    sum(choicedata:::read_Tp(choice_identifiers))
+    sum(read_Tp(choice_identifiers))
   )
   expect_equal(
     sort(unique(choice_responses[[attr(choice_responses, "column_choice")]])),
@@ -46,7 +69,8 @@ test_that("simulation of logit choice responses works", {
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
       formula = choice ~ price | time,
-      error_term = "logit"
+      error_term = "logit",
+      random_effects = c("price" = "cn")
     ),
     choice_alternatives = choice_alternatives(J = 2, alternatives = c("A", "B"))
   )
@@ -57,18 +81,48 @@ test_that("simulation of logit choice responses works", {
     column_decider = "deciderID",
     column_occasion = "occasionID"
   )
+  covariates <- covariates[
+    order(covariates$occasionID, covariates$deciderID),
+  ]
 
   params <- choice_parameters(
-    beta = rep(0.1, nrow(choice_effects))
+    beta = rep(0.1, nrow(choice_effects)),
+    Omega = matrix(1)
   )
 
+  ids <- extract_choice_identifiers(covariates)
+  set.seed(1)
+  preferences <- generate_choice_preferences(
+    choice_effects,
+    params,
+    ids
+  )
+  set.seed(1)
   responses <- generate_choice_responses(
     choice_effects = choice_effects,
     choice_covariates = covariates,
-    choice_parameters = params
+    choice_parameters = params,
+    choice_identifiers = ids,
+    choice_preferences = preferences
   )
+  design <- design_matrices(covariates, choice_effects, ids)
+  preferences <- split_choice_preferences(preferences, ids)
+  column_decider <- attr(ids, "column_decider")
+  preference_index <- match(
+    ids[[column_decider]],
+    unique(ids[[column_decider]])
+  )
+  preferences <- preferences[preference_index]
+  alternatives <- as.character(attr(choice_effects, "choice_alternatives"))
+  set.seed(1)
+  expected <- vapply(seq_along(design), function(i) {
+    utility <- as.vector(design[[i]] %*% preferences[[i]])
+    error <- -log(-log(stats::runif(length(utility))))
+    alternatives[which.max(utility + error)]
+  }, character(1))
 
   expect_s3_class(responses, "choice_responses")
+  expect_identical(responses$choice, expected)
   expect_true(all(responses$choice %in% c("A", "B")))
 })
 

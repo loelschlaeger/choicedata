@@ -19,6 +19,7 @@
 #' @importFrom optimizeR ParameterSpaces
 #' @importFrom patchwork wrap_plots
 #' @importFrom Rdpack reprompt
+#' @importFrom Rcpp evalCpp
 #' @importFrom rlang :=
 #' @importFrom rlang .data
 #' @importFrom rlang sym
@@ -26,6 +27,7 @@
 #' @importFrom tidyr pivot_wider
 #' @importFrom utils head
 #' @importFrom utils tail
+#' @useDynLib choicedata, .registration = TRUE
 ## usethis namespace: end
 NULL
 

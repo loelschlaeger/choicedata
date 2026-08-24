@@ -39,19 +39,15 @@
 #' Forwarded to the underlying probability engine to control additional input
 #' validation.
 #'
-#' @param lower_bound \[`numeric(1)`\]\cr
-#' The minimum probability used when computing the log-likelihood. Values below
-#' this bound are truncated to avoid taking the logarithm of zero.
-#'
 #' @param ...
 #' Additional arguments passed to the underlying probability engine.
 #'
 #' @return
 #' `choice_likelihood()` returns an object of class `choice_likelihood`, which
-#' is a `list` containing the design matrices, the choice indices, and the
-#' identifiers. `compute_choice_likelihood()` returns a single numeric value
-#' with the (negative) log-likelihood or likelihood, depending on `logarithm`
-#' and `negative`.
+#' is a `list` containing the design matrices, choice indices, and identifiers.
+#' `compute_choice_likelihood()` returns a single numeric value with the
+#' (negative) log-likelihood or likelihood, depending on `logarithm` and
+#' `negative`.
 #'
 #' @export
 #'
@@ -96,7 +92,6 @@ choice_likelihood <- function(
     choice_effects,
     choice_identifiers = extract_choice_identifiers(choice_data),
     input_checks = TRUE,
-    lower_bound = 1e-10,
     ...
   ) {
 
@@ -108,11 +103,6 @@ choice_likelihood <- function(
     check = checkmate::check_flag(input_checks),
     var_name = "input_checks"
   )
-  oeli::input_check_response(
-    check = checkmate::check_number(lower_bound, lower = 0, finite = TRUE),
-    var_name = "lower_bound"
-  )
-
   ### prepare repeated-use quantities
   design_list <- design_matrices(
     x = choice_data,
@@ -135,6 +125,14 @@ choice_likelihood <- function(
       ...
     ) {
 
+    oeli::input_check_response(
+      check = checkmate::check_flag(logarithm),
+      var_name = "logarithm"
+    )
+    oeli::input_check_response(
+      check = checkmate::check_flag(negative),
+      var_name = "negative"
+    )
     params <- choice_parameters
     if (!is.list(params)) {
       params <- switch_parameter_space(
@@ -154,8 +152,10 @@ choice_likelihood <- function(
     if (length(extra_args)) {
       prob_args_eval <- utils::modifyList(prob_args_eval, extra_args)
     }
+    prob_args_eval$numeric_only <- TRUE
+    prob_args_eval$logarithm <- TRUE
 
-    probabilities <- do.call(
+    log_prob <- do.call(
       evaluate_choice_probabilities,
       c(
         list(
@@ -170,22 +170,14 @@ choice_likelihood <- function(
         prob_args_eval
       )
     )
-    if (!inherits(probabilities, "choice_probabilities")) {
+    if (!is.numeric(log_prob) || anyNA(log_prob)) {
       cli::cli_abort(
-        "Evaluating the likelihood requires valid choice probabilities.",
+        "Evaluating the likelihood requires numeric log contributions.",
         call = NULL
       )
     }
-    column_probabilities <- attr(probabilities, "column_probabilities")
-    prob_column <- if (length(column_probabilities)) {
-      column_probabilities[1]
-    } else {
-      "choice_probability"
-    }
-    prob_vec <- as.numeric(probabilities[[prob_column]])
-    prob_vec <- pmax(prob_vec, lower_bound)
-
-    value <- if (isTRUE(logarithm)) sum(log(prob_vec)) else prod(prob_vec)
+    log_value <- sum(log_prob)
+    value <- if (isTRUE(logarithm)) log_value else exp(log_value)
     if (isTRUE(negative)) -value else value
   }
 

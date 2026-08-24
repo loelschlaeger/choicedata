@@ -31,10 +31,14 @@ Imports:
     oeli (>= 0.7.5),
     patchwork,
     Rdpack,
+    Rcpp,
     rlang,
     tibble,
     tidyr,
     utils
+LinkingTo:
+    Rcpp,
+    RcppArmadillo
 RdMacros: Rdpack
 LazyData: true
 LazyDataCompression: xz

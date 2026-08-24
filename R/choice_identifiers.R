@@ -296,7 +296,8 @@ read_Tp <- function(choice_identifiers) {
   if (is.null(column_occasion)) {
     rep(1L, times = nrow(choice_identifiers))
   } else {
-    as.integer(table(choice_identifiers[, column_decider]))
+    decider_ids <- choice_identifiers[[column_decider]]
+    tabulate(match(decider_ids, unique(decider_ids)))
   }
 }
 

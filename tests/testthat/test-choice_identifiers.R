@@ -205,9 +205,10 @@ test_that("Tp can be expanded", {
 
 test_that("Tp can be read", {
   choice_identifiers <- generate_choice_identifiers(N = 3, Tp = 1:3)
+  choice_identifiers <- choice_identifiers[c(2:4, 1, 5:6), ]
   expect_equal(
     read_Tp(choice_identifiers),
-    1:3
+    c(2L, 3L, 1L)
   )
   choice_identifiers <- generate_choice_identifiers(N = 3, Tp = 2, column_occasion = NULL)
   expect_equal(
