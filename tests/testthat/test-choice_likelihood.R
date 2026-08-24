@@ -30,25 +30,16 @@ test_that("choice_likelihood precomputes sufficient statistics", {
 
   choice_parameters <- generate_choice_parameters(choice_effects)
 
-  direct_eval <- compute_choice_likelihood(
-    choice_parameters = choice_parameters,
-    choice_data = choice_data,
-    choice_effects = choice_effects,
-    logarithm = TRUE
-  )
   precomp_eval <- compute_choice_likelihood(
     choice_parameters = choice_parameters,
-    choice_data = likelihood,
-    choice_effects = choice_effects,
+    choice_likelihood = likelihood,
     logarithm = TRUE
   )
-  expect_equal(direct_eval, precomp_eval)
 
   optim_space <- switch_parameter_space(choice_parameters, choice_effects)
   optim_eval <- compute_choice_likelihood(
     choice_parameters = optim_space,
-    choice_data = likelihood,
-    choice_effects = choice_effects,
+    choice_likelihood = likelihood,
     logarithm = TRUE
   )
   expect_equal(precomp_eval, optim_eval)
@@ -96,8 +87,7 @@ test_that("choice likelihood handles ordered data", {
   )
   expect_silent(compute_choice_likelihood(
     choice_parameters = params,
-    choice_data = likelihood,
-    choice_effects = ordered_effects
+    choice_likelihood = likelihood
   ))
 })
 

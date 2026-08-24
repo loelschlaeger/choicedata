@@ -321,9 +321,9 @@ test_that("compute_choice_probabilities returns per-alternative probit probabili
   choice_only_probabilities <- compute_choice_probabilities(
     choice_parameters = params,
     choice_data = ch_data,
-    choice_effects = choice_effects,
-    choice_only = TRUE
+    choice_effects = choice_effects
   )
+  expect_s3_class(choice_only_probabilities, "tbl_df")
 
   chosen_alternatives <- as.character(train_choice$choice)
   chosen_indices <- match(chosen_alternatives, alternative_columns)

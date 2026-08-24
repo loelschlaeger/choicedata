@@ -16,7 +16,7 @@
 #'
 #'
 #' @return
-#' An object of class `choice_preferences`, which is a `data.frame` with the
+#' An object of class `choice_preferences`, which is a `tibble` with the
 #' deciders' preferences. The column names are the names of the effects in the
 #' choice model. The first column contains the decider identifiers.
 #'
@@ -54,7 +54,7 @@
 #' head(choice_preferences)
 
 choice_preferences <- function(
-    data_frame, column_decider = colnames(data_frame)[1]
+    data_frame, column_decider = "deciderID"
   ) {
 
   ### input checks
@@ -73,12 +73,12 @@ choice_preferences <- function(
   column_order <- c(
     column_decider, setdiff(colnames(data_frame), column_decider)
   )
-  data_frame <- data_frame[, column_order]
+  data_frame <- tibble::as_tibble(data_frame[, column_order, drop = FALSE])
 
   ### build 'choice_preferences' object
   structure(
     data_frame,
-    class = c("choice_preferences", "data.frame"),
+    class = tibble_class("choice_preferences", class(data_frame)),
     column_decider = column_decider
   )
 }
@@ -113,15 +113,9 @@ is.choice_preferences <- function(
 
 generate_choice_preferences <- function(
     choice_effects,
-    choice_parameters = NULL,
+    choice_parameters = generate_choice_parameters(choice_effects),
     choice_identifiers = generate_choice_identifiers(N = 100)
   ) {
-
-  if (missing(choice_parameters)) {
-    choice_parameters <- generate_choice_parameters(
-      choice_effects = choice_effects
-    )
-  }
 
   ### input checks
   check_not_missing(choice_effects)
@@ -212,4 +206,3 @@ split_choice_preferences <- function(
     }
   })
 }
-

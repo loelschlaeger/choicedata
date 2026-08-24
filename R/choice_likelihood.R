@@ -9,8 +9,7 @@
 #'   these quantities so that repeated likelihood evaluations during maximum
 #'   likelihood estimation avoid redundant work.
 #' - `compute_choice_likelihood()` evaluates the (log-)likelihood for given
-#'   `choice_parameters`. It can either take the original choice objects or a
-#'   pre-computed `choice_likelihood` object.
+#'   `choice_parameters` and a pre-computed `choice_likelihood` object.
 #'
 #' @param choice_data \[`choice_data`\]\cr
 #' A \code{\link{choice_data}} object with the observed choices.
@@ -27,6 +26,9 @@
 #' \code{\link{switch_parameter_space}}. When a numeric vector in optimization
 #' space is supplied, it is converted via `switch_parameter_space()`.
 #'
+#' @param choice_likelihood \[`choice_likelihood`\]\cr
+#' A pre-computed object returned by `choice_likelihood()`.
+#'
 #' @param logarithm \[`logical(1)`\]\cr
 #' Return the log-likelihood? If `FALSE`, the likelihood is returned.
 #'
@@ -34,16 +36,15 @@
 #' Return the negative (log-)likelihood? Useful for minimization routines.
 #'
 #' @param input_checks \[`logical(1)`\]\cr
-#' Forwarded to \code{\link{choiceprob_probit}} or
-#' \code{\link{choiceprob_logit}} to control additional input validation.
+#' Forwarded to the underlying probability engine to control additional input
+#' validation.
 #'
 #' @param lower_bound \[`numeric(1)`\]\cr
 #' The minimum probability used when computing the log-likelihood. Values below
 #' this bound are truncated to avoid taking the logarithm of zero.
 #'
 #' @param ...
-#' Additional arguments passed to \code{\link{choiceprob_probit}} or
-#' \code{\link{choiceprob_logit}}.
+#' Additional arguments passed to the underlying probability engine.
 #'
 #' @return
 #' `choice_likelihood()` returns an object of class `choice_likelihood`, which
@@ -86,8 +87,7 @@
 #'
 #' compute_choice_likelihood(
 #'   choice_parameters = choice_parameters,
-#'   choice_data = likelihood,
-#'   choice_effects = choice_effects,
+#'   choice_likelihood = likelihood,
 #'   logarithm = TRUE
 #' )
 
@@ -214,39 +214,19 @@ is.choice_likelihood <- function(
 
 compute_choice_likelihood <- function(
     choice_parameters,
-    choice_data,
-    choice_effects,
+    choice_likelihood,
     logarithm = TRUE,
     negative = FALSE,
-    lower_bound = 1e-10,
-    input_checks = TRUE,
     ...
   ) {
 
-  ### prepare likelihood object
-  likelihood <- if (inherits(choice_data, "choice_likelihood")) {
-    is.choice_likelihood(choice_data, error = TRUE)
-    if (missing(choice_effects)) {
-      choice_effects <- attr(choice_data, "choice_effects")
-    }
-    choice_data
-  } else {
-    choice_likelihood(
-      choice_data = choice_data,
-      choice_effects = choice_effects,
-      choice_identifiers = extract_choice_identifiers(choice_data),
-      input_checks = input_checks,
-      lower_bound = lower_bound,
-      ...
-    )
-  }
+  is.choice_likelihood(choice_likelihood, error = TRUE)
 
   ### evaluate (log-)likelihood
-  likelihood$objective(
+  choice_likelihood$objective(
     choice_parameters = choice_parameters,
     logarithm = logarithm,
     negative = negative,
     ...
   )
 }
-

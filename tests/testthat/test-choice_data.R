@@ -280,6 +280,16 @@ test_that("alternative names can be guessed from wide format", {
 
 test_that("data can be transformed between long and wide format", {
 
+  expect_s3_class(
+    long_to_wide(
+      travel_mode_choice,
+      column_alternative = "mode",
+      column_decider = "individual"
+    ),
+    "tbl_df"
+  )
+  expect_s3_class(wide_to_long(train_choice), "tbl_df")
+
   ### from long format to wide format
   expect_identical(
     long_to_wide(
@@ -810,4 +820,3 @@ test_that("ranked simulations support logit and probit error terms", {
     expect_equal(simulated_data$choice, inferred_top, info = error_term)
   }
 })
-

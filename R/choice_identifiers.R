@@ -58,7 +58,7 @@ choice_identifiers <- function(
   format = "wide",
   column_decider = "deciderID",
   column_occasion = "occasionID",
-  cross_section = FALSE
+  cross_section = is.null(column_occasion)
 ) {
 
   ### input checks

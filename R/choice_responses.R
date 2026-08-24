@@ -16,7 +16,7 @@
 #' @inheritParams choice_identifiers
 #'
 #' @return
-#' A `data.frame`.
+#' A `choice_responses` tibble.
 #'
 #' @export
 #'
@@ -37,7 +37,7 @@ choice_responses <- function(
     column_choice = "choice",
     column_decider = "deciderID",
     column_occasion = NULL,
-    cross_section = FALSE
+    cross_section = is.null(column_occasion)
   ) {
 
   ### input checks
@@ -69,8 +69,9 @@ choice_responses <- function(
     )
   }
   choices <- data_frame[choice_cols]
+  responses <- tibble::as_tibble(cbind(choice_identifiers, choices))
   structure(
-    cbind(choice_identifiers, choices),
+    responses,
     class = tibble_class("choice_responses", class(data_frame)),
     column_decider = attr(choice_identifiers, "column_decider"),
     column_occasion = attr(choice_identifiers, "column_occasion"),
@@ -307,4 +308,3 @@ generate_choice_responses <- function(
     cross_section = cross_section
   )
 }
-

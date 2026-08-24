@@ -5,11 +5,11 @@
 \alias{generate_choice_preferences}
 \title{Define choice preferences}
 \usage{
-choice_preferences(data_frame, column_decider = colnames(data_frame)[1])
+choice_preferences(data_frame, column_decider = "deciderID")
 
 generate_choice_preferences(
   choice_effects,
-  choice_parameters = NULL,
+  choice_parameters = generate_choice_parameters(choice_effects),
   choice_identifiers = generate_choice_identifiers(N = 100)
 )
 }
@@ -31,7 +31,7 @@ A \code{\link{choice_parameters}} object.}
 A \code{\link{choice_identifiers}} object.}
 }
 \value{
-An object of class \code{choice_preferences}, which is a \code{data.frame} with the
+An object of class \code{choice_preferences}, which is a \code{tibble} with the
 deciders' preferences. The column names are the names of the effects in the
 choice model. The first column contains the decider identifiers.
 }

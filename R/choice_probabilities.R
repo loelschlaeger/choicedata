@@ -21,7 +21,7 @@
 #' probabilities for the chosen alternatives.
 #'
 #' @return
-#' A `choice_probabilities` S3 object (a data frame) that stores additional
+#' A `choice_probabilities` S3 object (a tibble) that stores additional
 #' metadata in attributes such as `column_probabilities`, `choice_only`, and the
 #' identifier columns. These attributes are used by downstream helpers to
 #' reconstruct the original structure.
@@ -61,7 +61,7 @@ choice_probabilities <- function(
   choice_only = TRUE,
   column_decider = "deciderID",
   column_occasion = NULL,
-  cross_section = FALSE,
+  cross_section = is.null(column_occasion),
   column_probabilities = if (choice_only) "choice_probability"
 ) {
 
@@ -88,12 +88,12 @@ choice_probabilities <- function(
   )
 
   ### build 'choice_probabilities' object
-  choice_probabilities <- cbind(
+  choice_probabilities <- tibble::as_tibble(cbind(
     choice_identifiers, data_frame[column_probabilities]
-  )
+  ))
   structure(
     choice_probabilities,
-    class = unique(c("choice_probabilities", "data.frame", class(data_frame))),
+    class = tibble_class("choice_probabilities", class(data_frame)),
     column_decider = attr(choice_identifiers, "column_decider"),
     column_occasion = attr(choice_identifiers, "column_occasion"),
     cross_section = attr(choice_identifiers, "cross_section"),
@@ -128,7 +128,7 @@ compute_choice_probabilities <- function(
   choice_parameters,
   choice_data,
   choice_effects,
-  choice_only = FALSE,
+  choice_only = TRUE,
   input_checks = TRUE,
   ...
 ) {
@@ -519,9 +519,7 @@ compute_ordered_panel_probability <- function(
 #' are computed, which is equivalent to computing choice probabilities in the
 #' regular (maximum utility) model.
 #'
-#' @keywords probability
-#'
-#' @export
+#' @noRd
 
 choiceprob_probit <- function(
     X, y = NULL, Tp = NULL, cml = "no", beta, Omega = NULL, Sigma, gamma = NULL,
@@ -939,8 +937,7 @@ choiceprob_probit_input_checks <- function(
   result
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mnp <- function(
     X, y, beta, Sigma,
@@ -971,8 +968,7 @@ choiceprob_mnp <- function(
   })
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mnp_ordered <- function(
     X, y, beta, Sigma, gamma, lower_bound = 0
@@ -998,8 +994,7 @@ choiceprob_mnp_ordered <- function(
   })
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mmnp <- function(
     X, y, beta, Omega, Sigma,
@@ -1035,8 +1030,7 @@ choiceprob_mmnp <- function(
   })
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mmnp_ordered <- function(
     X, y, beta, Omega, Sigma, gamma,
@@ -1068,8 +1062,7 @@ choiceprob_mmnp_ordered <- function(
   })
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mmnp_lc <- function(
     X, y, beta, Omega, Sigma, weights,
@@ -1089,8 +1082,7 @@ choiceprob_mmnp_lc <- function(
   Reduce("+", probs)
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mmnp_ordered_lc <- function(
     X, y, beta, Omega, Sigma, gamma, weights,
@@ -1108,8 +1100,7 @@ choiceprob_mmnp_ordered_lc <- function(
   Reduce("+", probs)
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mmnp_panel <- function(
     X, y,
@@ -1153,8 +1144,7 @@ choiceprob_mmnp_panel <- function(
   probabilities
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mmnp_ordered_panel <- function(
     X, y,
@@ -1207,8 +1197,7 @@ choiceprob_mmnp_ordered_panel <- function(
   probabilities
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mmnp_panel_lc <- function(
     X, y,
@@ -1231,8 +1220,7 @@ choiceprob_mmnp_panel_lc <- function(
   Reduce("+", probs)
 }
 
-#' @rdname choiceprob_probit
-#' @export
+#' @noRd
 
 choiceprob_mmnp_ordered_panel_lc <- function(
     X, y,
@@ -1285,9 +1273,7 @@ choiceprob_mmnp_ordered_panel_lc <- function(
 #' `y` is supplied. If `y` is `NULL`, a matrix with one row per observation and
 #' one column per alternative is returned.
 #'
-#' @keywords probability
-#'
-#' @export
+#' @noRd
 
 choiceprob_logit <- function(
     X, y = NULL, Tp = NULL, beta, Omega = NULL, gamma = NULL,

@@ -308,31 +308,16 @@ is.choice_data <- function(
 generate_choice_data <- function(
   choice_effects,
   choice_identifiers = generate_choice_identifiers(N = 100),
-  choice_covariates = NULL,
-  choice_parameters = NULL,
-  choice_preferences = NULL,
+  choice_covariates = generate_choice_covariates(
+    choice_effects, choice_identifiers
+  ),
+  choice_parameters = generate_choice_parameters(choice_effects),
+  choice_preferences = generate_choice_preferences(
+    choice_effects, choice_parameters, choice_identifiers
+  ),
   column_choice = "choice",
   choice_type = c("auto", "discrete", "ordered", "ranked")
 ) {
-
-  if (missing(choice_covariates)) {
-    choice_covariates <- generate_choice_covariates(
-      choice_effects = choice_effects,
-      choice_identifiers = choice_identifiers
-    )
-  }
-  if (missing(choice_parameters)) {
-    choice_parameters <- generate_choice_parameters(
-      choice_effects = choice_effects
-    )
-  }
-  if (missing(choice_preferences)) {
-    choice_preferences <- generate_choice_preferences(
-      choice_parameters = choice_parameters,
-      choice_effects = choice_effects,
-      choice_identifiers = choice_identifiers
-    )
-  }
 
   choice_alternatives <- attr(choice_effects, "choice_alternatives")
   ordered_alternatives <- if (is.null(choice_alternatives)) {
@@ -613,7 +598,7 @@ long_to_wide <- function(
     }
     wide <- dplyr::left_join(wide, choice_labels, by = id_cols_join)
   }
-  wide
+  tibble::as_tibble(wide)
 }
 
 #' @noRd
@@ -755,7 +740,7 @@ wide_to_long <- function(
       }
     }
   }
-  long
+  tibble::as_tibble(long)
 }
 
 #' @noRd

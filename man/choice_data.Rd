@@ -24,9 +24,10 @@ choice_data(
 generate_choice_data(
   choice_effects,
   choice_identifiers = generate_choice_identifiers(N = 100),
-  choice_covariates = NULL,
-  choice_parameters = NULL,
-  choice_preferences = NULL,
+  choice_covariates = generate_choice_covariates(choice_effects, choice_identifiers),
+  choice_parameters = generate_choice_parameters(choice_effects),
+  choice_preferences = generate_choice_preferences(choice_effects, choice_parameters,
+    choice_identifiers),
   column_choice = "choice",
   choice_type = c("auto", "discrete", "ordered", "ranked")
 )

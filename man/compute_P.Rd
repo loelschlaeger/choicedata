@@ -2,29 +2,17 @@
 % Please edit documentation in R/choice_effects.R
 \name{compute_P}
 \alias{compute_P}
-\alias{compute_P_d}
-\alias{compute_P_r}
-\title{Number of model effects}
+\title{Count model effects}
 \usage{
 compute_P(choice_effects)
-
-compute_P_d(choice_effects)
-
-compute_P_r(choice_effects)
 }
 \arguments{
 \item{choice_effects}{[\code{choice_effects}]\cr
 A \code{\link{choice_effects}} object.}
 }
 \value{
-An \code{integer}, the number of model effects.
+An integer with the number of model effects.
 }
 \description{
-These helper functions count the number of model effects:
-\itemize{
-\item \code{compute_P()} returns the total number \code{P} of model effects.
-\item \code{compute_P_d()} returns the number \code{P_d} of non-random effects.
-\item \code{compute_P_r()} returns the number \code{P_r} of random effects.
+\code{compute_P()} returns the total number of effects in a choice model.
 }
-}
-\keyword{model}

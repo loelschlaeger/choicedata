@@ -10,7 +10,7 @@ choice_probabilities(
   choice_only = TRUE,
   column_decider = "deciderID",
   column_occasion = NULL,
-  cross_section = FALSE,
+  cross_section = is.null(column_occasion),
   column_probabilities = if (choice_only) "choice_probability"
 )
 
@@ -18,7 +18,7 @@ compute_choice_probabilities(
   choice_parameters,
   choice_data,
   choice_effects,
-  choice_only = FALSE,
+  choice_only = TRUE,
   input_checks = TRUE,
   ...
 )
@@ -64,7 +64,7 @@ probabilities?}
 \item{...}{Passed to the underlying probability computation routine.}
 }
 \value{
-A \code{choice_probabilities} S3 object (a data frame) that stores additional
+A \code{choice_probabilities} S3 object (a tibble) that stores additional
 metadata in attributes such as \code{column_probabilities}, \code{choice_only}, and the
 identifier columns. These attributes are used by downstream helpers to
 reconstruct the original structure.

@@ -310,22 +310,18 @@ print.choice_effects <- function(x, ...) {
   print.data.frame(x)
 }
 
-#' Number of model effects
+#' Count model effects
 #'
 #' @description
-#' These helper functions count the number of model effects:
-#'
-#' - `compute_P()` returns the total number `P` of model effects.
-#' - `compute_P_d()` returns the number `P_d` of non-random effects.
-#' - `compute_P_r()` returns the number `P_r` of random effects.
+#' `compute_P()` returns the total number of effects in a choice model.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
 #' A \code{\link{choice_effects}} object.
 #'
 #' @return
-#' An `integer`, the number of model effects.
+#' An integer with the number of model effects.
 #'
-#' @keywords model
+#' @export
 
 compute_P <- function(choice_effects) {
   is.choice_effects(choice_effects, error = TRUE)
@@ -334,14 +330,14 @@ compute_P <- function(choice_effects) {
   as.integer(P_d + P_r)
 }
 
-#' @rdname compute_P
+#' @noRd
 
 compute_P_d <- function(choice_effects) {
   is.choice_effects(choice_effects, error = TRUE)
   as.integer(sum(is.na(choice_effects$mixing)))
 }
 
-#' @rdname compute_P
+#' @noRd
 
 compute_P_r <- function(choice_effects) {
   is.choice_effects(choice_effects, error = TRUE)

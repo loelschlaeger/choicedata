@@ -13,6 +13,7 @@ test_that("choice preferences can be generated", {
   expect_true(
     is.choice_preferences(choice_preferences)
   )
+  expect_s3_class(choice_preferences, "tbl_df")
   prefs_list <- choicedata:::split_choice_preferences(choice_preferences)
   expect_length(prefs_list, nrow(choice_preferences))
   expect_equal(
@@ -23,4 +24,3 @@ test_that("choice preferences can be generated", {
     )
   )
 })
-

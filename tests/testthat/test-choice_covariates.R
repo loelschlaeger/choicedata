@@ -171,4 +171,3 @@ test_that("design matrices can be build", {
     choice_effects = choice_effects
   )
 })
-

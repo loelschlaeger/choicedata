@@ -16,12 +16,9 @@ choice_likelihood(
 
 compute_choice_likelihood(
   choice_parameters,
-  choice_data,
-  choice_effects,
+  choice_likelihood,
   logarithm = TRUE,
   negative = FALSE,
-  lower_bound = 1e-10,
-  input_checks = TRUE,
   ...
 )
 }
@@ -37,20 +34,22 @@ A \code{\link{choice_identifiers}} object. The default extracts identifiers
 from \code{choice_data}.}
 
 \item{input_checks}{[\code{logical(1)}]\cr
-Forwarded to \code{\link{choiceprob_probit}} or
-\code{\link{choiceprob_logit}} to control additional input validation.}
+Forwarded to the underlying probability engine to control additional input
+validation.}
 
 \item{lower_bound}{[\code{numeric(1)}]\cr
 The minimum probability used when computing the log-likelihood. Values below
 this bound are truncated to avoid taking the logarithm of zero.}
 
-\item{...}{Additional arguments passed to \code{\link{choiceprob_probit}} or
-\code{\link{choiceprob_logit}}.}
+\item{...}{Additional arguments passed to the underlying probability engine.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{list}]\cr
 A \code{\link{choice_parameters}} object or a list as returned by
 \code{\link{switch_parameter_space}}. When a numeric vector in optimization
 space is supplied, it is converted via \code{switch_parameter_space()}.}
+
+\item{choice_likelihood}{[\code{choice_likelihood}]\cr
+A pre-computed object returned by \code{choice_likelihood()}.}
 
 \item{logarithm}{[\code{logical(1)}]\cr
 Return the log-likelihood? If \code{FALSE}, the likelihood is returned.}
@@ -74,8 +73,7 @@ implied by \code{choice_data} and \code{choice_effects}. The returned object sto
 these quantities so that repeated likelihood evaluations during maximum
 likelihood estimation avoid redundant work.
 \item \code{compute_choice_likelihood()} evaluates the (log-)likelihood for given
-\code{choice_parameters}. It can either take the original choice objects or a
-pre-computed \code{choice_likelihood} object.
+\code{choice_parameters} and a pre-computed \code{choice_likelihood} object.
 }
 }
 \examples{
@@ -108,8 +106,7 @@ choice_parameters <- generate_choice_parameters(choice_effects)
 
 compute_choice_likelihood(
   choice_parameters = choice_parameters,
-  choice_data = likelihood,
-  choice_effects = choice_effects,
+  choice_likelihood = likelihood,
   logarithm = TRUE
 )
 }

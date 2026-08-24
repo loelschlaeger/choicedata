@@ -10,7 +10,7 @@ choice_responses(
   column_choice = "choice",
   column_decider = "deciderID",
   column_occasion = NULL,
-  cross_section = FALSE
+  cross_section = is.null(column_occasion)
 )
 
 generate_choice_responses(
@@ -62,7 +62,7 @@ from \code{choice_alternatives}, or explicitly request \code{"discrete"},
 \code{"ordered"}, or \code{"ranked"} outcomes.}
 }
 \value{
-A \code{data.frame}.
+A \code{choice_responses} tibble.
 }
 \description{
 The \code{choice_responses} object defines the observed discrete responses.

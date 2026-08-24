@@ -43,8 +43,7 @@
 #' @section Design matrices:
 #' A covariate design matrix contains the choice covariates of a decider at a
 #' choice occasion. It is of dimension \code{J} x \code{P}, where \code{J} is
-#' the number of choice alternatives and \code{P} the number of effects. See
-#' \code{\link{compute_P}} to compute the number \code{P}.
+#' the number of choice alternatives and \code{P} the number of effects.
 #'
 #' @export
 #'
@@ -614,4 +613,3 @@ extract_choice_indices <- function(
 
   structure(choice_list, Tp = prep$Tp)
 }
-
