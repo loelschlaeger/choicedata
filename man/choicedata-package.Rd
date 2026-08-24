@@ -14,7 +14,7 @@ Offers a set of objects tailored to simplify working with choice data. It enable
 Useful links:
 \itemize{
   \item \url{https://github.com/loelschlaeger/choicedata}
-  \item \url{http://loelschlaeger.de/choicedata/}
+  \item \url{https://loelschlaeger.de/choicedata/}
   \item Report bugs at \url{https://github.com/loelschlaeger/choicedata/issues}
 }
 

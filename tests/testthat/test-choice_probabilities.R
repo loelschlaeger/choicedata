@@ -53,33 +53,6 @@ test_that("MNP probabilities can be computed", {
     probs,
     probs_all[cbind(seq_len(nrow(probs_all)), unlist(data$y))]
   )
-
-  ### verify via MLE
-  skip() # because Rprobit:::SJ is not exported
-  nll <- function(theta, data) {
-    beta <- theta[ind_beta]
-    Sigma <- oeli::undiff_cov(oeli::chol_to_cov(c(1, theta[ind_Sigma])))
-    probs <- choiceprob_mnp(
-      X = data$X,
-      y = data$y,
-      beta = beta,
-      Sigma = Sigma,
-      gcdf = function(upper, corr) exp(Rprobit:::SJ(x = upper, r = corr)),
-      lower_bound = 1e-6
-    )
-    -sum(log(probs))
-  }
-  out <- suppressWarnings(
-    nlm(nll, theta_true, data, print.level = 0, iterlim = 100)
-  )
-
-  ### check deviation
-  beta_true <- true_pars$beta
-  beta_estimate <- out$estimate[ind_beta] * scale
-  expect_lt(sqrt(sum(beta_true - beta_estimate)^2), 2)
-  Sigma_true <- rbind(0, cbind(0, oeli::diff_cov(true_pars$Sigma, ref = 1)))
-  Sigma_estimate <- oeli::undiff_cov(oeli::chol_to_cov(c(1, out$estimate[ind_Sigma]))) * scale^2
-  expect_lt(sqrt(sum(Sigma_true - Sigma_estimate)^2), 2)
 })
 
 test_that("MNP ordered probabilities can be computed", {

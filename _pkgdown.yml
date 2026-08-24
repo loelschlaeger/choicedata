@@ -2,7 +2,7 @@ template:
   bootstrap: 5
   bootswatch: simplex
 
-url: http://loelschlaeger.de/choicedata/
+url: https://loelschlaeger.de/choicedata/
 
 home:
   title: Working with Choice Data in R

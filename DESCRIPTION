@@ -1,7 +1,7 @@
 Package: choicedata
 Type: Package
 Title: Working with Choice Data
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person("Lennart", "Oelschl\u00e4ger", 
            email = "oelschlaeger.lennart@gmail.com", 
@@ -12,7 +12,7 @@ Description: Offers a set of objects tailored to simplify working with choice
     likelihood of various types of choice models based on given data.
 License: GPL (>= 3)
 Encoding: UTF-8
-URL: https://github.com/loelschlaeger/choicedata, http://loelschlaeger.de/choicedata/
+URL: https://github.com/loelschlaeger/choicedata, https://loelschlaeger.de/choicedata/
 BugReports: https://github.com/loelschlaeger/choicedata/issues
 Suggests:
     mlogit,
