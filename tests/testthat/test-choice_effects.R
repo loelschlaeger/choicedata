@@ -108,6 +108,13 @@ test_that("misspecified effects can be detected", {
     is.choice_effects(1),
     "is bad"
   )
+  expect_error(
+    choice_effects(
+      choice_formula(choice ~ x_A | 0 | x),
+      choice_alternatives(J = 2)
+    ),
+    "effect names"
+  )
 })
 
 test_that("ordered alternatives restrict effect specification", {

@@ -19,7 +19,8 @@ check_alternatives <- function(alternatives, J = length(alternatives)) {
   check_not_missing(alternatives)
   check_J(J)
   check <- checkmate::check_character(
-    alternatives, any.missing = FALSE, len = J, unique = TRUE
+    alternatives, min.chars = 1, any.missing = FALSE, len = J,
+    unique = TRUE
   )
   if (!isTRUE(check)) {
     cli::cli_abort("Input {.var alternatives} is bad: {check}", call = NULL)

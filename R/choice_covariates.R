@@ -437,8 +437,17 @@ design_matrices <- function(
   )
 
   prep <- prepare_choice_long_data(x, choice_effects, choice_identifiers)
-  choice_formula <- attr(choice_effects, "choice_formula")
-  choice_formula <- resolve_choice_formula(choice_formula, x)
+  stored_formula <- attr(choice_effects, "choice_formula")
+  choice_formula <- resolve_choice_formula(stored_formula, x)
+  oeli::input_check_response(
+    check = if (identical(
+      stored_formula$covariate_types,
+      choice_formula$covariate_types
+    )) TRUE else paste(
+      "Does not match `x`; recreate `choice_effects` with `choice_data = x`"
+    ),
+    var_name = "choice_effects"
+  )
   form <- choice_formula$formula
   P <- nrow(choice_effects)
 
@@ -506,6 +515,10 @@ design_matrices <- function(
       }
     }
 
+    oeli::input_check_response(
+      check = if (all(is.finite(X_nt))) TRUE else "Must contain finite values",
+      var_name = "design matrix"
+    )
     design_list[[k]] <- X_nt
   }
 

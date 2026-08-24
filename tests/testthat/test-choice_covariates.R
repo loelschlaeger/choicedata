@@ -109,6 +109,12 @@ test_that("design matrices can be build", {
     x = choice_covariates,
     choice_effects = choice_effects
   )
+  expect_length(design_matrices, 15)
+  expect_true(all(vapply(
+    design_matrices,
+    function(x) identical(dim(x), c(3L, nrow(choice_effects))),
+    logical(1)
+  )))
 
   ### empirical data case (wide)
   choice_data <- choice_data(
@@ -129,11 +135,24 @@ test_that("design matrices can be build", {
     ),
     choice_alternatives = choice_alternatives(
       J = 2, alternatives = c("A", "B")
-    )
+    ),
+    choice_data = choice_data
   )
   design_matrices <- design_matrices(
     x = choice_data,
     choice_effects = choice_effects
+  )
+  expect_identical(
+    colnames(design_matrices[[1]]),
+    choice_effects$effect_name
+  )
+  unresolved_effects <- choice_effects(
+    choice_formula(choice ~ factor(comfort)),
+    attr(choice_effects, "choice_alternatives")
+  )
+  expect_error(
+    design_matrices(choice_data, unresolved_effects),
+    "recreate `choice_effects`"
   )
   choice_ids <- extract_choice_identifiers(choice_data)
   choice_indices <- extract_choice_indices(
@@ -170,4 +189,9 @@ test_that("design matrices can be build", {
     x = choice_data,
     choice_effects = choice_effects
   )
+  expect_true(all(vapply(
+    design_matrices,
+    function(x) identical(dim(x), c(4L, nrow(choice_effects))),
+    logical(1)
+  )))
 })

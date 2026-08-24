@@ -7,9 +7,15 @@ test_that("choice_formula can be specified", {
     expect(Formula::is.Formula(object$formula), "bad formula")
     expect(identical(object$error_term, error_term), "bad error_term")
     expect(identical(object$choice, choice), "bad choice")
-    expect(identical(object$covariate_types, covariate_types), "bad covariate_types")
+    expect(
+      identical(object$covariate_types, covariate_types),
+      "bad covariate_types"
+    )
     expect(identical(object$ASC, ASC), "bad ASC")
-    expect(identical(object$random_effects, random_effects), "bad random_effects")
+    expect(
+      identical(object$random_effects, random_effects),
+      "bad random_effects"
+    )
   }
   expect_choice_formula(
     choice_formula(
@@ -277,6 +283,18 @@ test_that("choice_formula can be resolved", {
     new_covariate_types_2[[1]],
     c("deciderID2", "choice", "alternativeY", "brandB", "price")
   )
+
+  double <- function(x) 2 * x
+  local_formula <- choice_formula(choice ~ I(double(price)))
+  local_formula <- resolve_choice_formula(local_formula, choice_data)
+  expect_identical(
+    local_formula$covariate_types[[1]],
+    "I(double(price))"
+  )
+  expect_error(
+    resolve_choice_formula(choice_formula(choice ~ unknown), choice_data),
+    "unknown"
+  )
 })
 
 test_that("resolve_choice_formula infers alternatives with nested delimiters", {
@@ -316,4 +334,3 @@ test_that("logit error term supports random effects", {
   expect_s3_class(cf, "choice_formula")
   expect_identical(cf$error_term, "logit")
 })
-

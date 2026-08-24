@@ -91,6 +91,7 @@ choice_formula <- function(
 
   ### input checks
   formula <- check_formula(formula)
+  formula_env <- environment(formula)
   error_term <- check_error_term(error_term, choices = c("probit", "logit"))
   random_effects <- check_random_effects(random_effects, choices = c("cn"))
 
@@ -144,6 +145,7 @@ choice_formula <- function(
     sapply(covariate_types, paste, collapse = "+"), collapse = "|"
   )
   formula <- Formula::as.Formula(sprintf("%s ~ %s", choice, formula_rhs_char))
+  environment(formula) <- formula_env
   covariate_types <- lapply(covariate_types, function(x) x[!x %in% 0:1])
 
   ### check random_effects
@@ -332,6 +334,10 @@ resolve_choice_formula <- function(choice_formula, x) {
   covariate_types <- lapply(seq_len(3L), function(r) {
     mm <- oeli::try_silent(
       stats::model.matrix(form, data = x, lhs = 0, rhs = r)
+    )
+    oeli::input_check_response(
+      check = if (inherits(mm, "fail")) as.character(mm) else TRUE,
+      var_name = "formula"
     )
     fail <- inherits(mm, "fail") || is.null(mm) || ncol(mm) < 2L
     if (isTRUE(fail)) character() else colnames(mm)[-1L]

@@ -142,6 +142,10 @@ choice_effects <- function(
       delimiter = delimiter
     )
   }
+  oeli::input_check_response(
+    check = checkmate::check_character(overview$effect_name, unique = TRUE),
+    var_name = "effect names"
+  )
   overview$as_covariate <- as.logical(overview$as_covariate)
   overview$as_effect <- as.logical(overview$as_effect)
   overview$mixing <- factor(

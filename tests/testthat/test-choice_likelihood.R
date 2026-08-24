@@ -15,7 +15,8 @@ test_that("choice_likelihood precomputes sufficient statistics", {
     ),
     choice_alternatives = choice_alternatives(
       J = 2, alternatives = c("A", "B")
-    )
+    ),
+    choice_data = choice_data
   )
 
   likelihood <- choice_likelihood(

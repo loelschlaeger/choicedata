@@ -24,6 +24,10 @@ test_that("choice_alternatives can be specified and validated", {
     "Input `alternatives` is bad: Contains duplicated values, position 2"
   )
   expect_error(
+    choice_alternatives(J = 2, alternatives = c("A", "")),
+    "at least 1 characters"
+  )
+  expect_error(
     choice_alternatives(J = 2, base = "C"),
     "Input `base` is bad: Must be element of set"
   )
@@ -41,6 +45,14 @@ test_that("choice_alternatives can be specified and validated", {
   expect_s3_class(
     choice_alternatives(J = 3, alternatives = c("la", "le", "lu")),
     "choice_alternatives"
+  )
+  expect_identical(
+    as.character(choice_alternatives(3, c("C", "A", "B"))),
+    c("A", "B", "C")
+  )
+  expect_identical(
+    as.character(choice_alternatives(3, c("C", "A", "B"), ordered = TRUE)),
+    c("C", "A", "B")
   )
 })
 
