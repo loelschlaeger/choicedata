@@ -104,7 +104,10 @@ choice_likelihood <- function(
   is.choice_data(choice_data, error = TRUE)
   is.choice_effects(choice_effects, error = TRUE)
   is.choice_identifiers(choice_identifiers, error = TRUE)
-  checkmate::assert_flag(input_checks, na.ok = FALSE)
+  oeli::input_check_response(
+    check = checkmate::check_flag(input_checks),
+    var_name = "input_checks"
+  )
   oeli::input_check_response(
     check = checkmate::check_number(lower_bound, lower = 0, finite = TRUE),
     var_name = "lower_bound"
@@ -140,6 +143,11 @@ choice_likelihood <- function(
       )
     }
     is.choice_parameters(params, error = TRUE)
+    params <- validate_choice_parameters(
+      params,
+      choice_effects,
+      allow_missing = FALSE
+    )
 
     prob_args_eval <- prob_args
     extra_args <- list(...)

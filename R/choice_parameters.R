@@ -86,7 +86,12 @@ choice_parameters <- function(
   ### ensure that parameters are numerics without missing values
   for (i in seq_along(parameters)) {
     oeli::input_check_response(
-      check = checkmate::check_numeric(parameters[[i]], any.missing = FALSE),
+      check = checkmate::check_numeric(
+        parameters[[i]],
+        any.missing = FALSE,
+        finite = TRUE,
+        min.len = 1
+      ),
       var_name = names(parameters)[i]
     )
   }

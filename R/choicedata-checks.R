@@ -173,16 +173,31 @@ check_data_frame <- function(
   checkmate::assert_character(required_columns, null.ok = TRUE)
   checkmate::assert_character(forbidden_columns, null.ok = TRUE)
   oeli::input_check_response(
-    check = checkmate::check_data_frame(data_frame),
+    check = checkmate::check_data_frame(
+      data_frame, min.rows = 1, min.cols = 1
+    ),
+    var_name = "data_frame"
+  )
+  oeli::input_check_response(
+    check = if (anyNA(data_frame)) "Must not have NAs" else TRUE,
     var_name = "data_frame"
   )
   oeli::input_check_response(
     check = checkmate::check_names(
       colnames(data_frame), must.include = required_columns,
-      disjunct.from = forbidden_columns, what = "colnames"
+      disjunct.from = forbidden_columns, what = "colnames", type = "unique"
     ),
     var_name = "data_frame"
   )
+  numeric_cols <- vapply(data_frame, is.numeric, logical(1))
+  for (column in names(data_frame)[numeric_cols]) {
+    oeli::input_check_response(
+      check = checkmate::check_numeric(
+        data_frame[[column]], finite = TRUE, any.missing = FALSE
+      ),
+      var_name = column
+    )
+  }
   invisible(data_frame)
 }
 

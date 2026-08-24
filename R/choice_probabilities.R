@@ -78,6 +78,24 @@ choice_probabilities <- function(
     data_frame,
     required_columns = c(column_decider, column_occasion, column_probabilities)
   )
+  for (column in column_probabilities) {
+    oeli::input_check_response(
+      check = checkmate::check_numeric(
+        data_frame[[column]], lower = 0, upper = 1,
+        finite = TRUE, any.missing = FALSE
+      ),
+      var_name = column
+    )
+  }
+  if (!choice_only) {
+    sums <- rowSums(data_frame[column_probabilities])
+    if (any(abs(sums - 1) > sqrt(.Machine$double.eps))) {
+      cli::cli_abort(
+        "Alternative probabilities must sum to one in every row.",
+        call = NULL
+      )
+    }
+  }
 
   ### extract choice identifiers
   choice_identifiers <- choice_identifiers(
@@ -143,6 +161,11 @@ compute_choice_probabilities <- function(
   is.choice_parameters(choice_parameters, error = TRUE)
   is.choice_data(choice_data, error = TRUE)
   is.choice_effects(choice_effects, error = TRUE)
+  choice_parameters <- validate_choice_parameters(
+    choice_parameters,
+    choice_effects,
+    allow_missing = FALSE
+  )
 
   ### build design matrices and choice identifiers
   choice_identifiers <- extract_choice_identifiers(choice_data)
@@ -314,7 +337,10 @@ build_panel_chunks <- function(Tp_n, cml_type) {
   } else if (cml_type == 2L) {
     Map(c, seq_len(Tp_n)[-Tp_n], seq_len(Tp_n)[-1])
   } else {
-    stop("Unsupported composite marginal likelihood type", call. = FALSE)
+    cli::cli_abort(
+      "Unsupported composite marginal likelihood type {.val {cml_type}}.",
+      call = NULL
+    )
   }
 }
 
@@ -550,9 +576,25 @@ choiceprob_probit <- function(
   }
 
   ### determine the model type
-  if (ordered & ranked) stop()
-  if (!mixed & panel) stop()
   flags <- c(ordered, ranked, mixed, panel, lc)
+  oeli::input_check_response(
+    check = checkmate::check_logical(
+      flags, len = length(flags), any.missing = FALSE
+    ),
+    var_name = "model option flags"
+  )
+  if (ordered && ranked) {
+    cli::cli_abort(
+      "Ordered and ranked probability modes cannot be combined.",
+      call = NULL
+    )
+  }
+  if (!mixed && panel) {
+    cli::cli_abort(
+      "Panel probit probabilities require random effects.",
+      call = NULL
+    )
+  }
   model_type <- sum(flags * 2^(seq_along(flags) - 1))
   #  0: MNP
   #  1: ordered MNP
@@ -701,7 +743,7 @@ choiceprob_probit_input_checks <- function(
 
     ### X is a list
     oeli::input_check_response(
-      check = checkmate::check_list(X),
+      check = checkmate::check_list(X, min.len = 1),
       var_name = "X"
     )
 
@@ -751,6 +793,12 @@ choiceprob_probit_input_checks <- function(
     if (checkmate::test_list(beta)) {
       beta_lengths <- vapply(beta, length, integer(1))
       beta_dim <- if (length(beta_lengths)) beta_lengths[1] else 0L
+      if (length(unique(beta_lengths)) != 1L) {
+        cli::cli_abort(
+          "Coefficient vectors in {.var beta} must have equal lengths.",
+          call = NULL
+        )
+      }
     } else {
       beta_dim <- length(beta)
       beta_lengths <- beta_dim
@@ -810,10 +858,53 @@ choiceprob_probit_input_checks <- function(
     ### gamma is NULL or a numeric vector sorted in ascending order
     oeli::input_check_response(
       check = oeli::check_numeric_vector(
-        gamma, sorted = TRUE, any.missing = FALSE, null.ok = TRUE
+        gamma, sorted = TRUE, finite = TRUE, any.missing = FALSE,
+        null.ok = TRUE
       ),
       var_name = "gamma"
     )
+    if (!is.null(gamma) && any(diff(gamma) <= 0)) {
+      cli::cli_abort(
+        "Thresholds in {.var gamma} must be strictly increasing.",
+        call = NULL
+      )
+    }
+
+    ### design matrices and observed choice indices
+    J <- if (is.matrix(Sigma)) nrow(Sigma) else length(gamma) + 1L
+    expected_rows <- if (is.null(gamma)) J else 1L
+    for (n in seq_along(X)) {
+      oeli::input_check_response(
+        check = checkmate::check_matrix(
+          X[[n]], mode = "numeric", nrows = expected_rows,
+          ncols = beta_dim, any.missing = FALSE
+        ),
+        var_name = paste0("X[[", n, "]]")
+      )
+      oeli::input_check_response(
+        check = checkmate::check_numeric(
+          as.numeric(X[[n]]), finite = TRUE, any.missing = FALSE
+        ),
+        var_name = paste0("X[[", n, "]]")
+      )
+    }
+    if (!is.null(y)) {
+      for (n in seq_along(y)) {
+        oeli::input_check_response(
+          check = checkmate::check_integerish(
+            y[[n]], lower = 1, upper = J, min.len = 1,
+            any.missing = FALSE, unique = TRUE
+          ),
+          var_name = paste0("y[[", n, "]]")
+        )
+        if (!is.null(gamma) && length(y[[n]]) != 1L) {
+          cli::cli_abort(
+            "Ordered choice indices in {.var y} must be scalar.",
+            call = NULL
+          )
+        }
+      }
+    }
 
     ### weights
     if (!is.null(weights)) {
@@ -902,7 +993,9 @@ choiceprob_probit_input_checks <- function(
 
     ### lower_bound
     oeli::input_check_response(
-      check = checkmate::check_number(lower_bound, finite = TRUE),
+      check = checkmate::check_number(
+        lower_bound, lower = 0, upper = 1, finite = TRUE
+      ),
       var_name = "lower_bound"
     )
 
@@ -1391,8 +1484,21 @@ choiceprob_logit_input_checks <- function(
     draws, n_draws
   ) {
 
+  flags <- c(ordered, ranked, panel, lc)
   oeli::input_check_response(
-    check = checkmate::check_list(X),
+    check = checkmate::check_logical(
+      flags, len = length(flags), any.missing = FALSE
+    ),
+    var_name = "model option flags"
+  )
+  if (ordered && ranked) {
+    cli::cli_abort(
+      "Ordered and ranked probability modes cannot be combined.",
+      call = NULL
+    )
+  }
+  oeli::input_check_response(
+    check = checkmate::check_list(X, min.len = 1),
     var_name = "X"
   )
 
@@ -1401,6 +1507,12 @@ choiceprob_logit_input_checks <- function(
       check = checkmate::check_integer(Tp, lower = 1),
       var_name = "Tp"
     )
+    if (!length(Tp) || sum(Tp) != length(X)) {
+      cli::cli_abort(
+        "Panel counts {.var Tp} must sum to the length of {.var X}.",
+        call = NULL
+      )
+    }
     if (!is.null(y)) {
       oeli::input_check_response(
         check = checkmate::check_list(y, len = sum(Tp)),
@@ -1416,9 +1528,17 @@ choiceprob_logit_input_checks <- function(
 
   if (ordered) {
     oeli::input_check_response(
-      check = oeli::check_numeric_vector(gamma, any.missing = FALSE),
+      check = oeli::check_numeric_vector(
+        gamma, finite = TRUE, any.missing = FALSE
+      ),
       var_name = "gamma"
     )
+    if (any(diff(gamma) <= 0)) {
+      cli::cli_abort(
+        "Thresholds in {.var gamma} must be strictly increasing.",
+        call = NULL
+      )
+    }
   }
 
   if (lc) {
@@ -1433,12 +1553,21 @@ choiceprob_logit_input_checks <- function(
         call = NULL
       )
     }
+    oeli::input_check_response(check_beta_list(beta), var_name = "beta")
     if (length(beta) != length(weights)) {
       cli::cli_abort(
         "Number of coefficient vectors and class weights must match.",
         call = NULL
       )
     }
+    beta_lengths <- vapply(beta, length, integer(1))
+    if (length(unique(beta_lengths)) != 1L) {
+      cli::cli_abort(
+        "Coefficient vectors in {.var beta} must have equal lengths.",
+        call = NULL
+      )
+    }
+    beta_dim <- beta_lengths[1]
     if (!is.null(Omega)) {
       if (!checkmate::test_list(Omega, len = length(weights))) {
         cli::cli_abort(
@@ -1490,9 +1619,12 @@ choiceprob_logit_input_checks <- function(
     }
   } else {
     oeli::input_check_response(
-      check = oeli::check_numeric_vector(beta, any.missing = FALSE),
+      check = oeli::check_numeric_vector(
+        beta, finite = TRUE, any.missing = FALSE
+      ),
       var_name = "beta"
     )
+    beta_dim <- length(beta)
     if (!is.null(Omega)) {
       oeli::input_check_response(
         check = oeli::check_covariance_matrix(Omega),
@@ -1512,6 +1644,38 @@ choiceprob_logit_input_checks <- function(
     }
   }
 
+  for (n in seq_along(X)) {
+    oeli::input_check_response(
+      check = checkmate::check_matrix(
+        X[[n]], mode = "numeric", any.missing = FALSE
+      ),
+      var_name = paste0("X[[", n, "]]")
+    )
+  }
+  rows <- vapply(X, nrow, integer(1))
+  expected_rows <- if (ordered) 1L else rows[1]
+  if (!ordered && expected_rows < 2L) {
+    cli::cli_abort(
+      "Unordered choice design matrices require at least two rows.",
+      call = NULL
+    )
+  }
+  for (n in seq_along(X)) {
+    oeli::input_check_response(
+      check = checkmate::check_matrix(
+        X[[n]], mode = "numeric", nrows = expected_rows,
+        ncols = beta_dim, any.missing = FALSE
+      ),
+      var_name = paste0("X[[", n, "]]")
+    )
+    oeli::input_check_response(
+      check = checkmate::check_numeric(
+        as.numeric(X[[n]]), finite = TRUE, any.missing = FALSE
+      ),
+      var_name = paste0("X[[", n, "]]")
+    )
+  }
+
   if (!is.null(y) && !ordered) {
     lengths_y <- vapply(y, length, numeric(1))
     if (ranked && any(lengths_y < 2)) {
@@ -1519,6 +1683,24 @@ choiceprob_logit_input_checks <- function(
         "Ranked outcomes require at least two ranks per observation.",
         call = NULL
       )
+    }
+  }
+  if (!is.null(y)) {
+    J <- if (ordered) length(gamma) + 1L else expected_rows
+    for (n in seq_along(y)) {
+      oeli::input_check_response(
+        check = checkmate::check_integerish(
+          y[[n]], lower = 1, upper = J, min.len = 1,
+          any.missing = FALSE, unique = TRUE
+        ),
+        var_name = paste0("y[[", n, "]]")
+      )
+      if (!ranked && length(y[[n]]) != 1L) {
+        cli::cli_abort(
+          "Unranked choice indices in {.var y} must be scalar.",
+          call = NULL
+        )
+      }
     }
   }
 }

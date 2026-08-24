@@ -225,14 +225,21 @@ print.choice_formula <- function(x, ...) {
 resolve_choice_formula <- function(choice_formula, x) {
 
   ### input checks
-  stopifnot(
-    is.choice_formula(choice_formula, error = FALSE),
-    is.choice_data(x, error = FALSE) || is.choice_covariates(x, error = FALSE)
+  is.choice_formula(choice_formula, error = TRUE)
+  validate_choice_class_union(
+    x,
+    c("choice_data", "choice_covariates"),
+    var_name = "x"
   )
   form <- oeli::quiet(choice_formula$formula)
   format <- attr(x, "format")
   check_format(format)
-  stopifnot(Formula::is.Formula(form))
+  if (!Formula::is.Formula(form)) {
+    cli::cli_abort(
+      "The stored model formula must inherit from {.cls Formula}.",
+      call = NULL
+    )
+  }
 
   ### ensure long representation & an 'alternative' column
     if (identical(format, "wide")) {
@@ -382,4 +389,3 @@ resolve_choice_formula <- function(choice_formula, x) {
 
   choice_formula
 }
-

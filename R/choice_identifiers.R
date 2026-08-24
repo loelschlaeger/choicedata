@@ -80,12 +80,12 @@ choice_identifiers <- function(
 
   ### identifier checks
   decider_identifiers <- as.character(ids_df[[column_decider]])
-  if (anyNA(decider_identifiers)) {
-    cli::cli_abort(
-      "Column {.val {column_decider}} of {.var data_frame} must not have NAs",
-      call = NULL
-    )
-  }
+  oeli::input_check_response(
+    check = checkmate::check_character(
+      decider_identifiers, min.chars = 1, any.missing = FALSE
+    ),
+    var_name = column_decider
+  )
 
   if (is.null(column_occasion)) {
     ### ensure uniqueness after collapsing
@@ -100,13 +100,12 @@ choice_identifiers <- function(
     column_occasion <- "occasionID"
   } else {
     occasion_identifiers <- as.character(ids_df[[column_occasion]])
-    if (anyNA(occasion_identifiers)) {
-      cli::cli_abort(
-        "Column {.val {column_occasion}} of {.var data_frame} must not have
-        NAs",
-        call = NULL
-      )
-    }
+    oeli::input_check_response(
+      check = checkmate::check_character(
+        occasion_identifiers, min.chars = 1, any.missing = FALSE
+      ),
+      var_name = column_occasion
+    )
     for (decider_identifier in unique(decider_identifiers)) {
       ids <- which(decider_identifiers == decider_identifier)
       if (anyDuplicated(occasion_identifiers[ids])) {
@@ -264,12 +263,9 @@ expand_Tp <- function(N = length(Tp), Tp = 1) {
   check_not_missing(N)
   N <- check_N(N)
   Tp <- check_Tp(Tp, N = N)
-  checkmate::assert_int(N, lower = 1)
-  checkmate::assert_numeric(Tp)
   if (length(Tp) == 1) {
     Tp <- rep(Tp, N)
   }
-  checkmate::assert_integerish(Tp, lower = 1, len = N, any.missing = FALSE)
   as.integer(Tp)
 }
 
@@ -327,11 +323,17 @@ get_position_from_identifier <- function(
   N = length(Tp), Tp = 1, decider_number, occasion_number
 ) {
   Tp <- expand_Tp(N = N, Tp = Tp)
-  checkmate::assert_integerish(
-    decider_number, lower = 1, upper = N
+  oeli::input_check_response(
+    check = checkmate::check_integerish(
+      decider_number, lower = 1, upper = N
+    ),
+    var_name = "decider_number"
   )
-  checkmate::assert_integerish(
-    occasion_number, lower = 1, upper = Tp[decider_number]
+  oeli::input_check_response(
+    check = checkmate::check_integerish(
+      occasion_number, lower = 1, upper = Tp[decider_number]
+    ),
+    var_name = "occasion_number"
   )
   as.integer(c(0, cumsum(Tp))[decider_number] + occasion_number)
 }

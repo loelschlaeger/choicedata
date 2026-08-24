@@ -3,8 +3,6 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom checkmate assert_flag
-#' @importFrom checkmate check_string
 #' @importFrom checkmate test_formula
 #' @importFrom cli cat_line
 #' @importFrom cli cli_abort

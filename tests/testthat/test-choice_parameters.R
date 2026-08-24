@@ -15,6 +15,8 @@ test_that("input checks for choice parameters work", {
     choice_parameters(gamma = "not_a_numeric"),
     "Input `gamma` is bad: Must be of type 'numeric', not 'character'"
   )
+  expect_error(choice_parameters(beta = numeric()), "length >= 1")
+  expect_error(choice_parameters(beta = Inf), "finite")
 })
 
 test_that("choice parameter can be created", {

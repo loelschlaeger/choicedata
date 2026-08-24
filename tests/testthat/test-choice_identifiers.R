@@ -51,7 +51,7 @@ test_that("checks for choice identifiers work", {
       data.frame("id" = c(1, NA, 3), "idc" = 1), column_decider = "id",
       column_occasion = "idc"
     ),
-    "must not have NAs"
+    "[Mm]ust not have NAs"
   )
   expect_error(
     choice_identifiers(
@@ -79,7 +79,7 @@ test_that("checks for choice identifiers work", {
       data.frame("id" = c(1, 2, 3), "idc" = c(1, NA, 1)), column_decider = "id",
       column_occasion = "idc"
     ),
-    "must not have NAs"
+    "[Mm]ust not have NAs"
   )
   expect_error(
     choice_identifiers(
@@ -262,4 +262,3 @@ test_that("choice_identifiers can be extracted", {
   )
 
 })
-

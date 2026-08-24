@@ -314,7 +314,8 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
   if (identical(format, "wide")) {
     base_alt <- attr(choice_alternatives, "base")
     tmp_choice <- column_choice
-    if (is.null(tmp_choice) || !(tmp_choice %in% names(x))) {
+    missing_choice <- is.null(tmp_choice) || !(tmp_choice %in% names(x))
+    if (missing_choice && !identical(choice_type, "ranked")) {
       tmp_choice <- ".choicedata_dummy_choice"
       x[[tmp_choice]] <- base_alt
     }
