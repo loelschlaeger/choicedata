@@ -47,9 +47,9 @@ choice alternatives.
 If \code{choice_only = TRUE}, it is the name of a single column that contains the
 probabilities for the chosen alternatives.}
 
-\item{choice_parameters}{[\code{choice_parameters} | \code{list}]\cr
-Either a \code{\link{choice_parameters}} object or a list in optimization
-space as returned by \code{\link{switch_parameter_space}}.}
+\item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
+Either a \code{\link{choice_parameters}} object or a numeric vector in
+optimization space, as created by \code{\link{switch_parameter_space}}.}
 
 \item{choice_data}{[\code{choice_data}]\cr
 A \code{\link{choice_data}} object providing responses and covariates.}
@@ -61,13 +61,18 @@ A \code{\link{choice_effects}} object defining the specification.}
 Should additional internal input checks be performed before computing the
 probabilities?}
 
-\item{...}{Passed to the underlying probability computation routine.}
+\item{...}{Additional probability arguments. Common choices are \code{draws} or \code{n_draws}
+for mixed Logit and \code{cml = "no"}, \code{"fp"}, or \code{"ap"} for mixed Probit panel
+models.}
 }
 \value{
-A \code{choice_probabilities} S3 object (a tibble) that stores additional
-metadata in attributes such as \code{column_probabilities}, \code{choice_only}, and the
-identifier columns. These attributes are used by downstream helpers to
-reconstruct the original structure.
+A \code{choice_probabilities} tibble with one row per choice occasion. With
+\code{choice_only = TRUE}, it contains \code{choice_probability}; joint panel
+probabilities are repeated for the occasions of the same decider. With
+\code{choice_only = FALSE}, it contains one column per alternative and reports
+occasion-wise probabilities. In ranked models these are first-rank
+probabilities. Identifier and probability column names are stored as
+attributes.
 }
 \description{
 The \code{choice_probabilities} object defines the choice probabilities.
@@ -76,6 +81,16 @@ The \code{choice_probabilities} object defines the choice probabilities.
 on the choice parameters and the choice data.
 }
 }
+\section{Supported models}{
+
+The public API supports every combination of Logit or Probit errors, fixed
+or normally distributed random coefficients, discrete, ordered, or ranked
+responses, and cross-sectional or panel data. Mixed Probit panel models can
+use the full likelihood (\code{cml = "no"}), full pairwise CML (\code{"fp"}), or
+adjacent pairwise CML (\code{"ap"}). Latent-class calculations are not part of
+the public parameter and likelihood API.
+}
+
 \examples{
 data(train_choice)
 choice_effects <- choice_effects(

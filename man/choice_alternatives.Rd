@@ -25,8 +25,9 @@ Unique labels for the choice alternatives.}
 The name of the base alternative for alternative-constant covariates, see
 details.
 
-If \code{NULL} (default), it is set to the first element of the sorted
-\code{alternatives}.}
+If \code{NULL} (default), it is set to the first retained alternative. This is
+the first supplied alternative when \code{ordered = TRUE} and the first
+alphabetically sorted alternative otherwise.}
 
 \item{ordered}{[\code{logical(1)}]\cr
 Should the supplied order of \code{alternatives} be preserved and treated as an

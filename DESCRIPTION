@@ -12,6 +12,7 @@ Description: Offers a set of objects tailored to simplify working with choice
     likelihood of various types of choice models based on given data.
 License: GPL (>= 3)
 Encoding: UTF-8
+Language: en-US
 URL: https://github.com/loelschlaeger/choicedata, https://loelschlaeger.de/choicedata/
 BugReports: https://github.com/loelschlaeger/choicedata/issues
 Suggests:

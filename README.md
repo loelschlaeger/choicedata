@@ -15,11 +15,19 @@ coverage](https://codecov.io/gh/loelschlaeger/choicedata/graph/badge.svg)](https
 The `{choicedata}` package simplifies working with choice data in
 [R](https://www.r-project.org/).
 
+## Installation
+
+Install the released version from
+[CRAN](https://CRAN.R-project.org/package=choicedata):
+
+``` r
+install.packages("choicedata")
+```
+
 ## Package design
 
-The package breaks down the process of modeling choice data into a
-series of steps. Each step is represented by an object that contains the
-necessary information for the subsequent step.
+The package breaks choice-data modeling into a series of objects. Each
+object contains the information needed for the next step.
 
 ![](man/figures/choicedata_flowchart.png)
 
@@ -41,7 +49,8 @@ necessary information for the subsequent step.
   the identifiers for deciders and choice occasions.
 
 - [`choice_preferences`](https://loelschlaeger.de/choicedata/reference/choice_preferences.html):
-  the deciders’ choice preferences, identified by `choice_identifiers`.
+  the choice preferences of the deciders, identified by
+  `choice_identifiers`.
 
 - [`choice_responses`](https://loelschlaeger.de/choicedata/reference/choice_responses.html):
   the choice responses, influenced by `choice_preferences`.
@@ -68,7 +77,7 @@ ways to create a range of modeling workflows.
 
 The `travel_mode_choice` data set contains the revealed preferences of
 210 travelers choosing between plane, train, bus, and car. We can
-transform the data from long to wide format, or construct model design
+transform the data from long to wide format or construct model design
 matrices:
 
 ``` r
@@ -134,8 +143,8 @@ mode_data <- choice_data(
   column_as_covariates = c("wait", "cost", "travel")
 )
 
-design_matrices <- design_matrices(mode_data, mode_effects)
-design_matrices[[1]]
+mode_design <- design_matrices(mode_data, mode_effects)
+mode_design[[1]]
 #>       cost income_car income_plane income_train size_car size_plane size_train
 #> bus     25          0            0            0        0          0          0
 #> car     10         35            0            0        1          0          0
@@ -157,8 +166,8 @@ design_matrices[[1]]
 
 `generate_choice_data()` makes it straightforward to simulate choice
 data. The example below simulates 200 ranking tasks with three
-alternatives and recovers the data-generating parameters via numerical
-optimization of the likelihood:
+alternatives and recovers the data-generating parameters by optimizing
+the likelihood:
 
 ``` r
 library("choicedata")
@@ -178,34 +187,20 @@ sim_effects <- choice_effects(
 
 sim_parameters <- generate_choice_parameters(sim_effects)
 
-(sim_data <- generate_choice_data(
+sim_data <- generate_choice_data(
   choice_effects = sim_effects,
   choice_identifiers = generate_choice_identifiers(N = 200),
   choice_parameters = sim_parameters,
   choice_type = "ranked"
-))
-#> # A tibble: 200 × 13
-#>    deciderID occasionID choice        B choice_A choice_B choice_C     A_A
-#>  * <chr>     <chr>      <chr>     <dbl>    <int>    <int>    <int>   <dbl>
-#>  1 1         1          B       1.12           2        1        3  0.576 
-#>  2 2         1          B       0.782          3        1        2 -0.0449
-#>  3 3         1          B      -0.478          2        1        3  0.0746
-#>  4 4         1          B      -0.415          3        1        2  0.418 
-#>  5 5         1          B       0.697          2        1        3 -0.394 
-#>  6 6         1          B       0.881          2        1        3  0.557 
-#>  7 7         1          B      -0.367          3        1        2  0.398 
-#>  8 8         1          B       0.0280         3        1        2 -1.04  
-#>  9 9         1          C       0.476          3        2        1 -0.743 
-#> 10 10        1          B       0.00111        2        1        3 -0.710 
-#> # ℹ 190 more rows
-#> # ℹ 5 more variables: A_B <dbl>, A_C <dbl>, C_A <dbl>, C_B <dbl>, C_C <dbl>
+)
+dim(sim_data)
+#> [1] 200  13
 
 sim_likelihood <- choice_likelihood(
   choice_data = sim_data,
   choice_effects = sim_effects
 )
 
-objective <- sim_likelihood$objective
 true_vector <- switch_parameter_space(
   choice_parameters = sim_parameters,
   choice_effects = sim_effects
@@ -214,7 +209,12 @@ true_vector <- switch_parameter_space(
 fit <- stats::optim(
   par = stats::rnorm(length(true_vector)),
   fn = function(par) {
-    objective(choice_parameters = par, logarithm = TRUE, negative = TRUE)
+    compute_choice_likelihood(
+      choice_parameters = par,
+      choice_likelihood = sim_likelihood,
+      logarithm = TRUE,
+      negative = TRUE
+    )
   }
 )
 
@@ -235,15 +235,6 @@ data.frame(dgp = true_vector, estimated = fit$par)
 #> beta_8  2.3347877  1.96729481
 ```
 
-## Installation
-
-You can install the released package version from
-[CRAN](https://CRAN.R-project.org) with:
-
-``` r
-install.packages("choicedata")
-```
-
 ## Related work
 
 `{Rprobit}` ([Bauer et al. 2023](#ref-Bauer2023)) provides maximum
@@ -255,14 +246,13 @@ provides Bayesian tools for estimating probit models.
 
 ## Contact
 
-You have a question, found a bug, request a feature, want to give
-feedback, or like to contribute? [Please file an issue on
+You have a question, found a bug, or want to contribute? Please [file an
+issue on
 GitHub](https://github.com/loelschlaeger/choicedata/issues/new/choose).
 
 ## References
 
-<div id="refs" class="references csl-bib-body hanging-indent"
-entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 
 <div id="ref-Bauer2023" class="csl-entry">
 

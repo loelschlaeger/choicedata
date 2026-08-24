@@ -162,7 +162,7 @@ test_that("simulation of probit choice data works for wide covariates", {
   )
 })
 
-test_that("generate_choice_data joins responses and covariates without reordering", {
+test_that("generate_choice_data keeps covariate order", {
 
   set.seed(1)
 
@@ -185,7 +185,8 @@ test_that("generate_choice_data joins responses and covariates without reorderin
     choice_identifiers = choice_identifiers
   )
 
-  shuffled_covariates <- choice_covariates[rev(seq_len(nrow(choice_covariates))), ]
+  reverse_rows <- rev(seq_len(nrow(choice_covariates)))
+  shuffled_covariates <- choice_covariates[reverse_rows, ]
 
   choice_parameters <- generate_choice_parameters(
     choice_effects = choice_effects
@@ -231,7 +232,9 @@ test_that("generate_choice_data aborts when joins drop identifiers", {
 
   incomplete_covariates <- choice_covariates[-1, ]
 
-  choice_parameters <- generate_choice_parameters(choice_effects = choice_effects)
+  choice_parameters <- generate_choice_parameters(
+    choice_effects = choice_effects
+  )
 
   expect_error(
     generate_choice_data(
@@ -606,7 +609,8 @@ test_that("ranked choice data round-trips between long and wide", {
     choice_type = "ranked"
   )
 
-  long_ranked <- long_ranked[order(long_ranked$deciderID, long_ranked$alternative), ]
+  long_order <- order(long_ranked$deciderID, long_ranked$alternative)
+  long_ranked <- long_ranked[long_order, ]
   ranked_df <- ranked_df[order(ranked_df$deciderID, ranked_df$alternative), ]
   expect_equal(long_ranked$choice, ranked_df$choice)
   expect_equal(long_ranked$alternative, ranked_df$alternative)

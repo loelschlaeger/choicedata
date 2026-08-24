@@ -38,7 +38,10 @@
 #' @inheritParams choice_identifiers
 #'
 #' @return
-#' A `tibble`.
+#' `choice_covariates()` and `generate_choice_covariates()` return a
+#' `choice_covariates` tibble. `covariate_names()` returns a character vector.
+#' `design_matrices()` returns one numeric design matrix per choice occasion in
+#' a list; its `Tp` attribute records the panel lengths.
 #'
 #' @section Design matrices:
 #' A covariate design matrix contains the choice covariates of a decider at a
@@ -207,7 +210,8 @@ is.choice_covariates <- function(
 #' @inheritParams oeli::correlated_regressors
 #'
 #' @param choice_effects \[`choice_effects` | `NULL`\]\cr
-#' Optional \code{\link{choice_effects}} object used to align covariate labels.
+#' Optional \code{\link{choice_effects}} object used to derive and align
+#' covariate labels. If `NULL`, `labels` must be supplied.
 #'
 #' @param choice_identifiers \[`choice_identifiers`\]\cr
 #' A \code{\link{choice_identifiers}} object describing the simulated panel.

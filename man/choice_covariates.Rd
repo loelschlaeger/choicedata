@@ -71,7 +71,8 @@ format. May consist of one or more characters.}
 Treat choice data as cross-sectional?}
 
 \item{choice_effects}{[\code{choice_effects} | \code{NULL}]\cr
-Optional \code{\link{choice_effects}} object used to align covariate labels.}
+Optional \code{\link{choice_effects}} object used to derive and align
+covariate labels. If \code{NULL}, \code{labels} must be supplied.}
 
 \item{choice_identifiers}{[\code{choice_identifiers}]\cr
 A \code{\link{choice_identifiers}} object describing the simulated panel.}
@@ -114,7 +115,10 @@ Print information about the simulated regressors?}
 \item{x}{A \code{\link{choice_data}} or \code{\link{choice_covariates}} object.}
 }
 \value{
-A \code{tibble}.
+\code{choice_covariates()} and \code{generate_choice_covariates()} return a
+\code{choice_covariates} tibble. \code{covariate_names()} returns a character vector.
+\code{design_matrices()} returns one numeric design matrix per choice occasion in
+a list; its \code{Tp} attribute records the panel lengths.
 }
 \description{
 The \code{choice_covariates} object defines the choice model covariates.

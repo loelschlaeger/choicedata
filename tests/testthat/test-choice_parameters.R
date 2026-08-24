@@ -102,13 +102,17 @@ test_that("choice parameter can be validated", {
   )
   expect_true(is.choice_parameters(
     validate_choice_parameters(
-      choice_parameters = choice_parameters(beta = 1, Sigma = 1, gamma = c(0, 1)),
+      choice_parameters = choice_parameters(
+        beta = 1, Sigma = 1, gamma = c(0, 1)
+      ),
       choice_effects = ordered_effects
     )
   ))
   expect_error(
     validate_choice_parameters(
-      choice_parameters = choice_parameters(beta = 1, Sigma = 1, gamma = c(0, 0.5, 0.5)),
+      choice_parameters = choice_parameters(
+        beta = 1, Sigma = 1, gamma = c(0, 0.5, 0.5)
+      ),
       choice_effects = ordered_effects
     ),
     "strictly increasing"
@@ -130,7 +134,7 @@ test_that("not required choice parameters are set to NULL", {
   ))
 })
 
-test_that("choice parameters can be transformed between interpretation and optimization space", {
+test_that("choice parameters can switch parameter spaces", {
 
   ### MNP model
   J <- 3

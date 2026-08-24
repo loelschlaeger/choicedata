@@ -13,8 +13,9 @@
 #' The name of the base alternative for alternative-constant covariates, see
 #' details.
 #'
-#' If `NULL` (default), it is set to the first element of the sorted
-#' `alternatives`.
+#' If `NULL` (default), it is set to the first retained alternative. This is
+#' the first supplied alternative when `ordered = TRUE` and the first
+#' alphabetically sorted alternative otherwise.
 #'
 #' @param ordered \[`logical(1)`\]\cr
 #' Should the supplied order of `alternatives` be preserved and treated as an

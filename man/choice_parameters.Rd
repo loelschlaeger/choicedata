@@ -52,15 +52,19 @@ specification.}
 Optionally a \code{choice_parameters} object of parameters to keep
 fixed when sampling other parameters.}
 
-\item{choice_parameters}{[\code{choice_parameters}]\cr
-A \code{choice_parameters} object.}
+\item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
+A \code{choice_parameters} object. For \code{switch_parameter_space()}, a numeric
+vector in optimization space is also accepted and converted back to a
+\code{choice_parameters} object.}
 
 \item{allow_missing}{[\code{logical(1)}]\cr
 Should parameters be allowed to be missing (\code{TRUE}) or must all required
 elements be present (\code{FALSE})?}
 }
 \value{
-An object of class \code{choice_parameters}, which is a \code{list} with the elements:
+\code{choice_parameters()}, \code{generate_choice_parameters()}, and
+\code{validate_choice_parameters()} return a \code{choice_parameters} list with the
+elements:
 \describe{
 \item{\code{beta}}{The coefficient vector (if any).}
 \item{\code{Omega}}{The covariance matrix of random effects (if any).}
@@ -68,6 +72,9 @@ An object of class \code{choice_parameters}, which is a \code{list} with the ele
 models).}
 \item{\code{gamma}}{Threshold parameters for ordered models (if any).}
 }
+\code{switch_parameter_space()} returns a named numeric vector when given a
+\code{choice_parameters} object and a \code{choice_parameters} object when given a
+numeric optimization vector.
 }
 \description{
 These functions construct, validate, and transform an object of class

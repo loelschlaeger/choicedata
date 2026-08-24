@@ -35,7 +35,9 @@
 #' The \code{\link{choice_effects}} object that defines the choice effects.
 #'
 #' @return
-#' An object of class `choice_parameters`, which is a `list` with the elements:
+#' `choice_parameters()`, `generate_choice_parameters()`, and
+#' `validate_choice_parameters()` return a `choice_parameters` list with the
+#' elements:
 #' \describe{
 #'   \item{`beta`}{The coefficient vector (if any).}
 #'   \item{`Omega`}{The covariance matrix of random effects (if any).}
@@ -43,6 +45,9 @@
 #'     models).}
 #'   \item{`gamma`}{Threshold parameters for ordered models (if any).}
 #' }
+#' `switch_parameter_space()` returns a named numeric vector when given a
+#' `choice_parameters` object and a `choice_parameters` object when given a
+#' numeric optimization vector.
 #'
 #' @export
 #'
@@ -217,8 +222,10 @@ generate_choice_parameters <- function(
 
 #' @rdname choice_parameters
 #'
-#' @param choice_parameters \[`choice_parameters`\]\cr
-#' A `choice_parameters` object.
+#' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
+#' A `choice_parameters` object. For `switch_parameter_space()`, a numeric
+#' vector in optimization space is also accepted and converted back to a
+#' `choice_parameters` object.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
 #' A \code{\link{choice_effects}} object describing the utility

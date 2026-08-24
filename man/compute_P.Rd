@@ -16,3 +16,4 @@ An integer with the number of model effects.
 \description{
 \code{compute_P()} returns the total number of effects in a choice model.
 }
+\keyword{model}

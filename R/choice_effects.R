@@ -325,6 +325,8 @@ print.choice_effects <- function(x, ...) {
 #' @return
 #' An integer with the number of model effects.
 #'
+#' @keywords model
+#'
 #' @export
 
 compute_P <- function(choice_effects) {

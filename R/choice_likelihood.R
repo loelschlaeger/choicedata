@@ -21,10 +21,9 @@
 #' A \code{\link{choice_identifiers}} object. The default extracts identifiers
 #' from `choice_data`.
 #'
-#' @param choice_parameters \[`choice_parameters` | `list`\]\cr
-#' A \code{\link{choice_parameters}} object or a list as returned by
-#' \code{\link{switch_parameter_space}}. When a numeric vector in optimization
-#' space is supplied, it is converted via `switch_parameter_space()`.
+#' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
+#' A \code{\link{choice_parameters}} object or a numeric vector in optimization
+#' space. Numeric input is converted with `switch_parameter_space()`.
 #'
 #' @param choice_likelihood \[`choice_likelihood`\]\cr
 #' A pre-computed object returned by `choice_likelihood()`.
@@ -40,7 +39,10 @@
 #' validation.
 #'
 #' @param ...
-#' Additional arguments passed to the underlying probability engine.
+#' Additional probability arguments. Common choices are `draws` or `n_draws`
+#' for mixed Logit and `cml = "no"`, `"fp"`, or `"ap"` for mixed Probit panel
+#' models. Arguments supplied while computing override those stored by
+#' `choice_likelihood()`.
 #'
 #' @return
 #' `choice_likelihood()` returns an object of class `choice_likelihood`, which

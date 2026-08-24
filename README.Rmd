@@ -24,11 +24,22 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/choicedata/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/choicedata)
 <!-- badges: end -->
 
-The `{choicedata}` package simplifies working with choice data in [R](https://www.r-project.org/).
+The `{choicedata}` package simplifies working with choice data in
+[R](https://www.r-project.org/).
+
+## Installation
+
+Install the released version from
+[CRAN](https://CRAN.R-project.org/package=choicedata):
+
+```{r, install, eval = FALSE}
+install.packages("choicedata")
+```
 
 ## Package design
 
-The package breaks down the process of modeling choice data into a series of steps. Each step is represented by an object that contains the necessary information for the subsequent step.
+The package breaks choice-data modeling into a series of objects. Each object
+contains the information needed for the next step.
 
 ![](man/figures/choicedata_flowchart.png)
 
@@ -42,7 +53,7 @@ The package breaks down the process of modeling choice data into a series of ste
 
 - [`choice_identifiers`](https://loelschlaeger.de/choicedata/reference/choice_identifiers.html): the identifiers for deciders and choice occasions.
 
-- [`choice_preferences`](https://loelschlaeger.de/choicedata/reference/choice_preferences.html): the deciders' choice preferences, identified by `choice_identifiers`.
+- [`choice_preferences`](https://loelschlaeger.de/choicedata/reference/choice_preferences.html): the choice preferences of the deciders, identified by `choice_identifiers`.
 
 - [`choice_responses`](https://loelschlaeger.de/choicedata/reference/choice_responses.html): the choice responses, influenced by `choice_preferences`.
 
@@ -60,7 +71,9 @@ The objects are designed to be modular and can be combined in various ways to cr
 
 ### Empirical data
 
-The `travel_mode_choice` data set contains the revealed preferences of 210 travelers choosing between plane, train, bus, and car. We can transform the data from long to wide format, or construct model design matrices:
+The `travel_mode_choice` data set contains the revealed preferences of 210
+travelers choosing between plane, train, bus, and car. We can transform the
+data from long to wide format or construct model design matrices:
 
 ```{r travel-example}
 library("choicedata")
@@ -94,14 +107,15 @@ mode_data <- choice_data(
   column_as_covariates = c("wait", "cost", "travel")
 )
 
-design_matrices <- design_matrices(mode_data, mode_effects)
-design_matrices[[1]]
+mode_design <- design_matrices(mode_data, mode_effects)
+mode_design[[1]]
 ```
 
 ### Simulated choice
 
-`generate_choice_data()` makes it straightforward to simulate choice data. The example below simulates 200 ranking tasks with three alternatives and recovers the data-generating parameters via numerical optimization of the
-likelihood:
+`generate_choice_data()` makes it straightforward to simulate choice data.
+The example below simulates 200 ranking tasks with three alternatives and
+recovers the data-generating parameters by optimizing the likelihood:
 
 ```{r simulate-example}
 library("choicedata")
@@ -121,19 +135,19 @@ sim_effects <- choice_effects(
 
 sim_parameters <- generate_choice_parameters(sim_effects)
 
-(sim_data <- generate_choice_data(
+sim_data <- generate_choice_data(
   choice_effects = sim_effects,
   choice_identifiers = generate_choice_identifiers(N = 200),
   choice_parameters = sim_parameters,
   choice_type = "ranked"
-))
+)
+dim(sim_data)
 
 sim_likelihood <- choice_likelihood(
   choice_data = sim_data,
   choice_effects = sim_effects
 )
 
-objective <- sim_likelihood$objective
 true_vector <- switch_parameter_space(
   choice_parameters = sim_parameters,
   choice_effects = sim_effects
@@ -142,7 +156,12 @@ true_vector <- switch_parameter_space(
 fit <- stats::optim(
   par = stats::rnorm(length(true_vector)),
   fn = function(par) {
-    objective(choice_parameters = par, logarithm = TRUE, negative = TRUE)
+    compute_choice_likelihood(
+      choice_parameters = par,
+      choice_likelihood = sim_likelihood,
+      logarithm = TRUE,
+      negative = TRUE
+    )
   }
 )
 
@@ -154,22 +173,17 @@ estimated_parameters <- switch_parameter_space(
 data.frame(dgp = true_vector, estimated = fit$par)
 ```
 
-## Installation
-
-You can install the released package version from [CRAN](https://CRAN.R-project.org) with:
-
-```{r, install, eval = FALSE}
-install.packages("choicedata")
-```
-
 ## Related work
 
-`{Rprobit}` [@Bauer2023] provides maximum approximated composite marginal likelihood estimation for efficient probit choice modeling.  
+`{Rprobit}` [@Bauer2023] provides maximum approximated composite marginal
+likelihood estimation for efficient probit choice modeling.
 
-`{RprobitB}` [@Oelschlaeger2025] provides Bayesian tools for estimating probit models.
+`{RprobitB}` [@Oelschlaeger2025] provides Bayesian tools for estimating probit
+models.
 
 ## Contact
 
-You have a question, found a bug, request a feature, want to give feedback, or like to contribute? [Please file an issue on GitHub](https://github.com/loelschlaeger/choicedata/issues/new/choose).
+You have a question, found a bug, or want to contribute? Please
+[file an issue on GitHub](https://github.com/loelschlaeger/choicedata/issues/new/choose).
 
 ## References

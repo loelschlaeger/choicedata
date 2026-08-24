@@ -8,9 +8,9 @@
 #' `choice_data()` acts as the main entry point for observed data. It accepts
 #' either long or wide layouts and performs validation before
 #' returning a tidy tibble with consistent identifiers. Columns that refer to
-#' the same alternative are aligned using `delimiter` so that downstream helpers
-#' can detect them automatically. When used with ranked or ordered choices the
-#' function checks that rankings are complete and warns about inconsistencies.
+#' the same alternative are aligned using `delimiter` so that downstream
+#' helpers can detect them automatically. For ranked or ordered choices, the
+#' function checks the response encoding and reports invalid inputs.
 #'
 #' Internally the helper converts long inputs to wide format. This guarantees
 #' that subsequent steps (such as computing probabilities) receive the same
@@ -26,11 +26,11 @@
 #' Format of `data_frame`. Use `"wide"` when each row contains all alternatives
 #' of an occasion and `"long"` when each row contains a single alternative.
 #'
-#' @param column_choice \[`character(1)`\]\cr
+#' @param column_choice \[`character(1)` | `NULL`\]\cr
 #' Column name with the observed choices. In wide layout this column should
 #' contain a single value per observation: for discrete data the value is the
 #' label of the chosen alternative, for ordered data it is the ordered factor or
-#' integer score, and for ranked data it is omitted in favour of one column per
+#' integer score, and for ranked data it is omitted in favor of one column per
 #' alternative (see `choice_type`). In long layout the same column is evaluated
 #' once per alternative: discrete data must use a binary indicator (1 for the
 #' chosen alternative, 0 otherwise), ordered data repeats the ordinal value for
@@ -38,7 +38,7 @@
 #' alternative within an observation. Set to `NULL` when no observed choices are
 #' available (e.g., for purely covariate tables).
 #'
-#' @param column_as_covariates \[`character()`\]\cr
+#' @param column_as_covariates \[`character()` | `NULL`\]\cr
 #' Column names of `data_frame` with alternative-specific covariates.
 #'
 #' @param column_decider \[`character(1)`\]\cr
@@ -69,7 +69,9 @@
 #' @inheritParams choice_responses
 #'
 #' @return
-#' A `tibble` that inherits from `choice_data`.
+#' `choice_data()` and `generate_choice_data()` return a `choice_data` tibble.
+#' `long_to_wide()` and `wide_to_long()` return a tibble in the requested
+#' layout.
 #'
 #' @seealso
 #' [choice_responses()], [choice_covariates()], and [choice_identifiers()] for

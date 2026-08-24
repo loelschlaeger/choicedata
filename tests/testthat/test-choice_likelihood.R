@@ -264,7 +264,15 @@ test_that("choice likelihood enables estimation across model families", {
     }
     start_value <- objective(optim_start)
 
+    set.seed(1)
     fit <- stats::optim(
+      par = optim_start,
+      fn = objective,
+      method = "BFGS",
+      control = list(maxit = 200, reltol = 1e-8)
+    )
+    set.seed(1)
+    repeated_fit <- stats::optim(
       par = optim_start,
       fn = objective,
       method = "BFGS",
@@ -274,6 +282,8 @@ test_that("choice likelihood enables estimation across model families", {
     expect_identical(fit$convergence, 0L, info = spec$label)
     expect_true(is.finite(fit$value), info = spec$label)
     expect_true(fit$value <= start_value, info = spec$label)
+    expect_equal(repeated_fit$par, fit$par, info = spec$label)
+    expect_equal(repeated_fit$value, fit$value, info = spec$label)
 
     estimated <- switch_parameter_space(fit$par, choice_effects)
     expect_true(is.choice_parameters(estimated), info = spec$label)

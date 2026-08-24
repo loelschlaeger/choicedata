@@ -21,10 +21,21 @@
 #' probabilities for the chosen alternatives.
 #'
 #' @return
-#' A `choice_probabilities` S3 object (a tibble) that stores additional
-#' metadata in attributes such as `column_probabilities`, `choice_only`, and the
-#' identifier columns. These attributes are used by downstream helpers to
-#' reconstruct the original structure.
+#' A `choice_probabilities` tibble with one row per choice occasion. With
+#' `choice_only = TRUE`, it contains `choice_probability`; joint panel
+#' probabilities are repeated for the occasions of the same decider. With
+#' `choice_only = FALSE`, it contains one column per alternative and reports
+#' occasion-wise probabilities. In ranked models these are first-rank
+#' probabilities. Identifier and probability column names are stored as
+#' attributes.
+#'
+#' @section Supported models:
+#' The public API supports every combination of Logit or Probit errors, fixed
+#' or normally distributed random coefficients, discrete, ordered, or ranked
+#' responses, and cross-sectional or panel data. Mixed Probit panel models can
+#' use the full likelihood (`cml = "no"`), full pairwise CML (`"fp"`), or
+#' adjacent pairwise CML (`"ap"`). Latent-class calculations are not part of
+#' the public parameter and likelihood API.
 #'
 #' @export
 #'
@@ -123,9 +134,9 @@ choice_probabilities <- function(
 
 #' @rdname choice_probabilities
 #'
-#' @param choice_parameters \[`choice_parameters` | `list`\]\cr
-#' Either a \code{\link{choice_parameters}} object or a list in optimization
-#' space as returned by \code{\link{switch_parameter_space}}.
+#' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
+#' Either a \code{\link{choice_parameters}} object or a numeric vector in
+#' optimization space, as created by \code{\link{switch_parameter_space}}.
 #'
 #' @param choice_data \[`choice_data`\]\cr
 #' A \code{\link{choice_data}} object providing responses and covariates.
@@ -138,7 +149,9 @@ choice_probabilities <- function(
 #' probabilities?
 #'
 #' @param ...
-#' Passed to the underlying probability computation routine.
+#' Additional probability arguments. Common choices are `draws` or `n_draws`
+#' for mixed Logit and `cml = "no"`, `"fp"`, or `"ap"` for mixed Probit panel
+#' models.
 #'
 #' @export
 

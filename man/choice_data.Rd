@@ -62,11 +62,11 @@ Contains the choice data.}
 Format of \code{data_frame}. Use \code{"wide"} when each row contains all alternatives
 of an occasion and \code{"long"} when each row contains a single alternative.}
 
-\item{column_choice}{[\code{character(1)}]\cr
+\item{column_choice}{[\code{character(1)} | \code{NULL}]\cr
 Column name with the observed choices. In wide layout this column should
 contain a single value per observation: for discrete data the value is the
 label of the chosen alternative, for ordered data it is the ordered factor or
-integer score, and for ranked data it is omitted in favour of one column per
+integer score, and for ranked data it is omitted in favor of one column per
 alternative (see \code{choice_type}). In long layout the same column is evaluated
 once per alternative: discrete data must use a binary indicator (1 for the
 chosen alternative, 0 otherwise), ordered data repeats the ordinal value for
@@ -86,7 +86,7 @@ Column name with alternative identifiers when \code{format = "long"}.}
 \item{column_ac_covariates}{[\code{character()} | \code{NULL}]\cr
 Column names with alternative-constant covariates.}
 
-\item{column_as_covariates}{[\code{character()}]\cr
+\item{column_as_covariates}{[\code{character()} | \code{NULL}]\cr
 Column names of \code{data_frame} with alternative-specific covariates.}
 
 \item{delimiter}{[\code{character(1)}]\cr
@@ -121,7 +121,9 @@ Decider-specific preference draws used for simulation.}
 Unique labels for the choice alternatives.}
 }
 \value{
-A \code{tibble} that inherits from \code{choice_data}.
+\code{choice_data()} and \code{generate_choice_data()} return a \code{choice_data} tibble.
+\code{long_to_wide()} and \code{wide_to_long()} return a tibble in the requested
+layout.
 }
 \description{
 The \code{choice_data} object defines the choice data, it is a combination of
@@ -131,9 +133,9 @@ The \code{choice_data} object defines the choice data, it is a combination of
 \code{choice_data()} acts as the main entry point for observed data. It accepts
 either long or wide layouts and performs validation before
 returning a tidy tibble with consistent identifiers. Columns that refer to
-the same alternative are aligned using \code{delimiter} so that downstream helpers
-can detect them automatically. When used with ranked or ordered choices the
-function checks that rankings are complete and warns about inconsistencies.
+the same alternative are aligned using \code{delimiter} so that downstream
+helpers can detect them automatically. For ranked or ordered choices, the
+function checks the response encoding and reports invalid inputs.
 
 Internally the helper converts long inputs to wide format. This guarantees
 that subsequent steps (such as computing probabilities) receive the same

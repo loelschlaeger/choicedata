@@ -36,12 +36,14 @@ from \code{choice_data}.}
 Forwarded to the underlying probability engine to control additional input
 validation.}
 
-\item{...}{Additional arguments passed to the underlying probability engine.}
+\item{...}{Additional probability arguments. Common choices are \code{draws} or \code{n_draws}
+for mixed Logit and \code{cml = "no"}, \code{"fp"}, or \code{"ap"} for mixed Probit panel
+models. Arguments supplied while computing override those stored by
+\code{choice_likelihood()}.}
 
-\item{choice_parameters}{[\code{choice_parameters} | \code{list}]\cr
-A \code{\link{choice_parameters}} object or a list as returned by
-\code{\link{switch_parameter_space}}. When a numeric vector in optimization
-space is supplied, it is converted via \code{switch_parameter_space()}.}
+\item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
+A \code{\link{choice_parameters}} object or a numeric vector in optimization
+space. Numeric input is converted with \code{switch_parameter_space()}.}
 
 \item{choice_likelihood}{[\code{choice_likelihood}]\cr
 A pre-computed object returned by \code{choice_likelihood()}.}
