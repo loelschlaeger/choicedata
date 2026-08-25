@@ -112,12 +112,11 @@ is.choice_alternatives <- function(
 print.choice_alternatives <- function(x, ...) {
   is.choice_alternatives(x, error = TRUE)
   base <- attr(x, "base")
-  title <- if (isTRUE(attr(x, "ordered"))) {
-    "Choice alternatives (ordered)"
+  if (isTRUE(attr(x, "ordered"))) {
+    cli::cli_h3("Choice alternatives (ordered)")
   } else {
-    "Choice alternatives"
+    cli::cli_h3("Choice alternatives")
   }
-  cli::cli_h3(title)
   alt <- as.character(x)
   alt[alt == base] <- paste0(alt[alt == base], "*")
   cli::cat_bullet(alt)

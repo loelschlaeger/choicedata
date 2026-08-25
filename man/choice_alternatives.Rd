@@ -65,10 +65,18 @@ printing a \code{choice_alternatives} object.
 }
 
 \examples{
+### unordered choice alternatives: heating
 choice_alternatives(
   J = 3,
   alternatives = c("gas", "electricity", "oil"),
   base = "gas"
+)
+
+### ordered choice alternatives: opinion
+choice_alternatives(
+  J = 4,
+  alternatives = c("very good", "good", "neither good nor bad", "bad"),
+  ordered = TRUE
 )
 }
 \keyword{model}
