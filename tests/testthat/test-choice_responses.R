@@ -12,6 +12,24 @@ test_that("simulation of probit choice responses works", {
       Tp = sample.int(5, 100, replace = TRUE),
     )
   )
+  alternatives <- as.character(attr(choice_effects, "choice_alternatives"))
+  choice_covariates <- wide_to_long(
+    as.data.frame(choice_covariates),
+    column_choice = NULL,
+    alternatives = alternatives
+  )
+  first <- choice_covariates[1, c("deciderID", "occasionID")]
+  remove <- choice_covariates$deciderID == first$deciderID &
+    choice_covariates$occasionID == first$occasionID &
+    choice_covariates$alternative == alternatives[2]
+  choice_covariates <- choice_covariates[!remove, ]
+  choice_covariates <- choice_covariates(
+    choice_covariates,
+    format = "long",
+    column_decider = "deciderID",
+    column_occasion = "occasionID",
+    column_alternative = "alternative"
+  )
   choice_parameters <- generate_choice_parameters(
     choice_effects = choice_effects
   )
@@ -43,12 +61,14 @@ test_that("simulation of probit choice responses works", {
     preferences,
     times = read_Tp(choice_identifiers)
   )
-  alternatives <- as.character(attr(choice_effects, "choice_alternatives"))
+  availability <- attr(design, "availability")
   set.seed(1)
   expected <- vapply(seq_along(design), function(i) {
-    mean <- as.vector(design[[i]] %*% preferences[[i]])
-    utility <- oeli::rmvnorm(mean = mean, Sigma = choice_parameters$Sigma)
-    alternatives[which.max(utility)]
+    available <- availability[[i]]
+    mean <- as.vector(design[[i]][available, ] %*% preferences[[i]])
+    Sigma <- choice_parameters$Sigma[available, available, drop = FALSE]
+    utility <- oeli::rmvnorm(mean = mean, Sigma = Sigma)
+    alternatives[available[which.max(utility)]]
   }, character(1))
   expect_s3_class(choice_responses, "choice_responses")
   expect_true(is.choice_responses(choice_responses))
@@ -141,7 +161,9 @@ test_that("choice response simulation requires Sigma", {
     generate_choice_responses(
       choice_effects = choice_effects,
       choice_covariates = choice_covariates,
-      choice_parameters = choice_parameters(beta = numeric(nrow(choice_effects))),
+      choice_parameters = choice_parameters(
+        beta = numeric(nrow(choice_effects))
+      ),
       choice_identifiers = extract_choice_identifiers(choice_covariates)
     ),
     "required",
@@ -168,6 +190,25 @@ test_that("generate_choice_responses can return ranked columns", {
   )
   params <- generate_choice_parameters(choice_effects = choice_effects)
 
+  alt_names <- as.character(attr(choice_effects, "choice_alternatives"))
+  covariates <- wide_to_long(
+    as.data.frame(covariates),
+    column_choice = NULL,
+    alternatives = alt_names
+  )
+  keep <- with(covariates, !(
+    (deciderID == "1" & alternative == "B") |
+      (deciderID == "2" & alternative == "C") |
+      (deciderID == "3" & alternative != "B")
+  ))
+  covariates <- choice_covariates(
+    covariates[keep, ],
+    format = "long",
+    column_decider = "deciderID",
+    column_occasion = "occasionID",
+    column_alternative = "alternative"
+  )
+
   ranked_responses <- generate_choice_responses(
     choice_effects = choice_effects,
     choice_covariates = covariates,
@@ -180,12 +221,21 @@ test_that("generate_choice_responses can return ranked columns", {
   expect_s3_class(ranked_responses, "choice_responses")
   expect_identical(attr(ranked_responses, "column_choice"), "choice")
 
-  alt_names <- as.character(attr(choice_effects, "choice_alternatives"))
   rank_cols <- paste0("choice_", alt_names)
   expect_true(all(rank_cols %in% names(ranked_responses)))
 
   ranking_matrix <- as.matrix(ranked_responses[rank_cols])
 
-  inferred_top <- alt_names[max.col(-ranking_matrix, ties.method = "first")]
+  available <- list(c("A", "C"), c("A", "B"), "B")
+  for (i in seq_along(available)) {
+    unavailable <- !alt_names %in% available[[i]]
+    expect_true(all(is.na(ranking_matrix[i, unavailable])))
+    expect_setequal(
+      stats::na.omit(ranking_matrix[i, ]),
+      seq_along(available[[i]])
+    )
+    expect_true(ranked_responses$choice[i] %in% available[[i]])
+  }
+  inferred_top <- alt_names[apply(ranking_matrix, 1, which.min)]
   expect_equal(ranked_responses$choice, inferred_top)
 })

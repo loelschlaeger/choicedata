@@ -6,6 +6,7 @@
 #'
 #' - `choice_preferences()` constructs a `choice_preferences` object.
 #' - `generate_choice_preferences()` samples choice preferences at random.
+#'   In latent-class models, one class is sampled per decider.
 #'
 #' @param data_frame \[`data.frame`\]\cr
 #' Contains the deciders' preferences.
@@ -136,14 +137,45 @@ generate_choice_preferences <- function(
   column_decider <- attr(choice_identifiers, "column_decider")
 
   beta <- choice_parameters$beta
-  preferences <- matrix(beta, nrow = N, ncol = P, byrow = TRUE)
+  weights <- choice_parameters$weights
+  C <- if (is.null(weights)) 1L else length(weights)
+  class <- if (C == 1L) {
+    rep(1L, N)
+  } else {
+    sample.int(C, size = N, replace = TRUE, prob = weights)
+  }
+  beta <- if (C == 1L) list(beta) else beta
+  Omega <- if (C == 1L) {
+    list(choice_parameters$Omega)
+  } else {
+    choice_parameters$Omega
+  }
+  preferences <- matrix(NA_real_, nrow = N, ncol = P)
   re_position <- which(!is.na(choice_effects$mixing))
-  if (length(re_position)) {
-    preferences[, re_position] <- oeli::rmvnorm(
-      n = N,
-      mean = beta[re_position],
-      Sigma = choice_parameters$Omega
+  mixing <- as.character(choice_effects$mixing[re_position])
+  for (c in seq_len(C)) {
+    index <- which(class == c)
+    if (!length(index)) next
+    preferences[index, ] <- matrix(
+      beta[[c]], nrow = length(index), ncol = P, byrow = TRUE
     )
+    if (length(re_position)) {
+      latent <- oeli::rmvnorm(
+        n = length(index),
+        mean = beta[[c]][re_position],
+        Sigma = Omega[[c]]
+      )
+      latent <- matrix(
+        latent, nrow = length(index), ncol = length(re_position)
+      )
+      latent[, mixing == "cln+"] <- exp(
+        latent[, mixing == "cln+", drop = FALSE]
+      )
+      latent[, mixing == "cln-"] <- -exp(
+        latent[, mixing == "cln-", drop = FALSE]
+      )
+      preferences[index, re_position] <- latent
+    }
   }
   preferences <- as.data.frame(preferences)
   colnames(preferences) <- choice_effects[, "effect_name"]

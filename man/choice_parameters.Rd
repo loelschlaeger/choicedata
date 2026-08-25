@@ -7,11 +7,18 @@
 \alias{switch_parameter_space}
 \title{Define choice model parameters}
 \usage{
-choice_parameters(beta = NULL, Omega = NULL, Sigma = NULL, gamma = NULL)
+choice_parameters(
+  beta = NULL,
+  Omega = NULL,
+  Sigma = NULL,
+  gamma = NULL,
+  weights = NULL
+)
 
 generate_choice_parameters(
   choice_effects,
-  fixed_parameters = choice_parameters()
+  fixed_parameters = choice_parameters(),
+  n_classes = 1L
 )
 
 validate_choice_parameters(
@@ -23,17 +30,19 @@ validate_choice_parameters(
 switch_parameter_space(choice_parameters, choice_effects)
 }
 \arguments{
-\item{beta}{[\code{numeric(P)}]\cr
+\item{beta}{[\code{numeric(P)} | \code{list(C)} | \code{NULL}]\cr
 The coefficient vector of length \code{P} (number of effects) for computing the
-linear-in-parameters systematic utility \eqn{V = X\beta}.}
+linear-in-parameters systematic utility \eqn{V = X\beta}. For a latent class
+model, a list of one coefficient vector per class.}
 
-\item{Omega}{[\code{matrix(nrow = P_r, ncol = P_r)} | \code{NULL}]\cr
+\item{Omega}{[\code{matrix(nrow = P_r, ncol = P_r)} | \code{list(C)} | \code{NULL}]\cr
 The covariance matrix of random effects of dimension \code{P_r} times \code{P_r},
 where \code{P_r} \eqn{\leq} \code{P} is the number of random effects.
 
-Can be \code{NULL} in the case of \code{P_r = 0}.}
+In a latent class model, a list of one covariance matrix per class. Can be
+\code{NULL} in the case of \code{P_r = 0}.}
 
-\item{Sigma}{[\code{matrix(nrow = J, ncol = J)} | \code{numeric(1)}]\cr
+\item{Sigma}{[\code{matrix(nrow = J, ncol = J)} | \code{numeric(1)} | \code{NULL}]\cr
 Only relevant in the probit model. For unordered alternatives it is the
 covariance matrix of dimension \code{J} times \code{J} (number of alternatives) for
 the Gaussian error term \eqn{\epsilon = U - V}. In ordered models it reduces
@@ -44,6 +53,14 @@ Optional vector of strictly increasing threshold parameters for ordered
 models. The first element must equal zero for identification. Ignored for
 unordered alternatives.}
 
+\item{weights}{[\code{numeric(C)} | \code{NULL}]\cr
+Positive latent class weights. They are shared across choice occasions and
+normalized to sum to one during validation.
+
+Class-specific \code{beta}, \code{Omega}, and \code{weights} entries use their supplied
+order. As usual for finite mixtures, permuting all class-specific entries
+leaves the model unchanged, so class labels are not identified.}
+
 \item{choice_effects}{[\code{choice_effects}]\cr
 A \code{\link{choice_effects}} object describing the utility
 specification.}
@@ -51,6 +68,9 @@ specification.}
 \item{fixed_parameters}{[\code{choice_parameters}]\cr
 Optionally a \code{choice_parameters} object of parameters to keep
 fixed when sampling other parameters.}
+
+\item{n_classes}{[\code{integer(1)}]\cr
+Number of latent classes. The default \code{1} generates a regular model.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
 A \code{choice_parameters} object. For \code{switch_parameter_space()}, a numeric
@@ -71,6 +91,7 @@ elements:
 \item{\code{Sigma}}{The error term covariance matrix (or variance in ordered
 models).}
 \item{\code{gamma}}{Threshold parameters for ordered models (if any).}
+\item{\code{weights}}{The latent class weights (if any).}
 }
 \code{switch_parameter_space()} returns a named numeric vector when given a
 \code{choice_parameters} object and a \code{choice_parameters} object when given a
@@ -122,6 +143,8 @@ normalization and the second diagonal element is fixed to 1 for scale
 normalization
 \item the covariance matrices (\code{Omega} and \code{Sigma}) are transformed to their
 vectorized Cholesky factor (diagonal fixed to be positive for uniqueness)
+\item latent class parameters are concatenated in class order, and \code{C - 1}
+log weight ratios use the first class as reference
 }
 }
 }
@@ -142,5 +165,12 @@ choice_parameters <- generate_choice_parameters(
     Sigma = diag(c(0, rep(1, J - 1))) # scale and level normalization
   )
 )
+
+### generate a two-class model with class-specific random effects
+latent_parameters <- generate_choice_parameters(
+  choice_effects = choice_effects,
+  n_classes = 2L
+)
+latent_parameters$weights
 }
 \keyword{model}

@@ -29,8 +29,16 @@ alternative-specific constants) that appears in the supplied model formula.
 
 Current options for \code{"<distribution>"} are:
 \itemize{
-\item \code{"cn"}: correlated (with other \code{"cn"} random effects) normal distribution
+\item \code{"cn"}: correlated normal distribution
+\item \code{"cln+"}: positively signed correlated log-normal distribution
+\item \code{"cln-"}: negatively signed correlated log-normal distribution
 }
+
+\code{"cln"} is an alias for \code{"cln+"}. All random effects share one latent
+normal distribution. Thus, normal and log-normal effects can be correlated.
+For a log-normal effect, \code{beta} is the latent normal log-location and
+\code{Omega} is the covariance matrix of the joint latent normal vector. The
+coefficient is \code{exp(eta)} for \code{"cln+"} and \code{-exp(eta)} for \code{"cln-"}.
 
 To have random effects for the ASCs, use \code{"ASC"} for \code{"<covariate>"}.}
 

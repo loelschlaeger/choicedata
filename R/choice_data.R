@@ -12,9 +12,10 @@
 #' helpers can detect them automatically. For ranked or ordered choices, the
 #' function checks the response encoding and reports invalid inputs.
 #'
-#' Internally the helper converts long inputs to wide format. This guarantees
-#' that subsequent steps (such as computing probabilities) receive the same
-#' structure regardless of the original layout and keeps the workflow concise.
+#' In long format, omit rows for alternatives that are unavailable in a choice
+#' occasion. The long layout is retained so that individual choice sets remain
+#' distinguishable. Missing responses are allowed, but covariates must be
+#' observed because otherwise the corresponding utilities are undefined.
 #'
 #' - `generate_choice_data()` simulates choice data.
 #' - `wide_to_long()` and `long_to_wide()` transform to wide and long format.
@@ -34,9 +35,10 @@
 #' alternative (see `choice_type`). In long layout the same column is evaluated
 #' once per alternative: discrete data must use a binary indicator (1 for the
 #' chosen alternative, 0 otherwise), ordered data repeats the ordinal value for
-#' every alternative, and ranked data stores the integer rank `1:J` for each
-#' alternative within an observation. Set to `NULL` when no observed choices are
-#' available (e.g., for purely covariate tables).
+#' every alternative, and ranked data stores consecutive ranks `1:k` for the
+#' observed top `k` alternatives and `NA` for unranked alternatives. An
+#' entirely missing response marks an occasion that is omitted from the
+#' likelihood. Set to `NULL` for purely covariate tables.
 #'
 #' @param column_as_covariates \[`character()` | `NULL`\]\cr
 #' Column names of `data_frame` with alternative-specific covariates.
@@ -61,9 +63,11 @@
 #' Type of choice responses. Use `"discrete"` for standard multinomial choice
 #' data, `"ordered"` for ordered outcomes (declare the order via
 #' `choice_alternatives(ordered = TRUE)`), and `"ranked"` for ranked choice
-#' data. Ranked responses require a full ranking of all alternatives encoded as
-#' the integers `1:J` for each observation. In wide format, rankings must be
-#' provided in columns named `paste0(column_choice, delimiter, alternative)`.
+#' data. Ranked responses may be complete or partial and use consecutive
+#' integers `1:k`, where `k` can vary by observation. In wide format, rankings
+#' are stored in columns named
+#' `paste0(column_choice, delimiter, alternative)`; use `NA` for an unranked
+#' alternative.
 #'
 #' @inheritParams choice_alternatives
 #' @inheritParams choice_responses
@@ -101,6 +105,21 @@
 #' wide_to_long(
 #'   data_frame = train_choice
 #' )
+#'
+#' ### individual choice sets and a missing response
+#' partial_data <- data.frame(
+#'   deciderID = c(1, 1, 2),
+#'   alternative = c("A", "B", "B"),
+#'   choice = c(1L, 0L, NA),
+#'   cost = c(1.2, 1.5, 0.8)
+#' )
+#' choice_data(
+#'   data_frame = partial_data,
+#'   format = "long",
+#'   column_decider = "deciderID",
+#'   column_alternative = "alternative",
+#'   column_as_covariates = "cost"
+#' )
 
 choice_data <- function(
   data_frame,
@@ -136,6 +155,11 @@ choice_data <- function(
   if (identical(choice_type, "ranked")) {
     check_column_choice(column_choice, null.ok = FALSE)
   }
+  rank_cols <- character()
+  if (identical(format, "wide") && identical(choice_type, "ranked")) {
+    prefix <- paste0(column_choice, delimiter)
+    rank_cols <- names(data_frame)[startsWith(names(data_frame), prefix)]
+  }
   choice_column_check <- column_choice
   if (identical(format, "wide") && identical(choice_type, "ranked") &&
       !column_choice %in% names(data_frame)) {
@@ -150,16 +174,14 @@ choice_data <- function(
     column_alternative = column_alternative,
     column_ac_covariates = column_ac_covariates,
     column_as_covariates = column_as_covariates,
-    delimiter = delimiter
+    delimiter = delimiter,
+    allow_missing_columns = c(column_choice, rank_cols)
   )
   column_ac_covariates <- ac_as_covariates$column_ac_covariates
   column_as_covariates <- ac_as_covariates$column_as_covariates
   column_as_covariates_wide <- ac_as_covariates$column_as_covariates_wide
-  rank_cols <- character()
   alternatives_ranked <- character()
   if (identical(format, "wide") && identical(choice_type, "ranked")) {
-    prefix <- paste0(column_choice, delimiter)
-    rank_cols <- names(data_frame)[startsWith(names(data_frame), prefix)]
     alternatives_ranked <- substring(rank_cols, nchar(prefix) + 1L)
     check_alternatives(alternatives_ranked)
     column_as_covariates <- setdiff(
@@ -174,23 +196,26 @@ choice_data <- function(
     J <- length(alternatives_ranked)
     oeli::input_check_response(
       check = checkmate::check_integerish(
-        ranks, lower = 1, upper = J, any.missing = FALSE
+        ranks, lower = 1, upper = J, any.missing = TRUE
       ),
       var_name = "ranking columns"
     )
-    full_ranking <- apply(
+    valid_ranking <- apply(
       ranks,
       1,
-      function(x) identical(sort(as.integer(x)), seq_len(J))
+      function(x) {
+        x <- x[!is.na(x)]
+        !length(x) || identical(sort(as.integer(x)), seq_along(x))
+      }
     )
     oeli::input_check_response(
-      check = if (all(full_ranking)) TRUE else paste(
-        "Must contain each rank exactly once per observation"
+      check = if (all(valid_ranking)) TRUE else paste(
+        "Observed ranks must be consecutive and start at one"
       ),
       var_name = "ranking columns"
     )
   }
-  required_columns = c(
+  required_columns <- c(
     choice_column_check, column_decider, column_occasion, column_alternative,
     column_ac_covariates,
     if (format == "long") column_as_covariates else column_as_covariates_wide
@@ -198,7 +223,8 @@ choice_data <- function(
   data_frame <- check_data_frame(
     data_frame,
     forbidden_columns = if (format == "wide") column_alternative,
-    required_columns = required_columns
+    required_columns = required_columns,
+    allow_missing_columns = c(column_choice, rank_cols)
   )
 
   ### transform to wide format
@@ -226,8 +252,14 @@ choice_data <- function(
   }
 
   ### extract choice identifiers
+  identifier_data <- if (identical(format, "long")) {
+    data_frame[c(column_decider, column_occasion)]
+  } else {
+    data_frame_wide[c(column_decider, column_occasion)]
+  }
   choice_identifiers <- choice_identifiers(
-    data_frame = data_frame_wide[c(column_decider, column_occasion)],
+    data_frame = identifier_data,
+    format = format,
     column_decider = column_decider,
     column_occasion = column_occasion,
     cross_section = cross_section
@@ -237,45 +269,12 @@ choice_data <- function(
 
   ### build 'choice_data' object
   choice_data <- if (format == "long") {
-    choice_choice_cols <- if (!is.null(column_choice) &&
-        column_choice %in% names(data_frame_wide)) {
-      data_frame_wide[column_choice]
-    } else {
-      data_frame_wide[, character(), drop = FALSE]
-    }
-    covariate_cols <- c(column_ac_covariates, column_as_covariates_wide)
-    if (is.null(covariate_cols)) {
-      covariate_cols <- character()
-    }
-    if (identical(choice_type, "ranked")) {
-      esc <- function(x) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", x)
-      if (!is.null(column_choice) && length(alternatives)) {
-        rank_pattern <- paste0(
-          "^", esc(column_choice), esc(delimiter),
-          "(", paste0(esc(alternatives), collapse = "|"), ")$"
-        )
-        rank_cols <- grep(rank_pattern, names(data_frame_wide), value = TRUE)
-        covariate_cols <- c(covariate_cols, rank_cols)
-      }
-    }
-    if (length(covariate_cols)) {
-      covariate_cols <- unique(covariate_cols[!is.na(covariate_cols)])
-    }
-    choice_covariate_cols <- data_frame_wide[, covariate_cols, drop = FALSE]
-    choice_data <- cbind(
-      choice_identifiers, choice_choice_cols, choice_covariate_cols
-    ) |> wide_to_long(
-      column_choice = column_choice,
-      column_alternative = column_alternative,
-      alternatives = alternatives,
-      delimiter = delimiter,
-      choice_type = choice_type
-    )
     columns <- c(
       column_decider, column_occasion, column_alternative, column_choice,
       column_ac_covariates, column_as_covariates
     )
-    choice_data <- choice_data[, columns, drop = FALSE]
+    columns <- unique(columns[!is.na(columns)])
+    tibble::as_tibble(data_frame[, columns, drop = FALSE])
   } else {
     choice_choice_cols <- if (!is.null(column_choice) &&
         column_choice %in% names(data_frame)) {
@@ -409,6 +408,8 @@ generate_choice_data <- function(
   ### merge choices and covariates
   column_decider <- attr(choice_identifiers, "column_decider")
   column_occasion <- attr(choice_identifiers, "column_occasion")
+  cov_format <- attr(choice_covariates, "format")
+  long_format <- identical(cov_format, "long")
   choice_responses_df <- tibble::as_tibble(choice_responses)
   choice_covariates_df <- tibble::as_tibble(choice_covariates)
   if (
@@ -417,53 +418,46 @@ generate_choice_data <- function(
     choice_covariates_df[[column_choice]] <- NULL
   }
 
-  if (
-    !is.null(column_choice) && column_choice %in% names(choice_responses_df)
-  ) {
-    choice_responses_df[[column_choice]] <- as.character(
-      choice_responses_df[[column_choice]]
-    )
-  }
-
   join_columns <- c(column_decider, column_occasion)
+  duplicates_responses <- duplicated(choice_responses_df[join_columns])
+  duplicates_covariates <- if (long_format) {
+    rep(FALSE, nrow(choice_covariates_df))
+  } else {
+    duplicated(choice_covariates_df[join_columns])
+  }
   data_frame <- dplyr::inner_join(
-    choice_responses_df,
     choice_covariates_df,
+    choice_responses_df,
+    by = join_columns
+  )
+  responses_only <- dplyr::anti_join(
+    choice_responses_df[join_columns],
+    choice_covariates_df[join_columns],
+    by = join_columns
+  )
+  covariates_only <- dplyr::anti_join(
+    choice_covariates_df[join_columns],
+    choice_responses_df[join_columns],
     by = join_columns
   )
 
-  if (nrow(data_frame) != nrow(choice_responses_df) ||
-      nrow(data_frame) != nrow(choice_covariates_df)) {
+  if (nrow(data_frame) != nrow(choice_covariates_df) ||
+      nrow(responses_only) || nrow(covariates_only) ||
+      any(duplicates_responses) || any(duplicates_covariates)) {
     key_label <- paste(join_columns, collapse = ", ")
-    responses_only <- dplyr::anti_join(
-      choice_responses_df[join_columns],
-      choice_covariates_df[join_columns],
-      by = join_columns
-    )
-    covariates_only <- dplyr::anti_join(
-      choice_covariates_df[join_columns],
-      choice_responses_df[join_columns],
-      by = join_columns
-    )
-    duplicates_responses <- if (length(join_columns)) {
-      dup_idx <- duplicated(choice_responses_df[join_columns])
-      if (any(dup_idx)) {
-        choice_responses_df[dup_idx, join_columns, drop = FALSE]
-      } else {
-        choice_responses_df[0, join_columns, drop = FALSE]
-      }
+    duplicate_responses <- if (any(duplicates_responses)) {
+      choice_responses_df[
+        duplicates_responses, join_columns, drop = FALSE
+      ]
     } else {
       choice_responses_df[0, , drop = FALSE]
     }
-    duplicates_covariates <- if (length(join_columns)) {
-      dup_idx <- duplicated(choice_covariates_df[join_columns])
-      if (any(dup_idx)) {
-        choice_covariates_df[dup_idx, join_columns, drop = FALSE]
-      } else {
-        choice_covariates_df[0, join_columns, drop = FALSE]
-      }
+    duplicate_covariates <- if (any(duplicates_covariates)) {
+      choice_covariates_df[
+        duplicates_covariates, join_columns, drop = FALSE
+      ]
     } else {
-      choice_covariates_df[0, , drop = FALSE]
+      choice_covariates_df[0, join_columns, drop = FALSE]
     }
 
     summarise_keys <- function(df) {
@@ -482,14 +476,12 @@ generate_choice_data <- function(
 
     bullets <- c(
       "x" = sprintf(
-        "Join between simulated responses and covariates must be one-to-one on
-        %s.",
+        "Each covariate row must match one unique response on %s.",
         key_label
       ),
       "i" = sprintf(
-        "Join produced %d rows; expected %d from responses and %d from
-        covariates.",
-        nrow(data_frame), nrow(choice_responses_df), nrow(choice_covariates_df)
+        "Join produced %d rows; expected %d covariate rows.",
+        nrow(data_frame), nrow(choice_covariates_df)
       )
     )
     resp_missing <- summarise_keys(responses_only)
@@ -506,14 +498,14 @@ generate_choice_data <- function(
         "i" = sprintf("Missing responses for keys: %s", cov_missing)
       )
     }
-    dup_resp <- summarise_keys(duplicates_responses)
+    dup_resp <- summarise_keys(duplicate_responses)
     if (!is.null(dup_resp)) {
       bullets <- c(
         bullets,
         "i" = sprintf("Duplicate response keys: %s", dup_resp)
       )
     }
-    dup_cov <- summarise_keys(duplicates_covariates)
+    dup_cov <- summarise_keys(duplicate_covariates)
     if (!is.null(dup_cov)) {
       bullets <- c(
         bullets,
@@ -523,13 +515,32 @@ generate_choice_data <- function(
     cli::cli_abort(bullets, call = NULL)
   }
 
+  if (long_format) {
+    column_alternative <- attr(choice_covariates, "column_alternative")
+    alternative <- as.character(data_frame[[column_alternative]])
+    if (identical(choice_type, "discrete")) {
+      chosen <- as.character(data_frame[[column_choice]])
+      data_frame[[column_choice]] <- as.integer(chosen == alternative)
+    } else if (identical(choice_type, "ranked")) {
+      alternatives <- as.character(choice_alternatives)
+      delimiter <- attr(choice_covariates, "delimiter")
+      rank_cols <- paste(column_choice, alternatives, sep = delimiter)
+      ranks <- as.matrix(data_frame[rank_cols])
+      index <- cbind(
+        seq_len(nrow(data_frame)), match(alternative, alternatives)
+      )
+      data_frame[[column_choice]] <- ranks[index]
+      data_frame[rank_cols] <- NULL
+    }
+  }
+
   ### create and return 'choice_data' object
-  cov_format <- attr(choice_covariates, "format")
   column_as_covariates <- attr(choice_covariates, "column_as_covariates")
   if (!is.null(column_choice) && length(column_as_covariates)) {
     column_as_covariates <- setdiff(column_as_covariates, column_choice)
   }
-  if (identical(choice_type, "ranked") && !is.null(column_choice)) {
+  if (!long_format && identical(choice_type, "ranked") &&
+      !is.null(column_choice)) {
     column_as_covariates <- unique(c(column_as_covariates, column_choice))
   }
   choice_data(
@@ -578,7 +589,11 @@ long_to_wide <- function(
     column_alternative, column_ac_covariates, column_as_covariates,
     column_choice, column_decider, column_occasion
   )
-  check_data_frame(data_frame, required_columns = required_columns)
+  check_data_frame(
+    data_frame,
+    required_columns = required_columns,
+    allow_missing_columns = column_choice
+  )
   check_alternatives(alternatives)
   check_delimiter(delimiter)
   choice_type <- match.arg(choice_type)
@@ -589,14 +604,16 @@ long_to_wide <- function(
   obs <- interaction(data_frame[id_cols], drop = TRUE, lex.order = TRUE)
   alt <- as.character(data_frame[[column_alternative]])
   alt_by_obs <- split(alt, obs)
-  complete <- vapply(
+  valid_sets <- vapply(
     alt_by_obs,
-    function(x) identical(sort(x), sort(alternatives)),
+    function(x) {
+      length(x) > 0L && !anyDuplicated(x) && all(x %in% alternatives)
+    },
     logical(1)
   )
   oeli::input_check_response(
-    check = if (all(complete)) TRUE else paste(
-      "Must contain exactly one row per alternative and observation"
+    check = if (all(valid_sets)) TRUE else paste(
+      "Must contain unique declared alternatives in every observation"
     ),
     var_name = "data_frame"
   )
@@ -606,11 +623,13 @@ long_to_wide <- function(
     if (identical(choice_type, "discrete")) {
       oeli::input_check_response(
         check = checkmate::check_integerish(
-          response, lower = 0, upper = 1, any.missing = FALSE
+          response, lower = 0, upper = 1, any.missing = TRUE
         ),
         var_name = column_choice
       )
-      one_choice <- vapply(response_by_obs, sum, numeric(1)) == 1
+      one_choice <- vapply(response_by_obs, function(x) {
+        sum(x == 1, na.rm = TRUE) == 1L || all(is.na(x))
+      }, logical(1))
       oeli::input_check_response(
         check = if (all(one_choice)) TRUE else paste(
           "Must identify exactly one chosen alternative per observation"
@@ -628,7 +647,7 @@ long_to_wide <- function(
       }
       one_category <- vapply(
         response_by_obs,
-        function(x) length(unique(x)) == 1L,
+        function(x) length(unique(x[!is.na(x)])) <= 1L,
         logical(1)
       )
       oeli::input_check_response(
@@ -638,21 +657,24 @@ long_to_wide <- function(
         var_name = column_choice
       )
     } else {
-      J <- length(alternatives)
       oeli::input_check_response(
         check = checkmate::check_integerish(
-          response, lower = 1, upper = J, any.missing = FALSE
+          response, lower = 1, upper = length(alternatives),
+          any.missing = TRUE
         ),
         var_name = column_choice
       )
-      full_ranking <- vapply(
+      valid_ranking <- vapply(
         response_by_obs,
-        function(x) identical(sort(as.integer(x)), seq_len(J)),
+        function(x) {
+          x <- x[!is.na(x)]
+          !length(x) || identical(sort(as.integer(x)), seq_along(x))
+        },
         logical(1)
       )
       oeli::input_check_response(
-        check = if (all(full_ranking)) TRUE else paste(
-          "Must contain each rank exactly once per observation"
+        check = if (all(valid_ranking)) TRUE else paste(
+          "Observed ranks must be consecutive and start at one"
         ),
         var_name = column_choice
       )
@@ -667,7 +689,8 @@ long_to_wide <- function(
     column_decider = column_decider,
     column_occasion = column_occasion,
     column_alternative = column_alternative,
-    delimiter = delimiter
+    delimiter = delimiter,
+    allow_missing_columns = column_choice
   )
   if (is.null(column_ac_covariates)) {
     column_ac_covariates <- ac_as$column_ac_covariates
@@ -744,12 +767,19 @@ long_to_wide <- function(
 guess_alternatives_wide <- function(
   data_frame,
   column_choice = NULL,
-  delimiter = "_"
+  delimiter = "_",
+  allow_missing_columns = column_choice
 ) {
-  check_data_frame(data_frame)
+  check_data_frame(
+    data_frame,
+    allow_missing_columns = allow_missing_columns
+  )
   check_column_choice(column_choice, null.ok = TRUE)
   check_delimiter(delimiter)
-  if (!is.null(column_choice) && !column_choice %in% names(data_frame)) {
+  missing_choice <- !is.null(column_choice) &&
+    !column_choice %in% names(data_frame) &&
+    !column_choice %in% allow_missing_columns
+  if (missing_choice) {
     cli::cli_abort(
       "Column {.val {column_choice}} is missing from {.var data_frame}.",
       call = NULL
@@ -803,6 +833,12 @@ wide_to_long <- function(
   check_column_choice(column_choice, null.ok = TRUE)
   check_column_alternative(column_alternative, null.ok = FALSE)
   choice_type <- match.arg(choice_type)
+  rank_cols <- character()
+  if (!is.null(column_choice) && identical(choice_type, "ranked")) {
+    rank_cols <- names(data_frame)[startsWith(
+      names(data_frame), paste0(column_choice, delimiter)
+    )]
+  }
   required_choice_cols <- if (!is.null(column_choice) &&
       !identical(choice_type, "ranked")) {
     column_choice
@@ -812,20 +848,22 @@ wide_to_long <- function(
   check_data_frame(
     data_frame,
     required_columns = required_choice_cols,
-    forbidden_columns = column_alternative
+    forbidden_columns = column_alternative,
+    allow_missing_columns = c(column_choice, rank_cols)
   )
   if (is.null(alternatives)) {
     alternatives <- guess_alternatives_wide(
-      data_frame, column_choice = column_choice, delimiter = delimiter
+      data_frame,
+      column_choice = column_choice,
+      delimiter = delimiter,
+      allow_missing_columns = c(column_choice, rank_cols)
     )
   }
   check_alternatives(alternatives)
   check_delimiter(delimiter)
   if (!is.null(column_choice) && identical(choice_type, "discrete")) {
-    unknown <- setdiff(
-      as.character(data_frame[[column_choice]]),
-      alternatives
-    )
+    observed <- stats::na.omit(as.character(data_frame[[column_choice]]))
+    unknown <- setdiff(observed, alternatives)
     oeli::input_check_response(
       check = if (!length(unknown)) TRUE else paste(
         "Must only contain declared alternatives"
@@ -864,18 +902,21 @@ wide_to_long <- function(
     J <- length(alternatives)
     oeli::input_check_response(
       check = checkmate::check_integerish(
-        ranks, lower = 1, upper = J, any.missing = FALSE
+        ranks, lower = 1, upper = J, any.missing = TRUE
       ),
       var_name = "ranking columns"
     )
-    full_ranking <- apply(
+    valid_ranking <- apply(
       ranks,
       1,
-      function(x) identical(sort(as.integer(x)), seq_len(J))
+      function(x) {
+        x <- x[!is.na(x)]
+        !length(x) || identical(sort(as.integer(x)), seq_along(x))
+      }
     )
     oeli::input_check_response(
-      check = if (all(full_ranking)) TRUE else paste(
-        "Must contain each rank exactly once per observation"
+      check = if (all(valid_ranking)) TRUE else paste(
+        "Observed ranks must be consecutive and start at one"
       ),
       var_name = "ranking columns"
     )
@@ -961,7 +1002,8 @@ check_as_covariates <- function(
   column_alternative = NULL,
   column_ac_covariates = NULL,
   column_as_covariates = NULL,
-  delimiter = "_"
+  delimiter = "_",
+  allow_missing_columns = character()
 ) {
 
   ### input checks
@@ -984,7 +1026,8 @@ check_as_covariates <- function(
     forbidden_columns = if (format == "wide") column_alternative,
     required_columns = c(
       column_choice, column_decider, column_occasion, column_alternative
-    )
+    ),
+    allow_missing_columns = allow_missing_columns
   )
 
   esc <- function(x) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", x)
@@ -1061,7 +1104,8 @@ check_as_covariates <- function(
     alternatives <- guess_alternatives_wide(
       data_frame,
       column_choice = column_choice,
-      delimiter = delimiter
+      delimiter = delimiter,
+      allow_missing_columns = allow_missing_columns
     )
     pattern <- paste0(
       "^(.+?)", esc(delimiter), "(",

@@ -194,4 +194,52 @@ test_that("design matrices can be build", {
     function(x) identical(dim(x), c(4L, nrow(choice_effects))),
     logical(1)
   )))
+
+  ### individual choice sets keep global design rows
+  choice_set_df <- data.frame(
+    deciderID = c(1, 1, 1, 2, 2),
+    alternative = c("A", "B", "C", "A", "C"),
+    choice = c(0L, 1L, 0L, NA, NA),
+    cost = c(1, 2, 3, 4, 5)
+  )
+  choice_set_data <- choice_data(
+    data_frame = choice_set_df,
+    format = "long",
+    column_choice = "choice",
+    column_decider = "deciderID",
+    column_alternative = "alternative",
+    column_as_covariates = "cost"
+  )
+  choice_set_effects <- choice_effects(
+    choice_formula = choice_formula(
+      choice ~ cost | 0 | 0,
+      error_term = "logit"
+    ),
+    choice_alternatives = choice_alternatives(
+      J = 3,
+      alternatives = c("A", "B", "C")
+    ),
+    choice_data = choice_set_data
+  )
+  choice_set_design <- design_matrices(
+    x = choice_set_data,
+    choice_effects = choice_set_effects
+  )
+  expect_true(all(vapply(
+    choice_set_design,
+    function(x) identical(dim(x), c(3L, nrow(choice_set_effects))),
+    logical(1)
+  )))
+  expect_identical(
+    attr(choice_set_design, "availability"),
+    list(1:3, c(1L, 3L))
+  )
+  expect_true(all(choice_set_design[[2]]["B", ] == 0))
+
+  choice_set_indices <- extract_choice_indices(
+    choice_data = choice_set_data,
+    choice_effects = choice_set_effects
+  )
+  expect_identical(choice_set_indices[[1]], 2L)
+  expect_identical(choice_set_indices[[2]], integer())
 })

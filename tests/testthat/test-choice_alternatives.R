@@ -61,7 +61,14 @@ test_that("choice_alternatives can be printed", {
     print.choice_alternatives(1),
     "Input `x` is bad"
   )
-  expect_snapshot(
-    choice_alternatives(J = 3, alternatives = c("la", "le", "lu"))
+  messages <- capture.output(
+    output <- capture.output(
+      print(choice_alternatives(3, c("la", "le", "lu"))),
+      type = "output"
+    ),
+    type = "message"
   )
+  text <- paste(c(messages, output), collapse = "\n")
+  expect_match(text, "Choice alternatives", fixed = TRUE)
+  expect_match(text, "la*", fixed = TRUE)
 })

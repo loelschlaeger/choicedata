@@ -49,6 +49,8 @@ if the effect is alternative-specific),
 \item \code{"mixing"}, a factor with levels in the order
 \enumerate{
 \item \code{"cn"} (correlated normal distribution),
+\item \code{"cln+"} (positively signed correlated log-normal distribution),
+\item \code{"cln-"} (negatively signed correlated log-normal distribution),
 }
 
 indicating the type of random effect.
@@ -58,7 +60,6 @@ For identification, the choice effects are ordered according to the following
 rules:
 \enumerate{
 \item Non-random effects come before random effects.
-\item According to the ordering of the factor \code{mixing}.
 \item Otherwise, the order is determined by occurrence in \code{formula}.
 }
 

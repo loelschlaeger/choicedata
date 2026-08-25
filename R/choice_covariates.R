@@ -147,8 +147,14 @@ choice_covariates <- function(
   }
 
   ### extract choice identifiers
+  identifier_data <- if (identical(format, "long")) {
+    data_frame[c(column_decider, column_occasion)]
+  } else {
+    data_frame_wide[c(column_decider, column_occasion)]
+  }
   choice_identifiers <- choice_identifiers(
-    data_frame = data_frame_wide[c(column_decider, column_occasion)],
+    data_frame = identifier_data,
+    format = format,
     column_decider = column_decider,
     column_occasion = column_occasion,
     cross_section = cross_section
@@ -158,20 +164,12 @@ choice_covariates <- function(
 
   ### build 'choice_covariates' object
   choice_covariates <- if (format == "long") {
-    choice_covariates <- cbind(
-      choice_identifiers,
-      data_frame_wide[, c(column_ac_covariates, column_as_covariates_wide)]
-    ) |> wide_to_long(
-      column_choice = NULL,
-      column_alternative = column_alternative,
-      alternatives = alternatives,
-      delimiter = delimiter
-    )
     columns <- c(
       column_decider, column_occasion, column_alternative,
       column_ac_covariates, column_as_covariates
     )
-    choice_covariates <- choice_covariates[, columns, drop = FALSE]
+    columns <- unique(columns[!is.na(columns)])
+    tibble::as_tibble(data_frame[, columns, drop = FALSE])
   } else {
     choice_covariates <- cbind(
       choice_identifiers,
@@ -314,6 +312,12 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
     ordered_alternatives <- isTRUE(attr(choice_alternatives, "ordered"))
     choice_type <- if (ordered_alternatives) "ordered" else "discrete"
   }
+  rank_prefix <- paste0(column_choice, delimiter)
+  has_choice <- !is.null(column_choice) && (
+    column_choice %in% names(x) ||
+      identical(choice_type, "ranked") &&
+      any(startsWith(names(x), rank_prefix))
+  )
 
   if (identical(format, "wide")) {
     base_alt <- attr(choice_alternatives, "base")
@@ -386,7 +390,8 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
     cd_id = cd_id,
     co_id = co_id,
     co_vals = co_vals,
-    choice_type = choice_type
+    choice_type = choice_type,
+    has_choice = has_choice
   )
 }
 
@@ -405,16 +410,31 @@ subset_choice_observation <- function(prep, index) {
       , drop = FALSE
     ]
   }
-  ord <- match(prep$alts, as.character(df_nt[["alternative"]]))
-  if (anyNA(ord)) {
+  observed_alts <- as.character(df_nt[["alternative"]])
+  unknown_alts <- setdiff(observed_alts, prep$alts)
+  if (length(unknown_alts)) {
     cli::cli_abort(
-      "Missing rows for some alternatives in {.var x} at decider
-      {.val {dec_val}} and occasion
-      {.val {if (is.null(prep$column_occasion)) 1 else occ_val}}.",
+      "Unknown alternative(s) {.val {unknown_alts}} in {.var x}.",
       call = NULL
     )
   }
-  df_nt[ord, , drop = FALSE]
+  if (anyDuplicated(observed_alts)) {
+    cli::cli_abort(
+      "Alternatives must be unique within each choice occasion.",
+      call = NULL
+    )
+  }
+  ord <- match(prep$alts, observed_alts)
+  available <- which(!is.na(ord))
+  if (!length(available)) {
+    cli::cli_abort(
+      "Missing rows: each choice occasion needs at least one alternative.",
+      call = NULL
+    )
+  }
+  df_nt <- df_nt[ord[available], , drop = FALSE]
+  attr(df_nt, "availability") <- as.integer(available)
+  df_nt
 }
 
 #' @rdname choice_covariates
@@ -456,9 +476,11 @@ design_matrices <- function(
   P <- nrow(choice_effects)
 
   design_list <- vector("list", length = nrow(prep$ids_df))
+  availability <- vector("list", length = nrow(prep$ids_df))
 
   for (k in seq_len(nrow(prep$ids_df))) {
     df_nt <- subset_choice_observation(prep, k)
+    available <- attr(df_nt, "availability")
     ordered_type <- identical(prep$choice_type, "ordered")
     df_for_mm <- if (ordered_type) df_nt[1, , drop = FALSE] else df_nt
 
@@ -498,10 +520,11 @@ design_matrices <- function(
             call = NULL
           )
         }
-        if (isTRUE(e_is_ASC)) {
+        j <- match(e_alt, as.character(df_nt[["alternative"]]))
+        if (isTRUE(e_is_ASC) && !is.na(j)) {
           X_nt[e_alt, e_name] <- 1
-        } else if (!is.null(mm2) && e_cov %in% colnames(mm2)) {
-          j <- match(e_alt, prep$alts)
+        } else if (!is.na(j) && !is.null(mm2) &&
+            e_cov %in% colnames(mm2)) {
           X_nt[e_alt, e_name] <- mm2[j, e_cov]
         }
       } else {
@@ -513,8 +536,10 @@ design_matrices <- function(
           )
         }
         if (!is.null(mm3) && e_cov %in% colnames(mm3)) {
-          j <- match(e_alt, prep$alts)
-          X_nt[e_alt, e_name] <- mm3[j, e_cov]
+          j <- match(e_alt, as.character(df_nt[["alternative"]]))
+          if (!is.na(j)) {
+            X_nt[e_alt, e_name] <- mm3[j, e_cov]
+          }
         }
       }
     }
@@ -524,13 +549,16 @@ design_matrices <- function(
       var_name = "design matrix"
     )
     design_list[[k]] <- X_nt
+    availability[[k]] <- available
   }
 
   structure(
     design_list,
     class = c("choice_design_matrices", "list"),
     Tp = prep$Tp,
-    alternatives = prep$alts
+    alternatives = prep$alts,
+    availability = availability,
+    choice_type = prep$choice_type
   )
 }
 
@@ -550,6 +578,10 @@ extract_choice_indices <- function(
     choice_data, choice_effects, choice_identifiers
   )
   column_choice <- prep$column_choice
+  if (!prep$has_choice) {
+    choice_list <- rep(list(integer()), nrow(prep$ids_df))
+    return(structure(choice_list, Tp = prep$Tp))
+  }
   if (is.null(column_choice) || !column_choice %in% names(prep$x_long)) {
     cli::cli_abort(
       "Cannot extract choices because column {.val {column_choice}} is
@@ -570,28 +602,29 @@ extract_choice_indices <- function(
       values <- suppressWarnings(as.numeric(values_raw))
     }
     if (identical(prep$choice_type, "ranked")) {
-      expected <- seq_len(prep$J)
       rank_values <- suppressWarnings(as.numeric(values_raw))
-      rank_integers <- suppressWarnings(as.integer(rank_values))
-      if (length(rank_integers) != prep$J || anyNA(rank_integers) ||
-          !isTRUE(all.equal(rank_values, rank_integers)) ||
-          !identical(sort(rank_integers), expected)) {
+      rank_values <- rank_values[!is.na(rank_values)]
+      if (!length(rank_values)) {
+        choice_list[[k]] <- integer()
+        next
+      }
+      rank_integers <- as.integer(rank_values)
+      valid_ranking <- isTRUE(all.equal(rank_values, rank_integers)) &&
+        identical(sort(rank_integers), seq_along(rank_integers))
+      if (!valid_ranking) {
         cli::cli_abort(
-          "Ranked choice data must contain a full ranking of all alternatives.",
+          "Observed ranks must be consecutive and start at one.",
           call = NULL
         )
       }
-      order_idx <- order(rank_integers)
+      order_idx <- which(!is.na(values_raw))[order(rank_integers)]
       ranking_alts <- df_nt[["alternative"]][order_idx]
       choice_list[[k]] <- match(ranking_alts, prep$alts)
     } else if (identical(prep$choice_type, "ordered")) {
       non_missing <- !is.na(values_raw)
       if (!any(non_missing)) {
-        cli::cli_abort(
-          "Ordered choice data must contain an observed category for each
-          observation.",
-          call = NULL
-        )
+        choice_list[[k]] <- integer()
+        next
       }
       if (length(unique(values_raw[non_missing])) != 1L) {
         cli::cli_abort(
@@ -617,6 +650,10 @@ extract_choice_indices <- function(
       choice_list[[k]] <- idx
     } else {
       chosen_idx <- which(values == 1)
+      if (!length(chosen_idx) && all(is.na(values))) {
+        choice_list[[k]] <- integer()
+        next
+      }
       if (length(chosen_idx) != 1) {
         cli::cli_abort(
           "Choice data must contain exactly one chosen alternative per

@@ -6,6 +6,9 @@
 * Improved input validations. Internal validation failures now use descriptive
   `cli` messages.
 
+* Added partial rankings, individual choice sets, joint panel outcomes,
+  log-normal random effects, and latent class estimation.
+
 * Probability calculations now use Rcpp.
 
 # choicedata 0.1.0

@@ -57,7 +57,7 @@ test_that("choice_formula can be specified", {
   expect_choice_formula(
     choice_formula(
       formula = choice ~ A | B,
-      random_effects = c("A" = "cn", "B" = "cn")
+      random_effects = c("A" = "cn", "B" = "cln")
     ),
     error_term = "probit",
     choice = "choice",
@@ -65,12 +65,12 @@ test_that("choice_formula can be specified", {
     as_covariates = "A",
     ac_covariates = "B",
     ASC = TRUE,
-    random_effects = c("A" = "cn", "B" = "cn")
+    random_effects = c("A" = "cn", "B" = "cln+")
   )
   expect_choice_formula(
     choice_formula(
       formula = choice ~ A | B,
-      random_effects = c("B" = "cn", "ASC" = "cn")
+      random_effects = c("B" = "cln+", "ASC" = "cln-")
     ),
     error_term = "probit",
     choice = "choice",
@@ -78,7 +78,7 @@ test_that("choice_formula can be specified", {
     as_covariates = "A",
     ac_covariates = "B",
     ASC = TRUE,
-    random_effects = c("B" = "cn", "ASC" = "cn")
+    random_effects = c("B" = "cln+", "ASC" = "cln-")
   )
   expect_choice_formula(
     choice_formula(
@@ -172,6 +172,13 @@ test_that("misspecifications in choice_formula can be detected", {
   expect_error(
     choice_formula(
       formula = choice ~ A,
+      random_effects = c("A" = "log-normal")
+    ),
+    "Input `random_effects` is bad"
+  )
+  expect_error(
+    choice_formula(
+      formula = choice ~ A,
       random_effects = c("bad_covariate" = "cn")
     ),
     "contains"
@@ -230,17 +237,25 @@ test_that("choice_formula can be printed", {
     print.choice_formula(1),
     "Input `x` is bad"
   )
-  expect_snapshot(
-    choice_formula(
+  messages <- capture.output(
+    print(choice_formula(
       formula = choice ~ A | B
-    )
+    )),
+    type = "message"
   )
-  expect_snapshot(
-    choice_formula(
+  text <- paste(messages, collapse = "\n")
+  expect_match(text, "choice ~ A | B | 0", fixed = TRUE)
+  messages <- capture.output(
+    print(choice_formula(
       formula = choice ~ A + B,
       random_effects = c("A" = "cn", "B" = "cn")
-    )
+    )),
+    type = "message"
   )
+  text <- paste(messages, collapse = "\n")
+  expect_match(text, "random effects", fixed = TRUE)
+  expect_match(text, "A: cn", fixed = TRUE)
+  expect_match(text, "B: cn", fixed = TRUE)
 })
 
 test_that("choice_formula can be resolved", {
@@ -257,7 +272,7 @@ test_that("choice_formula can be resolved", {
   )
   choice_formula <- choice_formula(
     formula = choice ~ 0 | brand | price:brand,
-    random_effects = c("brand" = "cn")
+    random_effects = c("brand" = "cln")
   )
   choice_formula_resolved <- resolve_choice_formula(
     choice_formula = choice_formula, x = choice_data
@@ -272,6 +287,7 @@ test_that("choice_formula can be resolved", {
   ### check random effects
   new_random_effects <- choice_formula_resolved$random_effects
   expect_identical(names(new_random_effects), "brandB")
+  expect_identical(unname(new_random_effects), "cln+")
 
   ### '.' is resolved
   choice_formula_2 <- choice_formula(formula = choice ~ .)

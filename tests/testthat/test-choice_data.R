@@ -62,6 +62,52 @@ test_that("choice_data can be defined", {
     ) |> is.choice_data()
   )
 
+  ### wide format with a missing response
+  missing_wide <- train_choice[1:4, ]
+  missing_wide$choice[2] <- NA_character_
+  missing_data <- choice_data(
+    data_frame = missing_wide,
+    format = "wide",
+    column_choice = "choice",
+    column_decider = "deciderID",
+    column_occasion = "occasionID"
+  )
+  expect_s3_class(missing_data, "choice_data")
+  expect_true(is.na(missing_data$choice[2]))
+
+  ### long format with individual choice sets and a missing response
+  choice_set_df <- data.frame(
+    deciderID = c(1, 1, 1, 2, 2),
+    alternative = c("A", "B", "C", "A", "C"),
+    choice = c(0L, 1L, 0L, NA, NA),
+    cost = c(1, 2, 3, 4, 5)
+  )
+  choice_set_data <- choice_data(
+    data_frame = choice_set_df,
+    format = "long",
+    column_choice = "choice",
+    column_decider = "deciderID",
+    column_alternative = "alternative",
+    column_as_covariates = "cost"
+  )
+  expect_s3_class(choice_set_data, "choice_data")
+  expect_equal(nrow(choice_set_data), nrow(choice_set_df))
+  expect_true(all(is.na(choice_set_data$choice[4:5])))
+
+  bad_choice_set <- choice_set_df
+  bad_choice_set$cost[1] <- NA
+  expect_error(
+    choice_data(
+      data_frame = bad_choice_set,
+      format = "long",
+      column_choice = "choice",
+      column_decider = "deciderID",
+      column_alternative = "alternative",
+      column_as_covariates = "cost"
+    ),
+    "outside response columns"
+  )
+
 })
 
 test_that("multi-character delimiters are supported", {
@@ -160,6 +206,38 @@ test_that("simulation of probit choice data works for wide covariates", {
     unique(simulated_data[[attr(simulated_data, "column_choice")]]),
     as.character(attr(choice_effects, "choice_alternatives"))
   )
+
+  alternatives <- as.character(attr(choice_effects, "choice_alternatives"))
+  long_df <- wide_to_long(
+    as.data.frame(choice_covariates),
+    column_choice = NULL,
+    alternatives = alternatives
+  )
+  first <- long_df[1, c("deciderID", "occasionID")]
+  remove <- long_df$deciderID == first$deciderID &
+    long_df$occasionID == first$occasionID &
+    long_df$alternative == alternatives[2]
+  long_covariates <- choice_covariates(
+    long_df[!remove, ],
+    format = "long",
+    column_decider = "deciderID",
+    column_occasion = "occasionID",
+    column_alternative = "alternative"
+  )
+  set.seed(1)
+  long_data <- generate_choice_data(
+    choice_effects = choice_effects,
+    choice_identifiers = choice_identifiers,
+    choice_covariates = long_covariates,
+    choice_parameters = choice_parameters,
+    choice_preferences = choice_preferences
+  )
+  observation <- interaction(
+    long_data[c("deciderID", "occasionID")], drop = TRUE
+  )
+  expect_identical(attr(long_data, "format"), "long")
+  expect_equal(nrow(long_data), nrow(long_covariates))
+  expect_true(all(tapply(long_data$choice, observation, sum) == 1L))
 })
 
 test_that("generate_choice_data keeps covariate order", {
@@ -549,9 +627,9 @@ test_that("alternative-specific covariates can be detected", {
 
 test_that("ranked choice data can be indexed", {
   ranked_df <- data.frame(
-    deciderID = rep(1:2, each = 3),
-    alternative = rep(c("A", "B", "C"), times = 2),
-    choice = c(1, 2, 3, 2, 1, 3),
+    deciderID = c(1, 1, 1, 2, 2, 3, 3),
+    alternative = c("A", "B", "C", "B", "C", "A", "C"),
+    choice = c(1, 2, NA, 2, 1, NA, NA),
     stringsAsFactors = FALSE
   )
 
@@ -575,8 +653,9 @@ test_that("ranked choice data can be indexed", {
   )
 
   indices <- extract_choice_indices(ch_data, effects)
-  expect_equal(indices[[1]], c(1L, 2L, 3L))
-  expect_equal(indices[[2]], c(2L, 1L, 3L))
+  expect_equal(indices[[1]], c(1L, 2L))
+  expect_equal(indices[[2]], c(3L, 2L))
+  expect_identical(indices[[3]], integer())
 })
 
 test_that("ranked choice data round-trips between long and wide", {
@@ -615,6 +694,28 @@ test_that("ranked choice data round-trips between long and wide", {
   expect_equal(long_ranked$choice, ranked_df$choice)
   expect_equal(long_ranked$alternative, ranked_df$alternative)
   expect_equal(long_ranked$deciderID, ranked_df$deciderID)
+
+  partial_wide <- wide_ranked
+  partial_wide$choice_C[1] <- NA_integer_
+  partial_data <- choice_data(
+    data_frame = partial_wide,
+    format = "wide",
+    column_choice = "choice",
+    column_decider = "deciderID",
+    choice_type = "ranked"
+  )
+  expect_true(is.na(partial_data$choice_C[1]))
+
+  partial_long <- wide_to_long(
+    data_frame = partial_wide,
+    column_choice = "choice",
+    column_alternative = "alternative",
+    alternatives = c("A", "B", "C"),
+    choice_type = "ranked"
+  )
+  partial_row <- partial_long$deciderID == 1 &
+    partial_long$alternative == "C"
+  expect_true(is.na(partial_long$choice[partial_row]))
 })
 
 test_that("ordered choice data preserves categories", {
@@ -763,8 +864,41 @@ test_that("ordered simulations propagate the choice type", {
     expect_true(is.choice_data(simulated_data), info = error_term)
     expect_identical(attr(simulated_data, "choice_type"), "ordered")
     checkmate::expect_subset(
-      unique(simulated_data[[attr(simulated_data, "column_choice")]]),
+      unique(as.character(
+        simulated_data[[attr(simulated_data, "column_choice")]]
+      )),
       as.character(attr(choice_effects, "choice_alternatives"))
+    )
+
+    alternatives <- as.character(attr(choice_effects, "choice_alternatives"))
+    long_df <- wide_to_long(
+      as.data.frame(choice_covariates),
+      column_choice = NULL,
+      alternatives = alternatives
+    )
+    long_covariates <- choice_covariates(
+      long_df,
+      format = "long",
+      column_decider = "deciderID",
+      column_occasion = "occasionID",
+      column_alternative = "alternative"
+    )
+    set.seed(1)
+    long_data <- generate_choice_data(
+      choice_effects = choice_effects,
+      choice_identifiers = choice_identifiers,
+      choice_covariates = long_covariates,
+      choice_parameters = choice_parameters,
+      choice_preferences = choice_preferences
+    )
+    observation <- interaction(
+      long_data[c("deciderID", "occasionID")], drop = TRUE
+    )
+    categories <- split(long_data$choice, observation)
+    expect_equal(nrow(long_data), nrow(long_covariates), info = error_term)
+    expect_true(
+      all(vapply(categories, function(x) length(unique(x)), integer(1)) == 1L),
+      info = error_term
     )
   }
 })
@@ -828,5 +962,41 @@ test_that("ranked simulations support logit and probit error terms", {
 
     inferred_top <- alt_names[max.col(-ranking_matrix, ties.method = "first")]
     expect_equal(simulated_data$choice, inferred_top, info = error_term)
+
+    long_df <- wide_to_long(
+      as.data.frame(choice_covariates),
+      column_choice = NULL,
+      alternatives = alt_names
+    )
+    first <- long_df[1, c("deciderID", "occasionID")]
+    remove <- long_df$deciderID == first$deciderID &
+      long_df$occasionID == first$occasionID &
+      long_df$alternative == alt_names[2]
+    long_covariates <- choice_covariates(
+      long_df[!remove, ],
+      format = "long",
+      column_decider = "deciderID",
+      column_occasion = "occasionID",
+      column_alternative = "alternative"
+    )
+    set.seed(1)
+    long_data <- generate_choice_data(
+      choice_effects = choice_effects,
+      choice_identifiers = choice_identifiers,
+      choice_covariates = long_covariates,
+      choice_parameters = choice_parameters,
+      choice_preferences = choice_preferences,
+      choice_type = "ranked"
+    )
+    observation <- interaction(
+      long_data[c("deciderID", "occasionID")], drop = TRUE
+    )
+    rankings <- split(long_data$choice, observation)
+    valid <- vapply(rankings, function(x) {
+      identical(sort(x), seq_along(x))
+    }, logical(1))
+    expect_equal(nrow(long_data), nrow(long_covariates), info = error_term)
+    expect_true(all(valid), info = error_term)
+    expect_false(any(rank_cols %in% names(long_data)), info = error_term)
   }
 })

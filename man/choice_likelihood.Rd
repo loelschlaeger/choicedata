@@ -37,9 +37,10 @@ Forwarded to the underlying probability engine to control additional input
 validation.}
 
 \item{...}{Additional probability arguments. Common choices are \code{draws} or \code{n_draws}
-for mixed Logit and \code{cml = "no"}, \code{"fp"}, or \code{"ap"} for mixed Probit panel
-models. Arguments supplied while computing override those stored by
-\code{choice_likelihood()}.}
+for simulated mixed models and \code{cml = "no"}, \code{"fp"}, or \code{"ap"} for Probit
+panels. Arguments supplied while computing override those stored by
+\code{choice_likelihood()}. Omitted simulation draws are generated once as
+standard normal draws and reused for every evaluation.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
 A \code{\link{choice_parameters}} object or a numeric vector in optimization
@@ -68,7 +69,8 @@ choices for a given choice model.
 \item \code{choice_likelihood()} pre-computes the design matrices and choice indices
 implied by \code{choice_data} and \code{choice_effects}. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
-likelihood estimation avoid redundant work.
+likelihood estimation avoid redundant work. Occasions without a response
+are omitted; an entirely unobserved data set has neutral likelihood one.
 \item \code{compute_choice_likelihood()} evaluates the (log-)likelihood for given
 \code{choice_parameters} and a pre-computed \code{choice_likelihood} object.
 }

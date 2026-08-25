@@ -21,7 +21,15 @@
 #'
 #' Current options for `"<distribution>"` are:
 #'
-#' - `"cn"`: correlated (with other `"cn"` random effects) normal distribution
+#' - `"cn"`: correlated normal distribution
+#' - `"cln+"`: positively signed correlated log-normal distribution
+#' - `"cln-"`: negatively signed correlated log-normal distribution
+#'
+#' `"cln"` is an alias for `"cln+"`. All random effects share one latent
+#' normal distribution. Thus, normal and log-normal effects can be correlated.
+#' For a log-normal effect, `beta` is the latent normal log-location and
+#' `Omega` is the covariance matrix of the joint latent normal vector. The
+#' coefficient is `exp(eta)` for `"cln+"` and `-exp(eta)` for `"cln-"`.
 #'
 #' To have random effects for the ASCs, use `"ASC"` for `"<covariate>"`.
 #'
@@ -93,7 +101,11 @@ choice_formula <- function(
   formula <- check_formula(formula)
   formula_env <- environment(formula)
   error_term <- check_error_term(error_term, choices = c("probit", "logit"))
-  random_effects <- check_random_effects(random_effects, choices = c("cn"))
+  random_effects <- check_random_effects(
+    random_effects,
+    choices = c("cn", "cln", "cln+", "cln-")
+  )
+  random_effects[random_effects == "cln"] <- "cln+"
 
   ### read formula
   formula <- Formula::as.Formula(formula)
@@ -371,7 +383,9 @@ resolve_choice_formula <- function(choice_formula, x) {
     keys <- names(re); keys <- c(keys[keys == "."], keys[keys != "."])
     for (k in keys) {
       dist <- unname(re[[k]])
-      cols_k <- if (identical(k, ".")) {
+      cols_k <- if (identical(k, "ASC")) {
+        "ASC"
+      } else if (identical(k, ".")) {
         all_cols
       } else {
         kk <- squash(k)

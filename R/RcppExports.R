@@ -9,36 +9,40 @@ cpp_logsumexp <- function(x) {
     .Call(`_choicedata_cpp_logsumexp`, x)
 }
 
-cpp_ologit <- function(v, gamma, y, log = FALSE) {
-    .Call(`_choicedata_cpp_ologit`, v, gamma, y, log)
+cpp_lc_prob <- function(probs, weights, log = FALSE) {
+    .Call(`_choicedata_cpp_lc_prob`, probs, weights, log)
 }
 
-cpp_ologit_all <- function(v, gamma) {
-    .Call(`_choicedata_cpp_ologit_all`, v, gamma)
+cpp_ologit <- function(x, beta, gamma, y = NULL, log = FALSE) {
+    .Call(`_choicedata_cpp_ologit`, x, beta, gamma, y, log)
 }
 
 cpp_ranked_logit <- function(u, ranking, log = FALSE) {
     .Call(`_choicedata_cpp_ranked_logit`, u, ranking, log)
 }
 
-cpp_mnl_chosen <- function(x, y, beta, ranked = FALSE, log = FALSE) {
-    .Call(`_choicedata_cpp_mnl_chosen`, x, y, beta, ranked, log)
+cpp_rankings <- function(values, depth) {
+    .Call(`_choicedata_cpp_rankings`, values, depth)
 }
 
-cpp_mnl_all <- function(x, beta, log = FALSE) {
-    .Call(`_choicedata_cpp_mnl_all`, x, beta, log)
+cpp_mnl_chosen <- function(x, y, beta, ranked = FALSE, log = FALSE, availability = NULL) {
+    .Call(`_choicedata_cpp_mnl_chosen`, x, y, beta, ranked, log, availability)
+}
+
+cpp_mnl_all <- function(x, beta, log = FALSE, availability = NULL) {
+    .Call(`_choicedata_cpp_mnl_all`, x, beta, log, availability)
 }
 
 cpp_panel_prod <- function(p, tp, log = FALSE, input_log = FALSE) {
     .Call(`_choicedata_cpp_panel_prod`, p, tp, log, input_log)
 }
 
-cpp_average_draws <- function(draws, beta, position, compute, log = FALSE) {
-    .Call(`_choicedata_cpp_average_draws`, draws, beta, position, compute, log)
+cpp_average_draws <- function(draws, beta, position, compute, log = FALSE, chol = NULL, type = NULL, args = NULL, chunks = NULL) {
+    .Call(`_choicedata_cpp_average_draws`, draws, beta, position, compute, log, chol, type, args, chunks)
 }
 
-cpp_probit_d <- function(v, y, ranked) {
-    .Call(`_choicedata_cpp_probit_d`, v, y, ranked)
+cpp_probit_d <- function(v, y, ranked, availability = NULL) {
+    .Call(`_choicedata_cpp_probit_d`, v, y, ranked, availability)
 }
 
 cpp_probit_cov <- function(x, omega, sigma, d, occasions) {

@@ -46,9 +46,13 @@ choice_responses <- function(
   check_column_decider(column_decider, null.ok = FALSE)
   check_column_occasion(column_occasion, column_decider, null.ok = TRUE)
   check_cross_section(cross_section)
+  id_cols <- c(column_decider, column_occasion)
+  id_cols <- id_cols[!vapply(id_cols, is.null, logical(1))]
+  choice_cols <- setdiff(names(data_frame), id_cols)
   check_data_frame(
     data_frame,
-    required_columns = c(column_decider, column_occasion, column_choice)
+    required_columns = c(column_decider, column_occasion, column_choice),
+    allow_missing_columns = choice_cols
   )
   choice_identifiers <- choice_identifiers(
     data_frame = data_frame[c(column_decider, column_occasion)],
@@ -58,9 +62,6 @@ choice_responses <- function(
   )
 
   ### build 'choice_responses' object
-  id_cols <- c(column_decider, column_occasion)
-  id_cols <- id_cols[!vapply(id_cols, is.null, logical(1))]
-  choice_cols <- setdiff(names(data_frame), id_cols)
   if (!column_choice %in% choice_cols) {
     cli::cli_abort(
       "Column {.val {column_choice}} must be present in {.var data_frame} to
@@ -156,6 +157,7 @@ generate_choice_responses <- function(
     choice_effects = choice_effects,
     choice_identifiers = choice_identifiers
   )
+  availability <- attr(design_list, "availability")
   choice_preferences <- split_choice_preferences(
     choice_preferences,
     choice_identifiers = choice_identifiers
@@ -261,10 +263,12 @@ generate_choice_responses <- function(
       )
       top_choices[[id]] <- choice_alternatives[idx]
     } else {
+      available <- availability[[id]]
+      design_matrix_nt <- design_matrix_nt[available, , drop = FALSE]
       if (identical(error_term, "probit")) {
         U_id <- oeli::rmvnorm(
           mean = as.vector(design_matrix_nt %*% preference_n),
-          Sigma = Sigma
+          Sigma = Sigma[available, available, drop = FALSE]
         )
       } else {
         V_id <- as.vector(design_matrix_nt %*% preference_n)
@@ -273,11 +277,11 @@ generate_choice_responses <- function(
       }
       if (identical(choice_type, "ranked")) {
         order_idx <- order(U_id, decreasing = TRUE)
-        ranking <- choice_alternatives[order_idx]
+        ranking <- choice_alternatives[available[order_idx]]
         top_choices[id] <- ranking[1]
         ranked_matrix[id, ] <- match(choice_alternatives, ranking)
       } else {
-        top_choices[id] <- choice_alternatives[which.max(U_id)]
+        top_choices[id] <- choice_alternatives[available[which.max(U_id)]]
       }
     }
   }
@@ -286,7 +290,10 @@ generate_choice_responses <- function(
   data_frame <- as.data.frame(choice_identifiers, stringsAsFactors = FALSE)
   if (identical(choice_type, "ordered")) {
     choices <- vapply(top_choices, as.character, character(1))
-    data_frame[[column_choice]] <- choices
+    # Keep unused ordered categories available to later model construction.
+    data_frame[[column_choice]] <- factor(
+      choices, levels = alt_labels, ordered = TRUE
+    )
   } else {
     data_frame[[column_choice]] <- as.character(top_choices)
   }

@@ -34,29 +34,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_ologit
-NumericVector cpp_ologit(NumericVector v, NumericVector gamma, IntegerVector y, bool log);
-RcppExport SEXP _choicedata_cpp_ologit(SEXP vSEXP, SEXP gammaSEXP, SEXP ySEXP, SEXP logSEXP) {
+// cpp_lc_prob
+NumericVector cpp_lc_prob(List probs, NumericVector weights, bool log);
+RcppExport SEXP _choicedata_cpp_lc_prob(SEXP probsSEXP, SEXP weightsSEXP, SEXP logSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< List >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< bool >::type log(logSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_ologit(v, gamma, y, log));
+    rcpp_result_gen = Rcpp::wrap(cpp_lc_prob(probs, weights, log));
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_ologit_all
-NumericMatrix cpp_ologit_all(NumericVector v, NumericVector gamma);
-RcppExport SEXP _choicedata_cpp_ologit_all(SEXP vSEXP, SEXP gammaSEXP) {
+// cpp_ologit
+NumericVector cpp_ologit(List x, NumericVector beta, NumericVector gamma, Nullable<IntegerVector> y, bool log);
+RcppExport SEXP _choicedata_cpp_ologit(SEXP xSEXP, SEXP betaSEXP, SEXP gammaSEXP, SEXP ySEXP, SEXP logSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
+    Rcpp::traits::input_parameter< List >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type gamma(gammaSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_ologit_all(v, gamma));
+    Rcpp::traits::input_parameter< Nullable<IntegerVector> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< bool >::type log(logSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_ologit(x, beta, gamma, y, log));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -73,9 +75,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_rankings
+List cpp_rankings(IntegerVector values, int depth);
+RcppExport SEXP _choicedata_cpp_rankings(SEXP valuesSEXP, SEXP depthSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type values(valuesSEXP);
+    Rcpp::traits::input_parameter< int >::type depth(depthSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_rankings(values, depth));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_mnl_chosen
-NumericVector cpp_mnl_chosen(List x, List y, NumericVector beta, bool ranked, bool log);
-RcppExport SEXP _choicedata_cpp_mnl_chosen(SEXP xSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP rankedSEXP, SEXP logSEXP) {
+NumericVector cpp_mnl_chosen(List x, List y, NumericVector beta, bool ranked, bool log, Nullable<List> availability);
+RcppExport SEXP _choicedata_cpp_mnl_chosen(SEXP xSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP rankedSEXP, SEXP logSEXP, SEXP availabilitySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -84,20 +98,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< bool >::type ranked(rankedSEXP);
     Rcpp::traits::input_parameter< bool >::type log(logSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_mnl_chosen(x, y, beta, ranked, log));
+    Rcpp::traits::input_parameter< Nullable<List> >::type availability(availabilitySEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_mnl_chosen(x, y, beta, ranked, log, availability));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_mnl_all
-NumericMatrix cpp_mnl_all(List x, NumericVector beta, bool log);
-RcppExport SEXP _choicedata_cpp_mnl_all(SEXP xSEXP, SEXP betaSEXP, SEXP logSEXP) {
+NumericMatrix cpp_mnl_all(List x, NumericVector beta, bool log, Nullable<List> availability);
+RcppExport SEXP _choicedata_cpp_mnl_all(SEXP xSEXP, SEXP betaSEXP, SEXP logSEXP, SEXP availabilitySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type x(xSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< bool >::type log(logSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_mnl_all(x, beta, log));
+    Rcpp::traits::input_parameter< Nullable<List> >::type availability(availabilitySEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_mnl_all(x, beta, log, availability));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -116,8 +132,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_average_draws
-NumericVector cpp_average_draws(NumericMatrix draws, NumericVector beta, IntegerVector position, Function compute, bool log);
-RcppExport SEXP _choicedata_cpp_average_draws(SEXP drawsSEXP, SEXP betaSEXP, SEXP positionSEXP, SEXP computeSEXP, SEXP logSEXP) {
+NumericVector cpp_average_draws(NumericMatrix draws, NumericVector beta, IntegerVector position, Function compute, bool log, Nullable<NumericMatrix> chol, Nullable<IntegerVector> type, Nullable<List> args, Nullable<List> chunks);
+RcppExport SEXP _choicedata_cpp_average_draws(SEXP drawsSEXP, SEXP betaSEXP, SEXP positionSEXP, SEXP computeSEXP, SEXP logSEXP, SEXP cholSEXP, SEXP typeSEXP, SEXP argsSEXP, SEXP chunksSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -126,20 +142,25 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type position(positionSEXP);
     Rcpp::traits::input_parameter< Function >::type compute(computeSEXP);
     Rcpp::traits::input_parameter< bool >::type log(logSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_average_draws(draws, beta, position, compute, log));
+    Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type chol(cholSEXP);
+    Rcpp::traits::input_parameter< Nullable<IntegerVector> >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< Nullable<List> >::type args(argsSEXP);
+    Rcpp::traits::input_parameter< Nullable<List> >::type chunks(chunksSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_average_draws(draws, beta, position, compute, log, chol, type, args, chunks));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_probit_d
-List cpp_probit_d(NumericVector v, IntegerVector y, bool ranked);
-RcppExport SEXP _choicedata_cpp_probit_d(SEXP vSEXP, SEXP ySEXP, SEXP rankedSEXP) {
+List cpp_probit_d(NumericVector v, IntegerVector y, bool ranked, Nullable<IntegerVector> availability);
+RcppExport SEXP _choicedata_cpp_probit_d(SEXP vSEXP, SEXP ySEXP, SEXP rankedSEXP, SEXP availabilitySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< bool >::type ranked(rankedSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_probit_d(v, y, ranked));
+    Rcpp::traits::input_parameter< Nullable<IntegerVector> >::type availability(availabilitySEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_probit_d(v, y, ranked, availability));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -187,14 +208,15 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_choicedata_cpp_softmax", (DL_FUNC) &_choicedata_cpp_softmax, 2},
     {"_choicedata_cpp_logsumexp", (DL_FUNC) &_choicedata_cpp_logsumexp, 1},
-    {"_choicedata_cpp_ologit", (DL_FUNC) &_choicedata_cpp_ologit, 4},
-    {"_choicedata_cpp_ologit_all", (DL_FUNC) &_choicedata_cpp_ologit_all, 2},
+    {"_choicedata_cpp_lc_prob", (DL_FUNC) &_choicedata_cpp_lc_prob, 3},
+    {"_choicedata_cpp_ologit", (DL_FUNC) &_choicedata_cpp_ologit, 5},
     {"_choicedata_cpp_ranked_logit", (DL_FUNC) &_choicedata_cpp_ranked_logit, 3},
-    {"_choicedata_cpp_mnl_chosen", (DL_FUNC) &_choicedata_cpp_mnl_chosen, 5},
-    {"_choicedata_cpp_mnl_all", (DL_FUNC) &_choicedata_cpp_mnl_all, 3},
+    {"_choicedata_cpp_rankings", (DL_FUNC) &_choicedata_cpp_rankings, 2},
+    {"_choicedata_cpp_mnl_chosen", (DL_FUNC) &_choicedata_cpp_mnl_chosen, 6},
+    {"_choicedata_cpp_mnl_all", (DL_FUNC) &_choicedata_cpp_mnl_all, 4},
     {"_choicedata_cpp_panel_prod", (DL_FUNC) &_choicedata_cpp_panel_prod, 4},
-    {"_choicedata_cpp_average_draws", (DL_FUNC) &_choicedata_cpp_average_draws, 5},
-    {"_choicedata_cpp_probit_d", (DL_FUNC) &_choicedata_cpp_probit_d, 3},
+    {"_choicedata_cpp_average_draws", (DL_FUNC) &_choicedata_cpp_average_draws, 9},
+    {"_choicedata_cpp_probit_d", (DL_FUNC) &_choicedata_cpp_probit_d, 4},
     {"_choicedata_cpp_probit_cov", (DL_FUNC) &_choicedata_cpp_probit_cov, 5},
     {"_choicedata_cpp_cml_chunks", (DL_FUNC) &_choicedata_cpp_cml_chunks, 3},
     {"_choicedata_cpp_prob_prod", (DL_FUNC) &_choicedata_cpp_prob_prod, 2},

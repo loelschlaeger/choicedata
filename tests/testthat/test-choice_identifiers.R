@@ -210,7 +210,9 @@ test_that("Tp can be read", {
     read_Tp(choice_identifiers),
     c(2L, 3L, 1L)
   )
-  choice_identifiers <- generate_choice_identifiers(N = 3, Tp = 2, column_occasion = NULL)
+  choice_identifiers <- generate_choice_identifiers(
+    N = 3, Tp = 2, column_occasion = NULL
+  )
   expect_equal(
     read_Tp(choice_identifiers),
     rep(1L, 6)

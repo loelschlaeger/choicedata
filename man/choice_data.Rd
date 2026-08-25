@@ -70,9 +70,10 @@ integer score, and for ranked data it is omitted in favor of one column per
 alternative (see \code{choice_type}). In long layout the same column is evaluated
 once per alternative: discrete data must use a binary indicator (1 for the
 chosen alternative, 0 otherwise), ordered data repeats the ordinal value for
-every alternative, and ranked data stores the integer rank \code{1:J} for each
-alternative within an observation. Set to \code{NULL} when no observed choices are
-available (e.g., for purely covariate tables).}
+every alternative, and ranked data stores consecutive ranks \code{1:k} for the
+observed top \code{k} alternatives and \code{NA} for unranked alternatives. An
+entirely missing response marks an occasion that is omitted from the
+likelihood. Set to \code{NULL} for purely covariate tables.}
 
 \item{column_decider}{[\code{character(1)}]\cr
 Column name with decider identifiers.}
@@ -137,9 +138,10 @@ the same alternative are aligned using \code{delimiter} so that downstream
 helpers can detect them automatically. For ranked or ordered choices, the
 function checks the response encoding and reports invalid inputs.
 
-Internally the helper converts long inputs to wide format. This guarantees
-that subsequent steps (such as computing probabilities) receive the same
-structure regardless of the original layout and keeps the workflow concise.
+In long format, omit rows for alternatives that are unavailable in a choice
+occasion. The long layout is retained so that individual choice sets remain
+distinguishable. Missing responses are allowed, but covariates must be
+observed because otherwise the corresponding utilities are undefined.
 \itemize{
 \item \code{generate_choice_data()} simulates choice data.
 \item \code{wide_to_long()} and \code{long_to_wide()} transform to wide and long format.
@@ -170,6 +172,21 @@ long_to_wide(
 )
 wide_to_long(
   data_frame = train_choice
+)
+
+### individual choice sets and a missing response
+partial_data <- data.frame(
+  deciderID = c(1, 1, 2),
+  alternative = c("A", "B", "B"),
+  choice = c(1L, 0L, NA),
+  cost = c(1.2, 1.5, 0.8)
+)
+choice_data(
+  data_frame = partial_data,
+  format = "long",
+  column_decider = "deciderID",
+  column_alternative = "alternative",
+  column_as_covariates = "cost"
 )
 }
 \seealso{

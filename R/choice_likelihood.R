@@ -7,7 +7,8 @@
 #' - `choice_likelihood()` pre-computes the design matrices and choice indices
 #'   implied by `choice_data` and `choice_effects`. The returned object stores
 #'   these quantities so that repeated likelihood evaluations during maximum
-#'   likelihood estimation avoid redundant work.
+#'   likelihood estimation avoid redundant work. Occasions without a response
+#'   are omitted; an entirely unobserved data set has neutral likelihood one.
 #' - `compute_choice_likelihood()` evaluates the (log-)likelihood for given
 #'   `choice_parameters` and a pre-computed `choice_likelihood` object.
 #'
@@ -40,9 +41,10 @@
 #'
 #' @param ...
 #' Additional probability arguments. Common choices are `draws` or `n_draws`
-#' for mixed Logit and `cml = "no"`, `"fp"`, or `"ap"` for mixed Probit panel
-#' models. Arguments supplied while computing override those stored by
-#' `choice_likelihood()`.
+#' for simulated mixed models and `cml = "no"`, `"fp"`, or `"ap"` for Probit
+#' panels. Arguments supplied while computing override those stored by
+#' `choice_likelihood()`. Omitted simulation draws are generated once as
+#' standard normal draws and reused for every evaluation.
 #'
 #' @return
 #' `choice_likelihood()` returns an object of class `choice_likelihood`, which
@@ -116,8 +118,51 @@ choice_likelihood <- function(
     choice_effects = choice_effects,
     choice_identifiers = choice_identifiers
   )
+
+  ### remove observations without a response
+  observed <- lengths(choice_indices) > 0L
+  if (any(!observed)) {
+    availability <- attr(design_list, "availability")
+    alternatives <- attr(design_list, "alternatives")
+    choice_type <- attr(design_list, "choice_type")
+    design_class <- class(design_list)
+    design_list <- design_list[observed]
+    choice_indices <- choice_indices[observed]
+    choice_identifiers <- choice_identifiers[observed, , drop = FALSE]
+    Tp <- read_Tp(choice_identifiers)
+    design_list <- structure(
+      design_list,
+      class = design_class,
+      Tp = Tp,
+      alternatives = alternatives,
+      availability = availability[observed],
+      choice_type = choice_type
+    )
+    attr(choice_indices, "Tp") <- Tp
+  }
   Tp <- attr(design_list, "Tp")
   prob_args <- list(...)
+
+  ### keep simulated likelihoods deterministic across evaluations
+  choice_formula <- attr(choice_effects, "choice_formula")
+  P_r <- sum(!is.na(choice_effects$mixing))
+  simulated <- P_r > 0L && (
+    identical(choice_formula$error_term, "logit") ||
+      any(stats::na.omit(choice_effects$mixing) != "cn")
+  )
+  if (simulated && is.null(prob_args$draws)) {
+    n_draws <- if (is.null(prob_args$n_draws)) 200L else prob_args$n_draws
+    oeli::input_check_response(
+      check = checkmate::check_int(n_draws, lower = 1),
+      var_name = "n_draws"
+    )
+    prob_args$draws <- matrix(
+      stats::rnorm(n_draws * P_r),
+      nrow = n_draws,
+      ncol = P_r
+    )
+    prob_args$n_draws <- NULL
+  }
 
   ### evaluation function
   objective <- function(
@@ -157,21 +202,25 @@ choice_likelihood <- function(
     prob_args_eval$numeric_only <- TRUE
     prob_args_eval$logarithm <- TRUE
 
-    log_prob <- do.call(
-      evaluate_choice_probabilities,
-      c(
-        list(
-          design_list = design_list,
-          choice_identifiers = choice_identifiers,
-          choice_effects = choice_effects,
-          choice_parameters = params,
-          choice_only = TRUE,
-          choice_indices = choice_indices,
-          input_checks = input_checks
-        ),
-        prob_args_eval
+    log_prob <- if (length(choice_indices)) {
+      do.call(
+        evaluate_choice_probabilities,
+        c(
+          list(
+            design_list = design_list,
+            choice_identifiers = choice_identifiers,
+            choice_effects = choice_effects,
+            choice_parameters = params,
+            choice_only = TRUE,
+            choice_indices = choice_indices,
+            input_checks = input_checks
+          ),
+          prob_args_eval
+        )
       )
-    )
+    } else {
+      numeric()
+    }
     if (!is.numeric(log_prob) || anyNA(log_prob)) {
       cli::cli_abort(
         "Evaluating the likelihood requires numeric log contributions.",

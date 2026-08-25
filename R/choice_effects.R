@@ -33,6 +33,8 @@
 #' 7. `"mixing"`, a factor with levels in the order
 #'
 #'    1. `"cn"` (correlated normal distribution),
+#'    2. `"cln+"` (positively signed correlated log-normal distribution),
+#'    3. `"cln-"` (negatively signed correlated log-normal distribution),
 #'
 #'    indicating the type of random effect.
 #'
@@ -40,8 +42,7 @@
 #' rules:
 #'
 #' 1. Non-random effects come before random effects.
-#' 2. According to the ordering of the factor `mixing`.
-#' 3. Otherwise, the order is determined by occurrence in `formula`.
+#' 2. Otherwise, the order is determined by occurrence in `formula`.
 #'
 #' It contains the arguments `choice_formula`, `choice_alternatives`, and
 #' `delimiter` as attributes.
@@ -150,7 +151,7 @@ choice_effects <- function(
   overview$as_effect <- as.logical(overview$as_effect)
   overview$mixing <- factor(
     overview$mixing,
-    levels = c("cn"),
+    levels = c("cn", "cln+", "cln-"),
     ordered = TRUE
   )
 

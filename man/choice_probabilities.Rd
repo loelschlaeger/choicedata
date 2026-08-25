@@ -62,17 +62,25 @@ Should additional internal input checks be performed before computing the
 probabilities?}
 
 \item{...}{Additional probability arguments. Common choices are \code{draws} or \code{n_draws}
-for mixed Logit and \code{cml = "no"}, \code{"fp"}, or \code{"ap"} for mixed Probit panel
-models.}
+for simulated mixed models and \code{cml = "no"}, \code{"fp"}, or \code{"ap"} for Probit
+panels. Supplied draws are standard normal and are transformed using the
+current random-effect covariance matrix.}
 }
 \value{
-A \code{choice_probabilities} tibble with one row per choice occasion. With
-\code{choice_only = TRUE}, it contains \code{choice_probability}; joint panel
-probabilities are repeated for the occasions of the same decider. With
-\code{choice_only = FALSE}, it contains one column per alternative and reports
-occasion-wise probabilities. In ranked models these are first-rank
-probabilities. Identifier and probability column names are stored as
-attributes.
+A \code{choice_probabilities} tibble. With \code{choice_only = TRUE}, it contains one
+row per occasion and a \code{choice_probability} column. A joint panel
+probability is repeated over the observed occasions of its decider; missing
+responses receive \code{NA}.
+
+With \code{choice_only = FALSE}, non-ranked cross-sectional models contain one
+row per occasion and one column per alternative. An unavailable alternative
+has probability zero. Ranked and panel models instead contain one row per
+possible outcome, an \code{outcome} list-column, and \code{choice_probability}. These
+rows cover complete or partial rankings and complete joint panel sequences,
+and their probabilities sum to one per decider. Enumerating them can grow
+combinatorially with ranking depth and panel length.
+For a missing ranked response, a common observed depth of the same decider
+is reused; without one, all available alternatives are ranked.
 }
 \description{
 The \code{choice_probabilities} object defines the choice probabilities.
@@ -83,12 +91,13 @@ on the choice parameters and the choice data.
 }
 \section{Supported models}{
 
-The public API supports every combination of Logit or Probit errors, fixed
-or normally distributed random coefficients, discrete, ordered, or ranked
-responses, and cross-sectional or panel data. Mixed Probit panel models can
+The public API supports every combination of Logit or Probit errors, fixed,
+correlated normal, or correlated log-normal coefficients, discrete,
+ordered, or ranked responses, and cross-sectional or panel data. It also
+supports latent classes with or without random effects. Probit panels can
 use the full likelihood (\code{cml = "no"}), full pairwise CML (\code{"fp"}), or
-adjacent pairwise CML (\code{"ap"}). Latent-class calculations are not part of
-the public parameter and likelihood API.
+adjacent pairwise CML (\code{"ap"}). All-outcome output always uses the full
+likelihood.
 }
 
 \examples{

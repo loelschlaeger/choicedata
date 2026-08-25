@@ -41,6 +41,7 @@ choice model.
 \itemize{
 \item \code{choice_preferences()} constructs a \code{choice_preferences} object.
 \item \code{generate_choice_preferences()} samples choice preferences at random.
+In latent-class models, one class is sampled per decider.
 }
 }
 \examples{
