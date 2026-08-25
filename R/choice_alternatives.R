@@ -47,10 +47,18 @@
 #' @keywords model
 #'
 #' @examples
+#' ### unordered choice alternatives: heating
 #' choice_alternatives(
 #'   J = 3,
 #'   alternatives = c("gas", "electricity", "oil"),
 #'   base = "gas"
+#' )
+#'
+#' ### ordered choice alternatives: opinion
+#' choice_alternatives(
+#'   J = 4,
+#'   alternatives = c("very good", "good", "neither good nor bad", "bad"),
+#'   ordered = TRUE
 #' )
 
 choice_alternatives <- function(
@@ -104,7 +112,12 @@ is.choice_alternatives <- function(
 print.choice_alternatives <- function(x, ...) {
   is.choice_alternatives(x, error = TRUE)
   base <- attr(x, "base")
-  cli::cli_h3("Choice alternatives")
+  title <- if (isTRUE(attr(x, "ordered"))) {
+    "Choice alternatives (ordered)"
+  } else {
+    "Choice alternatives"
+  }
+  cli::cli_h3(title)
   alt <- as.character(x)
   alt[alt == base] <- paste0(alt[alt == base], "*")
   cli::cat_bullet(alt)
