@@ -21,29 +21,10 @@ Defines the model's error term. Current options are:
 }}
 
 \item{random_effects}{[\code{character()}]\cr
-Defines the random effects in the model. The expected format of elements in
-\code{random_effects} is \code{"<covariate>" = "<distribution>"}, where
-\code{"<covariate>"} is the name of a variable on the \code{formula} right-hand side.
-Every random effect must reference an explicit covariate (or \code{"ASC"} for
-alternative-specific constants) that appears in the supplied model formula.
-
-Current options for \code{"<distribution>"} are:
-\itemize{
-\item \code{"cn"}: correlated normal distribution
-\item \code{"cln+"}: positively signed correlated log-normal distribution
-\item \code{"cln-"}: negatively signed correlated log-normal distribution
-}
-
-\code{"cln"} is an alias for \code{"cln+"}. All random effects share one latent
-normal distribution. Thus, normal and log-normal effects can be correlated.
-For a log-normal effect, \code{beta} is the latent normal log-location and
-\code{Omega} is the covariance matrix of the joint latent normal vector. The
-coefficient is \code{exp(eta)} for \code{"cln+"} and \code{-exp(eta)} for \code{"cln-"}.
-
-To have random effects for the ASCs, use \code{"ASC"} for \code{"<covariate>"}.}
+Named vector defining random effects, see details.}
 
 \item{x}{[\code{choice_formula}]\cr
-A \code{choice_formula} object.}
+A \code{\link{choice_formula}} object.}
 
 \item{...}{Currently not used.}
 }
@@ -99,7 +80,25 @@ for the transformed covariate, e.g.,
 }
 }
 
+\section{Specifying random effects}{
+
+Specify random effects as \code{"<covariate>" = "<distribution>"}. Each covariate
+must appear explicitly on the right-hand side of \code{formula}; use \code{"ASC"} for
+alternative-specific constants.
+
+Available distributions are:
+\itemize{
+\item \code{"cn"}: correlated normal
+\item \code{"n"}: uncorrelated normal
+\item \code{"cln"}: positively signed correlated log-normal
+\item \code{"ln"}: positively signed uncorrelated log-normal
+\item \code{"cln-"}: negatively signed correlated log-normal
+\item \code{"ln-"}: negatively signed uncorrelated log-normal
+}
+}
+
 \examples{
+### specify a choice formula
 choice_formula(
   formula = choice ~ I(A^2 + 1) | B | I(log(C)),
   error_term = "probit",

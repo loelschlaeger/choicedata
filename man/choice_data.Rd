@@ -18,7 +18,7 @@ choice_data(
   column_as_covariates = NULL,
   delimiter = "_",
   cross_section = is.null(column_occasion),
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 
 generate_choice_data(
@@ -29,7 +29,7 @@ generate_choice_data(
   choice_preferences = generate_choice_preferences(choice_effects, choice_parameters,
     choice_identifiers),
   column_choice = "choice",
-  choice_type = c("auto", "discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 
 long_to_wide(
@@ -42,7 +42,7 @@ long_to_wide(
   column_occasion = NULL,
   alternatives = unique(data_frame[[column_alternative]]),
   delimiter = "_",
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 
 wide_to_long(
@@ -51,7 +51,7 @@ wide_to_long(
   column_alternative = "alternative",
   alternatives = NULL,
   delimiter = "_",
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 }
 \arguments{
@@ -64,15 +64,18 @@ of an occasion and \code{"long"} when each row contains a single alternative.}
 
 \item{column_choice}{[\code{character(1)} | \code{NULL}]\cr
 Column name with the observed choices. In wide layout this column should
-contain a single value per observation: for discrete data the value is the
+contain a single value per observation: for unordered data the value is the
 label of the chosen alternative, for ordered data it is the ordered factor or
 integer score, and for ranked data it is omitted in favor of one column per
-alternative (see \code{choice_type}). In long layout the same column is evaluated
-once per alternative: discrete data must use a binary indicator (1 for the
-chosen alternative, 0 otherwise), ordered data repeats the ordinal value for
-every alternative, and ranked data stores consecutive ranks \code{1:k} for the
-observed top \code{k} alternatives and \code{NA} for unranked alternatives. An
-entirely missing response marks an occasion that is omitted from the
+alternative (see \code{choice_type}).
+
+In long layout the same column is evaluated once per alternative: unordered
+data must use a binary indicator (1 for the chosen alternative, 0 otherwise),
+ordered data repeats the ordinal value for every alternative, and ranked data
+stores consecutive ranks \code{1:k} for the observed top \code{k} alternatives and \code{NA}
+for unranked alternatives.
+
+An entirely missing response marks an occasion that is omitted from the
 likelihood. Set to \code{NULL} for purely covariate tables.}
 
 \item{column_decider}{[\code{character(1)}]\cr
@@ -92,77 +95,51 @@ Column names of \code{data_frame} with alternative-specific covariates.}
 
 \item{delimiter}{[\code{character(1)}]\cr
 Delimiter separating alternative identifiers from covariate names in wide
-format. May consist of one or more characters.}
+format.}
 
 \item{cross_section}{[\code{logical(1)}]\cr
 Treat choice data as cross-sectional?}
 
 \item{choice_type}{[\code{character(1)}]\cr
-Requested response type. Use \code{"auto"} (default) to infer the mode from
-\code{choice_alternatives()}, or explicitly simulate \code{"discrete"}, \code{"ordered"},
-or \code{"ranked"} outcomes.}
+Requested response type. Use \code{"unordered"} (default), \code{"ordered"}, or
+\code{"ranked"}.}
 
 \item{choice_effects}{[\code{choice_effects}]\cr
-A \code{\link{choice_effects}} object describing the model.}
+A \code{\link{choice_effects}} object.}
 
 \item{choice_identifiers}{[\code{choice_identifiers}]\cr
-A \code{\link{choice_identifiers}} object that provides the decider and
-occasion identifiers.}
+A \code{\link{choice_identifiers}} object.}
 
 \item{choice_covariates}{[\code{choice_covariates}]\cr
-Covariates to include in the generated data.}
+A \code{\link{choice_covariates}} object.}
 
 \item{choice_parameters}{[\code{choice_parameters}]\cr
-Model parameters supplying utilities and covariance structures.}
+A \code{\link{choice_parameters}} object.}
 
 \item{choice_preferences}{[\code{choice_preferences}]\cr
-Decider-specific preference draws used for simulation.}
+A \code{\link{choice_preferences}} object.}
 
 \item{alternatives}{[\code{character(J)}]\cr
 Unique labels for the choice alternatives.}
 }
 \value{
-\code{choice_data()} and \code{generate_choice_data()} return a \code{choice_data} tibble.
-\code{long_to_wide()} and \code{wide_to_long()} return a tibble in the requested
-layout.
+A \code{choice_data} tibble.
 }
 \description{
 The \code{choice_data} object defines the choice data, it is a combination of
 \code{choice_responses} and \code{choice_covariates}.
 }
-\details{
-\code{choice_data()} acts as the main entry point for observed data. It accepts
-either long or wide layouts and performs validation before
-returning a tidy tibble with consistent identifiers. Columns that refer to
-the same alternative are aligned using \code{delimiter} so that downstream
-helpers can detect them automatically. For ranked or ordered choices, the
-function checks the response encoding and reports invalid inputs.
-
-In long format, omit rows for alternatives that are unavailable in a choice
-occasion. The long layout is retained so that individual choice sets remain
-distinguishable. Missing responses are allowed, but covariates must be
-observed because otherwise the corresponding utilities are undefined.
-\itemize{
-\item \code{generate_choice_data()} simulates choice data.
-\item \code{wide_to_long()} and \code{long_to_wide()} transform to wide and long format.
-}
-
-The generated \code{choice_data} object inherits a \code{choice_type} attribute for
-the requested simulation mode. Ordered alternatives (\code{ordered = TRUE})
-yield ordered responses, unordered alternatives default to discrete
-multinomial outcomes, and ranked simulations return complete rankings for
-every observation.
-}
 \examples{
 ### simulate data from a multinomial probit model
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ A | B, error_term = "probit",
+    formula = choice ~ A | B,
+    error_term = "probit",
     random_effects = c("A" = "cn")
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )
-generate_choice_data(choice_effects)
+generate_choice_data(choice_effects = choice_effects)
 
 ### transform between long/wide format
 long_to_wide(
@@ -188,9 +165,5 @@ choice_data(
   column_alternative = "alternative",
   column_as_covariates = "cost"
 )
-}
-\seealso{
-\code{\link[=choice_responses]{choice_responses()}}, \code{\link[=choice_covariates]{choice_covariates()}}, and \code{\link[=choice_identifiers]{choice_identifiers()}} for
-the helper objects that feed into \code{choice_data()}.
 }
 \keyword{data}

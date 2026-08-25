@@ -3,7 +3,7 @@ test_that("effect overview can be created", {
   ### test 1: MMNP with type-1 covariates only
   choice_formula <- choice_formula(
     formula = choice ~ cov,
-    random_effects = c("cov" = "cln+", "ASC" = "cln-")
+    random_effects = c("cov" = "cln", "ASC" = "cln-")
   )
   choice_alternatives <- choice_alternatives(
     J = 3,
@@ -25,7 +25,7 @@ test_that("effect overview can be created", {
         as_effect = c(FALSE, TRUE, TRUE),
         mixing = structure(
           c(2L, 3L, 3L),
-          levels = c("cn", "cln+", "cln-"),
+          levels = c("cn", "cln", "cln-", "n", "ln", "ln-"),
           class = c("ordered", "factor")
         )
       ),
@@ -56,7 +56,7 @@ test_that("effect overview can be created", {
   )
   expect_equal(
     as.character(resolved$mixing),
-    c("cln+", "cln-", "cln-")
+    c("cln", "cln-", "cln-")
   )
 
   ### test 2: MNP with different types
@@ -83,7 +83,7 @@ test_that("effect overview can be created", {
         as_effect = c(FALSE, TRUE, TRUE, TRUE),
         mixing = structure(
           c(NA_integer_, NA_integer_, NA_integer_, NA_integer_),
-          levels = c("cn", "cln+", "cln-"),
+          levels = c("cn", "cln", "cln-", "n", "ln", "ln-"),
           class = c("ordered", "factor")
         )
       ),
@@ -180,7 +180,7 @@ test_that("number of effects can be computed", {
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
       formula = choice ~ A | B + 0 | C + D,
-      random_effects = c("A" = "cn", "D" = "cln+")
+      random_effects = c("A" = "cn", "D" = "cln")
     ),
     choice_alternatives = choice_alternatives(
       J = 3
@@ -191,7 +191,7 @@ test_that("number of effects can be computed", {
   expect_equal(compute_P_r(choice_effects), 4)
   expect_identical(
     as.character(utils::tail(choice_effects$mixing, 4)),
-    c("cn", "cln+", "cln+", "cln+")
+    c("cn", "cln", "cln", "cln")
   )
 })
 

@@ -23,31 +23,27 @@ compute_choice_likelihood(
 }
 \arguments{
 \item{choice_data}{[\code{choice_data}]\cr
-A \code{\link{choice_data}} object with the observed choices.}
+A \code{\link{choice_data}} object.}
 
 \item{choice_effects}{[\code{choice_effects}]\cr
-A \code{\link{choice_effects}} object that determines the model effects.}
+A \code{\link{choice_effects}} object.}
 
 \item{choice_identifiers}{[\code{choice_identifiers}]\cr
-A \code{\link{choice_identifiers}} object. The default extracts identifiers
-from \code{choice_data}.}
+A \code{\link{choice_identifiers}} object.
+The default is extracted from \code{choice_data}.}
 
 \item{input_checks}{[\code{logical(1)}]\cr
-Forwarded to the underlying probability engine to control additional input
-validation.}
+Check inputs?}
 
-\item{...}{Additional probability arguments. Common choices are \code{draws} or \code{n_draws}
-for simulated mixed models and \code{cml = "no"}, \code{"fp"}, or \code{"ap"} for Probit
-panels. Arguments supplied while computing override those stored by
-\code{choice_likelihood()}. Omitted simulation draws are generated once as
-standard normal draws and reused for every evaluation.}
+\item{...}{Additional arguments.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
-A \code{\link{choice_parameters}} object or a numeric vector in optimization
-space. Numeric input is converted with \code{switch_parameter_space()}.}
+A \code{\link{choice_parameters}} object.
+A numeric vector in optimization space is also accepted and converted with
+\code{switch_parameter_space()}.}
 
 \item{choice_likelihood}{[\code{choice_likelihood}]\cr
-A pre-computed object returned by \code{choice_likelihood()}.}
+A \code{\link{choice_likelihood}} object.}
 
 \item{logarithm}{[\code{logical(1)}]\cr
 Return the log-likelihood? If \code{FALSE}, the likelihood is returned.}
@@ -58,9 +54,9 @@ Return the negative (log-)likelihood? Useful for minimization routines.}
 \value{
 \code{choice_likelihood()} returns an object of class \code{choice_likelihood}, which
 is a \code{list} containing the design matrices, choice indices, and identifiers.
+
 \code{compute_choice_likelihood()} returns a single numeric value with the
-(negative) log-likelihood or likelihood, depending on \code{logarithm} and
-\code{negative}.
+(negative) (log-)likelihood.
 }
 \description{
 These functions prepare and evaluate the likelihood contribution of observed
@@ -69,14 +65,14 @@ choices for a given choice model.
 \item \code{choice_likelihood()} pre-computes the design matrices and choice indices
 implied by \code{choice_data} and \code{choice_effects}. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
-likelihood estimation avoid redundant work. Occasions without a response
-are omitted; an entirely unobserved data set has neutral likelihood one.
+likelihood estimation avoid redundant work.
 \item \code{compute_choice_likelihood()} evaluates the (log-)likelihood for given
 \code{choice_parameters} and a pre-computed \code{choice_likelihood} object.
 }
 }
 \examples{
-data(train_choice)
+### compute choice likelihood
+data(list = "train_choice")
 
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
@@ -84,7 +80,8 @@ choice_effects <- choice_effects(
     error_term = "probit"
   ),
   choice_alternatives = choice_alternatives(
-    J = 2, alternatives = c("A", "B")
+    J = 2,
+    alternatives = c("A", "B")
   )
 )
 
@@ -101,7 +98,9 @@ likelihood <- choice_likelihood(
   choice_effects = choice_effects
 )
 
-choice_parameters <- generate_choice_parameters(choice_effects)
+choice_parameters <- generate_choice_parameters(
+  choice_effects = choice_effects
+)
 
 compute_choice_likelihood(
   choice_parameters = choice_parameters,

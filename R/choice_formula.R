@@ -13,25 +13,7 @@
 #' - `"logit"`: errors follow a type-I extreme value distribution
 #'
 #' @param random_effects \[`character()`\]\cr
-#' Defines the random effects in the model. The expected format of elements in
-#' `random_effects` is `"<covariate>" = "<distribution>"`, where
-#' `"<covariate>"` is the name of a variable on the `formula` right-hand side.
-#' Every random effect must reference an explicit covariate (or `"ASC"` for
-#' alternative-specific constants) that appears in the supplied model formula.
-#'
-#' Current options for `"<distribution>"` are:
-#'
-#' - `"cn"`: correlated normal distribution
-#' - `"cln+"`: positively signed correlated log-normal distribution
-#' - `"cln-"`: negatively signed correlated log-normal distribution
-#'
-#' `"cln"` is an alias for `"cln+"`. All random effects share one latent
-#' normal distribution. Thus, normal and log-normal effects can be correlated.
-#' For a log-normal effect, `beta` is the latent normal log-location and
-#' `Omega` is the covariance matrix of the joint latent normal vector. The
-#' coefficient is `exp(eta)` for `"cln+"` and `-exp(eta)` for `"cln-"`.
-#'
-#' To have random effects for the ASCs, use `"ASC"` for `"<covariate>"`.
+#' Named vector defining random effects, see details.
 #'
 #' @return
 #' An object of class `choice_formula`, which is a `list` of the elements:
@@ -80,11 +62,26 @@
 #'   `random_effects = c("I(A1^2 + A2 * 2)" = "cn")`.
 #' }
 #'
+#' @section Specifying random effects:
+#' Specify random effects as `"<covariate>" = "<distribution>"`. Each covariate
+#' must appear explicitly on the right-hand side of `formula`; use `"ASC"` for
+#' alternative-specific constants.
+#'
+#' Available distributions are:
+#'
+#' - `"cn"`: correlated normal
+#' - `"n"`: uncorrelated normal
+#' - `"cln"`: positively signed correlated log-normal
+#' - `"ln"`: positively signed uncorrelated log-normal
+#' - `"cln-"`: negatively signed correlated log-normal
+#' - `"ln-"`: negatively signed uncorrelated log-normal
+#'
 #' @export
 #'
 #' @keywords model
 #'
 #' @examples
+#' ### specify a choice formula
 #' choice_formula(
 #'   formula = choice ~ I(A^2 + 1) | B | I(log(C)),
 #'   error_term = "probit",
@@ -103,9 +100,8 @@ choice_formula <- function(
   error_term <- check_error_term(error_term, choices = c("probit", "logit"))
   random_effects <- check_random_effects(
     random_effects,
-    choices = c("cn", "cln", "cln+", "cln-")
+    choices = c("cn", "n", "cln", "ln", "cln-", "ln-")
   )
-  random_effects[random_effects == "cln"] <- "cln+"
 
   ### read formula
   formula <- Formula::as.Formula(formula)
@@ -141,8 +137,10 @@ choice_formula <- function(
     )
   )
   rhs_char <- strsplit(rhs_char, split = "|", fixed = TRUE)[[1]]
-  rhs_char <- gsub("\\s+", "",  rhs_char) # remove whitespaces
-  split <- "\\+(?![^()]*\\))" # avoid splitting expressions enclosed in I(...)
+  ### remove whitespace
+  rhs_char <- gsub("\\s+", "",  rhs_char)
+  ### keep expressions enclosed in I(...) intact
+  split <- "\\+(?![^()]*\\))"
   covariate_types <- strsplit(rhs_char, split, perl = TRUE) |> lapply(trimws)
   ASC <- ifelse(0 %in% covariate_types[[2]], FALSE, TRUE)
   if ("ASC" %in% unlist(covariate_types)) {
@@ -161,7 +159,8 @@ choice_formula <- function(
   covariate_types <- lapply(covariate_types, function(x) x[!x %in% 0:1])
 
   ### check random_effects
-  names(random_effects) <- gsub("\\s+", "", names(random_effects)) # remove ws
+  ### remove whitespace from random-effect names
+  names(random_effects) <- gsub("\\s+", "", names(random_effects))
   for (random_effect in names(random_effects)) {
     if (identical(random_effect, ".")) {
       cli::cli_abort(
@@ -200,7 +199,7 @@ is.choice_formula <- function(
   error = FALSE,
   var_name = oeli::variable_name(x)
 ) {
-  validate_choice_object(
+  check_choice_object(
     x = x,
     class_name = "choice_formula",
     error = error,
@@ -211,7 +210,7 @@ is.choice_formula <- function(
 #' @rdname choice_formula
 #'
 #' @param x \[`choice_formula`\]\cr
-#' A `choice_formula` object.
+#' A \code{\link{choice_formula}} object.
 #'
 #' @param ...
 #' Currently not used.
@@ -240,7 +239,7 @@ resolve_choice_formula <- function(choice_formula, x) {
 
   ### input checks
   is.choice_formula(choice_formula, error = TRUE)
-  validate_choice_class_union(
+  check_choice_class_union(
     x,
     c("choice_data", "choice_covariates"),
     var_name = "x"
@@ -262,7 +261,7 @@ resolve_choice_formula <- function(choice_formula, x) {
       delimiter <- attr(x, "delimiter")
       if (is.null(delimiter)) delimiter <- "_"
       choice_type <- attr(x, "choice_type")
-      if (is.null(choice_type)) choice_type <- "discrete"
+      if (is.null(choice_type)) choice_type <- "unordered"
       esc <- function(s) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", s)
       alts <- character()
       base_names <- character()

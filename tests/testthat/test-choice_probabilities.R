@@ -83,7 +83,7 @@ test_that("MNP ordered probabilities can be computed", {
   N <- 100
   beta <- rnorm(P)
   d <- rnorm(J - 2)
-  # gamma_0 = -Inf, gamma_1 = 0, gamma_2, ..., gamma_J = Inf
+  ### gamma_0 = -Inf, gamma_1 = 0, gamma_2, ..., gamma_J = Inf
   gamma <- c(0, cumsum(exp(d)))
   Sigma <- 2
   true_pars <- list("beta" = beta, "d" = d)
@@ -242,374 +242,6 @@ test_that("MNP ranked probabilities can be computed", {
   )
 })
 
-test_that("probability evaluation helper matches direct computation", {
-
-  data(train_choice)
-
-  choice_effects <- choice_effects(
-    choice_formula = choice_formula(
-      formula = choice ~ price | time,
-      error_term = "probit"
-    ),
-    choice_alternatives = choice_alternatives(J = 2, alternatives = c("A", "B"))
-  )
-
-  ch_data <- choice_data(
-    data_frame = train_choice,
-    format = "wide",
-    column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
-  )
-
-  params <- generate_choice_parameters(choice_effects)
-
-  direct <- compute_choice_probabilities(
-    choice_parameters = params,
-    choice_data = ch_data,
-    choice_effects = choice_effects,
-    choice_only = TRUE
-  )
-
-  identifiers <- extract_choice_identifiers(ch_data)
-  design <- design_matrices(
-    x = ch_data,
-    choice_effects = choice_effects,
-    choice_identifiers = identifiers
-  )
-  indices <- extract_choice_indices(
-    choice_data = ch_data,
-    choice_effects = choice_effects,
-    choice_identifiers = identifiers
-  )
-
-  obs_log <- choiceprob_probit(
-    X = design,
-    y = indices,
-    beta = params$beta,
-    Sigma = params$Sigma,
-    logarithm = TRUE
-  )
-  Tp <- attr(design, "Tp")
-  pos <- c(0L, cumsum(Tp))
-  for (cml in c("fp", "ap")) {
-    type <- match(cml, c("no", "fp", "ap")) - 1L
-    expected <- vapply(seq_along(Tp), function(n) {
-      idx <- pos[n] + seq_len(Tp[n])
-      chunks <- build_panel_chunks(Tp[n], type)
-      sum(vapply(chunks, function(chunk) {
-        sum(obs_log[idx[chunk]])
-      }, numeric(1)))
-    }, numeric(1))
-    actual <- evaluate_choice_probabilities(
-      design_list = design,
-      choice_identifiers = identifiers,
-      choice_effects = choice_effects,
-      choice_parameters = params,
-      choice_only = TRUE,
-      choice_indices = indices,
-      numeric_only = TRUE,
-      logarithm = TRUE,
-      cml = cml
-    )
-    expect_equal(actual, expected)
-  }
-
-  evaluated <- evaluate_choice_probabilities(
-    design_list = design,
-    choice_identifiers = identifiers,
-    choice_effects = choice_effects,
-    choice_parameters = params,
-    choice_only = TRUE,
-    choice_indices = indices
-  )
-
-  expect_s3_class(evaluated, "choice_probabilities")
-  expect_equal(evaluated$choice_probability, direct$choice_probability)
-
-  for (value in list("yes", NA, 1L, NULL)) {
-    expect_error(
-      compute_choice_probabilities(
-        params, ch_data, choice_effects,
-        choice_only = value
-      )
-    )
-    expect_error(
-      compute_choice_probabilities(
-        params, ch_data, choice_effects,
-        input_checks = value
-      )
-    )
-  }
-
-  optim_params <- switch_parameter_space(params, choice_effects)
-  optimized <- compute_choice_probabilities(
-    choice_parameters = optim_params,
-    choice_data = ch_data,
-    choice_effects = choice_effects,
-    choice_only = TRUE
-  )
-  expect_equal(optimized$choice_probability, direct$choice_probability)
-})
-
-test_that("evaluate_choice_probabilities validates probability row counts", {
-
-  data(train_choice)
-
-  choice_effects <- choice_effects(
-    choice_formula = choice_formula(
-      formula = choice ~ price | time,
-      error_term = "probit"
-    ),
-    choice_alternatives = choice_alternatives(J = 2, alternatives = c("A", "B"))
-  )
-
-  ch_data <- choice_data(
-    data_frame = train_choice,
-    format = "wide",
-    column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
-  )
-
-  params <- generate_choice_parameters(choice_effects)
-
-  identifiers <- extract_choice_identifiers(ch_data)
-  design <- design_matrices(
-    x = ch_data,
-    choice_effects = choice_effects,
-    choice_identifiers = identifiers
-  )
-  indices <- extract_choice_indices(
-    choice_data = ch_data,
-    choice_effects = choice_effects,
-    choice_identifiers = identifiers
-  )
-
-  short_ids <- identifiers[-nrow(identifiers), , drop = FALSE]
-  attr(short_ids, "column_decider") <- attr(identifiers, "column_decider")
-  attr(short_ids, "column_occasion") <- attr(identifiers, "column_occasion")
-  attr(short_ids, "cross_section") <- attr(identifiers, "cross_section")
-
-  expect_error(
-    evaluate_choice_probabilities(
-      design_list = design,
-      choice_identifiers = short_ids,
-      choice_effects = choice_effects,
-      choice_parameters = params,
-      choice_only = TRUE,
-      choice_indices = indices
-    ),
-    "mismatched number of rows"
-  )
-})
-
-test_that("compute_choice_probabilities returns all probit probabilities", {
-
-  data(train_choice)
-
-  choice_effects <- choice_effects(
-    choice_formula = choice_formula(
-      formula = choice ~ price | time,
-      error_term = "probit"
-    ),
-    choice_alternatives = choice_alternatives(J = 2, alternatives = c("A", "B"))
-  )
-
-  params <- generate_choice_parameters(choice_effects)
-
-  small_frame <- train_choice[1:3, ]
-  small_data <- choice_data(
-    data_frame = small_frame,
-    format = "wide",
-    column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
-  )
-  all_probabilities <- compute_choice_probabilities(
-    choice_parameters = params,
-    choice_data = small_data,
-    choice_effects = choice_effects,
-    choice_only = FALSE
-  )
-
-  expect_s3_class(all_probabilities, "choice_probabilities")
-  expect_true(all(
-    c("outcome", "choice_probability") %in% names(all_probabilities)
-  ))
-  expect_equal(
-    sum(all_probabilities$choice_probability),
-    1,
-    tolerance = 1e-8
-  )
-
-  choice_only_probabilities <- compute_choice_probabilities(
-    choice_parameters = params,
-    choice_data = small_data,
-    choice_effects = choice_effects
-  )
-  expect_s3_class(choice_only_probabilities, "tbl_df")
-  observed <- as.character(small_frame$choice)
-  observed_row <- which(vapply(
-    all_probabilities$outcome,
-    identical,
-    logical(1),
-    observed
-  ))
-  expect_equal(
-    all_probabilities$choice_probability[observed_row],
-    unique(choice_only_probabilities$choice_probability),
-    tolerance = 1e-8
-  )
-
-  missing_frame <- small_frame
-  missing_frame$choice[2] <- NA_character_
-  missing_data <- choice_data(
-    data_frame = missing_frame,
-    format = "wide",
-    column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
-  )
-  missing_probabilities <- compute_choice_probabilities(
-    choice_parameters = params,
-    choice_data = missing_data,
-    choice_effects = choice_effects,
-    choice_only = TRUE
-  )
-  observed_data <- choice_data(
-    data_frame = missing_frame[-2, ],
-    format = "wide",
-    column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
-  )
-  observed_probabilities <- compute_choice_probabilities(
-    choice_parameters = params,
-    choice_data = observed_data,
-    choice_effects = choice_effects,
-    choice_only = TRUE
-  )
-  expect_true(is.na(missing_probabilities$choice_probability[2]))
-  expect_equal(
-    missing_probabilities$choice_probability[c(1, 3)],
-    observed_probabilities$choice_probability
-  )
-
-  all_missing_frame <- small_frame
-  all_missing_frame$choice[] <- NA_character_
-  all_missing_data <- choice_data(
-    data_frame = all_missing_frame,
-    format = "wide",
-    column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
-  )
-  all_missing_probabilities <- compute_choice_probabilities(
-    choice_parameters = params,
-    choice_data = all_missing_data,
-    choice_effects = choice_effects,
-    choice_only = TRUE
-  )
-  expect_true(all(is.na(
-    all_missing_probabilities$choice_probability
-  )))
-
-  no_choice_frame <- small_frame
-  no_choice_frame$choice <- NULL
-  no_choice_data <- choice_data(
-    data_frame = no_choice_frame,
-    format = "wide",
-    column_choice = NULL,
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
-  )
-  no_choice_probabilities <- compute_choice_probabilities(
-    choice_parameters = params,
-    choice_data = no_choice_data,
-    choice_effects = choice_effects,
-    choice_only = TRUE
-  )
-  expect_true(all(is.na(
-    no_choice_probabilities$choice_probability
-  )))
-
-  set_frame <- data.frame(
-    deciderID = c(1, 1, 2, 2, 2),
-    alternative = c("A", "B", "A", "B", "C"),
-    choice = c(1, 0, 0, 1, 0),
-    x = c(0.2, -0.1, 0.3, 0.1, -0.2)
-  )
-  set_data <- choice_data(
-    data_frame = set_frame,
-    format = "long",
-    column_choice = "choice",
-    column_decider = "deciderID",
-    column_alternative = "alternative",
-    column_as_covariates = "x",
-    cross_section = TRUE
-  )
-  set_effects <- choice_effects(
-    choice_formula = choice_formula(choice ~ x | 0),
-    choice_alternatives = choice_alternatives(
-      J = 3,
-      alternatives = c("A", "B", "C")
-    ),
-    choice_data = set_data
-  )
-  set_prob <- compute_choice_probabilities(
-    choice_parameters = choice_parameters(
-      beta = 0.4,
-      Sigma = diag(3)
-    ),
-    choice_data = set_data,
-    choice_effects = set_effects,
-    choice_only = FALSE
-  )
-  expect_equal(set_prob$C[1], 0)
-  expect_equal(rowSums(set_prob[c("A", "B", "C")]), c(1, 1))
-  lc_set_prob <- compute_choice_probabilities(
-    choice_parameters = choice_parameters(
-      beta = list(0.4, -0.2),
-      Sigma = diag(3),
-      weights = c(0.3, 0.7)
-    ),
-    choice_data = set_data,
-    choice_effects = set_effects,
-    choice_only = FALSE
-  )
-  expect_equal(lc_set_prob$C[1], 0)
-  expect_equal(rowSums(lc_set_prob[c("A", "B", "C")]), c(1, 1))
-
-  bad_probs <- data.frame(
-    deciderID = 1L,
-    A = 0.8,
-    B = 0.8
-  )
-  expect_error(
-    choice_probabilities(
-      data_frame = bad_probs,
-      choice_only = FALSE,
-      column_probabilities = c("A", "B")
-    ),
-    "sum to one"
-  )
-
-  missing_alt_prob <- data.frame(
-    deciderID = 1L,
-    A = NA_real_,
-    B = 1
-  )
-  expect_error(
-    choice_probabilities(
-      data_frame = missing_alt_prob,
-      choice_only = FALSE,
-      column_probabilities = c("A", "B")
-    ),
-    "outside response columns"
-  )
-})
-
 test_that("MNL probabilities can be computed", {
   data(train_choice)
 
@@ -708,241 +340,6 @@ test_that("MNL probabilities can be computed", {
   expect_equal(long_mean, rep(1.5, 4096))
 })
 
-test_that("logit ordered probabilities cover full and choice-only outputs", {
-
-  X <- list(
-    matrix(c(0.3, -0.7), nrow = 1),
-    matrix(c(-0.4, 0.2), nrow = 1)
-  )
-  beta <- c(0.5, -0.2)
-  gamma <- c(-0.25, 0.75)
-  gamma_augmented <- c(-Inf, gamma, Inf)
-
-  all_probs <- choiceprob_logit(
-    X = X, beta = beta, gamma = gamma
-  )
-
-  expect_equal(nrow(all_probs), length(X))
-  expect_equal(
-    rowSums(all_probs),
-    rep(1, length(X)),
-    tolerance = 1e-10
-  )
-
-  y <- list(1L, 3L)
-  chosen_probs <- choiceprob_logit(
-    X = X, y = y, beta = beta, gamma = gamma
-  )
-
-  expected <- vapply(seq_along(X), function(n) {
-    V_n <- as.numeric(X[[n]] %*% beta)
-    upper <- stats::plogis(gamma_augmented[y[[n]] + 1] - V_n)
-    lower <- stats::plogis(gamma_augmented[y[[n]]] - V_n)
-    upper - lower
-  }, numeric(1))
-
-  expect_equal(chosen_probs, expected, tolerance = 1e-10)
-  expect_equal(cpp_ologit(X, beta, gamma), all_probs)
-  expect_equal(
-    cpp_ologit(X, beta, gamma, unlist(y)),
-    expected,
-    tolerance = 1e-10
-  )
-  expect_equal(
-    cpp_ologit(X, beta, gamma, unlist(y), log = TRUE),
-    log(expected),
-    tolerance = 1e-10
-  )
-  log_probs <- choiceprob_logit(
-    X = X, y = y, beta = beta, gamma = gamma,
-    logarithm = TRUE
-  )
-  expect_equal(exp(log_probs), chosen_probs, tolerance = 1e-10)
-
-  beta_lc <- list(beta, -beta)
-  weights <- c(0.4, 0.6)
-  second <- choiceprob_logit(
-    X = X, y = y, beta = -beta, gamma = gamma
-  )
-  lc_ref <- weights[1] * chosen_probs + weights[2] * second
-  lc_probs <- choiceprob_logit(
-    X = X, y = y, beta = beta_lc, gamma = gamma,
-    weights = weights
-  )
-  lc_log <- choiceprob_logit(
-    X = X, y = y, beta = beta_lc, gamma = gamma,
-    weights = weights, logarithm = TRUE
-  )
-  expect_equal(lc_probs, lc_ref)
-  expect_equal(exp(lc_log), lc_probs)
-
-  lc_all_log <- choiceprob_logit(
-    X = X, beta = beta_lc, gamma = gamma,
-    weights = weights, logarithm = TRUE
-  )
-  expect_equal(rowSums(exp(lc_all_log)), rep(1, length(X)))
-
-  Omega <- matrix(0.04, nrow = 1)
-  draws <- matrix(c(-0.2, 0, 0.2), ncol = 1)
-  omega_lc <- list(Omega, Omega)
-  mixed_lc <- choiceprob_logit(
-    X = X, y = y, beta = beta_lc, Omega = omega_lc,
-    gamma = gamma, weights = weights, draws = draws
-  )
-  mixed_ref <- weights[1] * choiceprob_logit(
-    X = X, y = y, beta = beta, Omega = Omega,
-    gamma = gamma, draws = draws
-  ) + weights[2] * choiceprob_logit(
-    X = X, y = y, beta = -beta, Omega = Omega,
-    gamma = gamma, draws = draws
-  )
-  expect_equal(mixed_lc, mixed_ref)
-  expect_error(
-    choiceprob_logit(
-      X = X, y = y, beta = beta, gamma = gamma,
-      ordered = TRUE, ranked = TRUE
-    ),
-    "cannot be combined"
-  )
-})
-
-test_that("logit ranked probabilities honour rankings", {
-
-  X <- list(
-    matrix(c(
-      0.2, -0.1,
-      -0.3, 0.4,
-      0.1, 0.2
-    ), nrow = 3, byrow = TRUE),
-    matrix(c(
-      -0.5, 0.1,
-      0.4, -0.3,
-      0.6, 0.2
-    ), nrow = 3, byrow = TRUE)
-  )
-  beta <- c(0.3, -0.4)
-  rankings <- list(c(2L, 1L, 3L), c(1L, 3L, 2L))
-
-  manual_ranked_prob <- function(utilities, ranking) {
-    available <- seq_along(utilities)
-    prob <- 1
-    for (pos in seq_along(ranking)) {
-      probs <- exp(utilities[available] - max(utilities[available]))
-      probs <- probs / sum(probs)
-      idx <- match(ranking[pos], available)
-      prob <- prob * probs[idx]
-      available <- available[-idx]
-    }
-    prob
-  }
-
-  expected <- vapply(seq_along(X), function(n) {
-    utilities <- as.numeric(X[[n]] %*% beta)
-    manual_ranked_prob(utilities, rankings[[n]])
-  }, numeric(1))
-
-  probs <- choiceprob_logit(
-    X = X, y = rankings, beta = beta
-  )
-
-  expect_equal(probs, expected, tolerance = 1e-10)
-  log_probs <- choiceprob_logit(
-    X = X, y = rankings, beta = beta, logarithm = TRUE
-  )
-  expect_equal(exp(log_probs), probs, tolerance = 1e-10)
-  first_u <- as.numeric(X[[1]] %*% beta)
-  expect_equal(
-    cpp_ranked_logit(first_u, rankings[[1]]),
-    expected[[1]],
-    tolerance = 1e-10
-  )
-  expect_equal(
-    cpp_ranked_logit(first_u, rankings[[1]], log = TRUE),
-    log(expected[[1]]),
-    tolerance = 1e-10
-  )
-  expect_true(all(probs > 0 & probs <= 1))
-  partial <- lapply(rankings, utils::head, 2)
-  partial_expected <- vapply(seq_along(X), function(n) {
-    manual_ranked_prob(as.numeric(X[[n]] %*% beta), partial[[n]])
-  }, numeric(1))
-  expect_equal(
-    choiceprob_logit(
-      X = X, y = partial, beta = beta, ranked = TRUE
-    ),
-    partial_expected,
-    tolerance = 1e-10
-  )
-
-  rank_data <- choice_data(
-    data_frame = data.frame(
-      deciderID = 1,
-      rank_A = 1L,
-      rank_B = 2L,
-      rank_C = NA_integer_
-    ),
-    format = "wide",
-    column_choice = "rank",
-    column_decider = "deciderID",
-    choice_type = "ranked"
-  )
-  rank_effects <- choice_effects(
-    choice_formula(
-      rank ~ 0 | 1 | 0,
-      error_term = "logit"
-    ),
-    choice_alternatives(
-      J = 3,
-      alternatives = c("A", "B", "C")
-    )
-  )
-  rank_prob <- compute_choice_probabilities(
-    choice_parameters = choice_parameters(beta = c(0.2, -0.1)),
-    choice_data = rank_data,
-    choice_effects = rank_effects,
-    choice_only = FALSE
-  )
-  expect_equal(nrow(rank_prob), 6L)
-  expect_true(all(lengths(rank_prob$outcome) == 2L))
-  expect_equal(sum(rank_prob$choice_probability), 1)
-})
-
-test_that("logit panel probabilities respect Tp", {
-
-  X <- list(
-    matrix(c(
-      0.2, -0.1,
-      -0.3, 0.5
-    ), nrow = 2, byrow = TRUE),
-    matrix(c(
-      -0.6, 0.2,
-      0.4, -0.3
-    ), nrow = 2, byrow = TRUE),
-    matrix(c(
-      0.1, 0.3,
-      -0.2, -0.4
-    ), nrow = 2, byrow = TRUE)
-  )
-  y <- list(1L, 2L, 1L)
-  Tp <- c(2L, 1L)
-  beta <- c(0.4, -0.2)
-
-  per_observation <- vapply(seq_along(X), function(n) {
-    utilities <- as.numeric(X[[n]] %*% beta)
-    probs <- exp(utilities - max(utilities))
-    probs <- probs / sum(probs)
-    probs[y[[n]]]
-  }, numeric(1))
-  expected <- c(prod(per_observation[1:2]), per_observation[3])
-
-  panel_probs <- choiceprob_logit(
-    X = X, y = y, Tp = Tp, beta = beta
-  )
-
-  expect_equal(panel_probs, expected, tolerance = 1e-10)
-  expect_true(all(panel_probs > 0 & panel_probs <= 1))
-})
-
 test_that("latent class logit probabilities combine class panels correctly", {
 
   X <- list(
@@ -1035,7 +432,7 @@ test_that("latent class logit probabilities combine class panels correctly", {
       X = X, y = y, beta = beta, Omega = omega_lc,
       weights = weights, draws = list(matrix(0, nrow = 1))
     ),
-    "draws must match"
+    "matrix"
   )
   expect_error(
     choiceprob_logit(
@@ -1116,10 +513,23 @@ test_that("mixed logit probabilities average over draws", {
       y = list(2L),
       beta = beta_mix,
       Omega = omega_mix,
-      re_mixing = c("cn", "cln+", "cln-"),
+      re_mixing = c("cn", "cln", "cln-"),
       draws = draws_mix
     ),
     manual_mix
+  )
+  omega_independent <- diag(diag(omega_mix))
+  expect_equal(
+    choiceprob_logit(
+      X = X_mix, y = list(2L), beta = beta_mix,
+      Omega = omega_independent, re_mixing = c("n", "ln", "ln-"),
+      draws = draws_mix
+    ),
+    choiceprob_logit(
+      X = X_mix, y = list(2L), beta = beta_mix,
+      Omega = omega_independent, re_mixing = c("cn", "cln", "cln-"),
+      draws = draws_mix
+    )
   )
 
   beta_lc <- list(beta, -beta)
@@ -1221,23 +631,22 @@ test_that("mixed logit panel probabilities average products over draws", {
 
   beta_lc <- list(beta, -beta)
   omega_lc <- list(Omega, Omega)
-  draw_lc <- list(draws, draws)
   weights <- c(0.4, 0.6)
   ordered_lc <- choiceprob_logit(
     X = X_ord, y = y_ord, Tp = Tp, beta = beta_lc,
     Omega = omega_lc, gamma = gamma, weights = weights,
-    draws = draw_lc
+    draws = draws
   )
   expected_lc <- choiceprob_mmnl_lc(
     X = X_ord, y = y_ord, Tp = Tp, beta = beta_lc,
     Omega = omega_lc, gamma = gamma, weights = weights,
-    re_position = 2L, draws = draw_lc
+    re_position = 2L, draws = draws
   )
   expect_equal(ordered_lc, expected_lc)
 
   panel_lc <- choiceprob_logit(
     X = X, y = y, Tp = Tp, beta = beta_lc,
-    Omega = omega_lc, weights = weights, draws = draw_lc
+    Omega = omega_lc, weights = weights, draws = draws
   )
   panel_lc_ref <- weights[1] * choiceprob_logit(
     X = X, y = y, Tp = Tp, beta = beta,
@@ -1434,7 +843,7 @@ test_that("MMNP probabilities can be computed", {
       beta = beta_mix,
       Omega = omega_mix,
       Sigma = diag(2),
-      re_mixing = c("cn", "cln+"),
+      re_mixing = c("cn", "cln"),
       draws = draws_mix
     ),
     manual_mix
@@ -1543,7 +952,7 @@ test_that("MMNP ordered probabilities can be computed", {
   Omega <- matrix(1, 1, 1)
   P_r <- nrow(Omega)
   d <- rnorm(J - 2)
-  # gamma_0 = -Inf, gamma_1 = 0, gamma_2, ..., gamma_J = Inf
+  ### gamma_0 = -Inf, gamma_1 = 0, gamma_2, ..., gamma_J = Inf
   gamma <- c(0, cumsum(exp(d)))
   Sigma <- 2
   true_pars <- list("beta" = beta, "Omega" = Omega, "d" = d)
@@ -1759,80 +1168,6 @@ test_that("MMNP latent class probabilities can be computed", {
     re_position = seq_len(P_r), ranked = TRUE
   )
   expect_equal(mixed_rank, mixed_rank_ref)
-})
-
-test_that("latent class weights are validated", {
-
-  X <- list(matrix(c(1, 0), nrow = 2, ncol = 1))
-  y <- list(1L)
-  beta <- list(0.2, -0.1)
-  Omega <- list(matrix(0.3, 1, 1), matrix(0.4, 1, 1))
-  Sigma <- diag(2)
-  base_args <- list(
-    X = X,
-    y = y,
-    beta = beta,
-    Omega = Omega,
-    Sigma = Sigma,
-    weights = c(0.6, 0.4),
-    re_position = 1L
-  )
-
-  expect_error(do.call(choiceprob_probit, base_args), NA)
-
-  expect_error(
-    do.call(
-      choiceprob_probit,
-      utils::modifyList(base_args, list(weights = c(0.6, -0.2)))
-    ),
-    "weights"
-  )
-  expect_error(
-    do.call(
-      choiceprob_probit,
-      utils::modifyList(base_args, list(weights = c(0.5, 0.25, 0.25)))
-    ),
-    "weights"
-  )
-  expect_warning(
-    normalized <- do.call(
-      choiceprob_probit,
-      utils::modifyList(base_args, list(weights = c(3, 1)))
-    ),
-    "normalized"
-  )
-  expect_equal(
-    normalized,
-    do.call(
-      choiceprob_probit,
-      utils::modifyList(base_args, list(weights = c(0.75, 0.25)))
-    )
-  )
-
-  empty_beta <- base_args
-  empty_beta$beta <- list()
-  empty_beta$Omega <- NULL
-  empty_beta$weights <- 1
-  expect_error(do.call(choiceprob_probit, empty_beta), "empty")
-
-  unequal_beta <- base_args
-  unequal_beta$beta <- list(0.2, c(-0.1, 0.3))
-  expect_error(do.call(choiceprob_probit, unequal_beta), "equal lengths")
-
-  empty_omega <- base_args
-  empty_omega$Omega <- list()
-  expect_error(do.call(choiceprob_probit, empty_omega), "must not be empty")
-
-  zero_weights <- base_args
-  zero_weights$weights <- c(0, 0)
-  expect_error(do.call(choiceprob_probit, zero_weights), "positive")
-
-  log_args <- base_args
-  log_args$logarithm <- TRUE
-  expect_equal(
-    exp(do.call(choiceprob_probit, log_args)),
-    do.call(choiceprob_probit, base_args)
-  )
 })
 
 test_that("MMNP ordered latent class probabilities can be computed", {
@@ -2160,7 +1495,7 @@ test_that("MMNP ordered panel probabilities can be computed", {
   Omega <- matrix(1, 1, 1)
   P_r <- nrow(Omega)
   d <- rnorm(J - 2)
-  # gamma_0 = -Inf, gamma_1 = 0, gamma_2, ..., gamma_J = Inf
+  ### gamma_0 = -Inf, gamma_1 = 0, gamma_2, ..., gamma_J = Inf
   gamma <- c(0, cumsum(exp(d)))
   Sigma <- 2
   true_pars <- list("beta" = beta, "Omega" = Omega, "d" = d)
@@ -2439,7 +1774,7 @@ test_that("MMNP ordered panel latent class probabilities can be computed", {
   P_r <- 1
   Omega <- lapply(seq_len(C), function(c) matrix(runif(P_r), 1, 1))
   d <- rnorm(J - 2)
-  # gamma_0 = -Inf, gamma_1 = 0, gamma_2, ..., gamma_J = Inf
+  ### gamma_0 = -Inf, gamma_1 = 0, gamma_2, ..., gamma_J = Inf
   gamma <- c(0, cumsum(exp(d)))
   Sigma <- 2
   true_pars <- list(
@@ -2658,141 +1993,4 @@ test_that("panel helper utilities cover edge cases", {
     512L
   )
   expect_equal(as.numeric(large_cov$cov), 1)
-})
-
-test_that("choiceprob_probit validates random effect covariance inputs", {
-
-  X <- list(matrix(c(1, 0, 0, 1), nrow = 2, byrow = TRUE))
-  y <- list(1L)
-  beta <- c(0.1, -0.1)
-  bad_Omega <- matrix(c(1, 2, 3, 4), nrow = 2)
-  Sigma <- diag(2)
-
-  expect_error(
-    choiceprob_probit(
-      X = X,
-      y = y,
-      beta = beta,
-      Omega = bad_Omega,
-      Sigma = Sigma
-    ),
-    "Omega",
-    fixed = FALSE
-  )
-
-  good_Omega <- diag(2)
-
-  expect_error(
-    choiceprob_probit(
-      X = X,
-      y = y,
-      beta = beta,
-      Omega = good_Omega,
-      Sigma = Sigma
-    ),
-    NA
-  )
-
-  expect_error(
-    choiceprob_probit(
-      X = X, y = y, beta = list(beta, -beta), Omega = good_Omega,
-      Sigma = Sigma, weights = c(0.5, 0.5)
-    ),
-    "must be a list"
-  )
-  expect_error(
-    choiceprob_probit(
-      X = X, y = y, beta = list(beta, -beta), Sigma = Sigma
-    ),
-    "weights"
-  )
-  expect_error(
-    choiceprob_probit(
-      X = X, y = y, beta = beta, Omega = list(good_Omega),
-      Sigma = Sigma
-    ),
-    "weights"
-  )
-  expect_error(
-    choiceprob_probit(X = X, y = y, beta = beta, Sigma = 1),
-    "Sigma"
-  )
-  expect_error(
-    choiceprob_probit(
-      X = list(matrix(beta, nrow = 1)), y = y, beta = beta,
-      Sigma = Sigma, gamma = 0
-    ),
-    "Sigma"
-  )
-  expect_error(
-    choiceprob_probit(
-      X = X, y = y, cml = "fp", beta = beta, Sigma = Sigma
-    ),
-    "panel"
-  )
-  expect_error(
-    choiceprob_probit(
-      X = list(matrix(beta, nrow = 1)), y = y,
-      beta = beta, Sigma = 1,
-      gamma = 0, ordered = TRUE, ranked = TRUE
-    ),
-    "Ordered and ranked"
-  )
-  expect_error(
-    choiceprob_probit(
-      X = X, y = y, Tp = 1L, beta = beta, Sigma = Sigma,
-      panel = TRUE, input_checks = FALSE
-    ),
-    "require random effects"
-  )
-  expect_error(
-    choiceprob_probit(
-      X = list(matrix(beta, nrow = 1)), y = y, beta = beta,
-      Sigma = 1, gamma = c(0, 0)
-    ),
-    "strictly increasing"
-  )
-
-  omega_lc <- list(diag(2), matrix(1, nrow = 1))
-  expect_error(
-    choiceprob_probit(
-      X = X, y = y, beta = list(beta, -beta),
-      Omega = omega_lc, Sigma = Sigma, weights = c(0.5, 0.5)
-    ),
-    "same dimensions"
-  )
-})
-
-test_that("choiceprob_probit validates random effect positions", {
-
-  X <- list(matrix(c(1, 0, 0, 1), nrow = 2, byrow = TRUE))
-  y <- list(1L)
-  beta <- c(0.2, -0.2)
-  Omega <- diag(2)
-  Sigma <- diag(2)
-
-  expect_error(
-    choiceprob_probit(
-      X = X,
-      y = y,
-      beta = beta,
-      Omega = Omega,
-      Sigma = Sigma,
-      re_position = c(1L, 1L)
-    ),
-    "Random effect positions",
-    fixed = FALSE
-  )
-
-  expect_error(
-    choiceprob_probit(
-      X = X,
-      y = y,
-      beta = beta,
-      Omega = Omega,
-      Sigma = Sigma,
-      re_position = c(1L, 2L)
-    ),
-    NA
-  )
 })

@@ -52,7 +52,7 @@ test_that("choice parameters can be generated", {
   x <- generate_choice_parameters(choice_effects)
   expect_s3_class(x, "choice_parameters")
   set.seed(1)
-  x_lc <- generate_choice_parameters(choice_effects, n_classes = 2L)
+  x_lc <- generate_choice_parameters(choice_effects, C = 2L)
   expect_length(x_lc$beta, 2L)
   expect_length(x_lc$Omega, 2L)
   expect_equal(x_lc$weights, c(0.5, 0.5))
@@ -191,7 +191,7 @@ test_that("not required choice parameters are set to NULL", {
 
 test_that("choice parameters can switch parameter spaces", {
 
-  ### MNP model
+  ### multinomial probit model
   J <- 3
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
@@ -202,7 +202,8 @@ test_that("choice parameters can switch parameter spaces", {
   choice_parameters <- generate_choice_parameters(
     choice_effects = choice_effects,
     fixed_parameters = choice_parameters(
-      Sigma = diag(c(0, rep(1, J - 1))) # scale and level normalization
+      ### apply scale and level normalization
+      Sigma = diag(c(0, rep(1, J - 1)))
     )
   )
   o_space <- switch_parameter_space(choice_parameters, choice_effects)
@@ -211,7 +212,7 @@ test_that("choice parameters can switch parameter spaces", {
     choice_parameters, i_space
   )
 
-  ### MMNP model
+  ### mixed multinomial probit model
   J <- 3
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
@@ -223,7 +224,8 @@ test_that("choice parameters can switch parameter spaces", {
   choice_parameters <- generate_choice_parameters(
     choice_effects = choice_effects,
     fixed_parameters = choice_parameters(
-      Sigma = diag(c(0, rep(1, J - 1))) # scale and level normalization
+      ### apply scale and level normalization
+      Sigma = diag(c(0, rep(1, J - 1)))
     )
   )
   o_space <- switch_parameter_space(choice_parameters, choice_effects)
@@ -232,7 +234,7 @@ test_that("choice parameters can switch parameter spaces", {
     choice_parameters, i_space
   )
 
-  ### Latent class MMNP model
+  ### latent class mixed multinomial probit model
   lc_parameters <- choice_parameters(
     beta = list(choice_parameters$beta, -choice_parameters$beta),
     Omega = list(choice_parameters$Omega, 2 * choice_parameters$Omega),
@@ -247,7 +249,7 @@ test_that("choice parameters can switch parameter spaces", {
   expect_equal(lc_i_space, lc_parameters)
   expect_true("w_2" %in% names(lc_o_space))
 
-  ### Ordered model
+  ### ordered model
   J <- 3
   ordered_effects <- choice_effects(
     choice_formula = choice_formula(
@@ -277,4 +279,43 @@ test_that("choice parameters can switch parameter spaces", {
     switch_parameter_space(as.numeric(ordered_lc_o), ordered_effects),
     ordered_lc
   )
+})
+
+test_that("uncorrelated random effects constrain Omega", {
+  choice_effects <- choice_effects(
+    choice_formula(
+      choice ~ A + B + C + D | 0,
+      random_effects = c(A = "cn", B = "n", C = "ln", D = "cln-")
+    ),
+    choice_alternatives(J = 2)
+  )
+  Omega <- diag(1:4)
+  Omega[1, 4] <- Omega[4, 1] <- 0.2
+  parameters <- choice_parameters(
+    beta = seq_len(4),
+    Omega = Omega,
+    Sigma = diag(c(0, 1))
+  )
+
+  validated <- validate_choice_parameters(parameters, choice_effects)
+  optimization <- switch_parameter_space(validated, choice_effects)
+  expect_length(optimization[startsWith(names(optimization), "o_")], 5L)
+  expect_equal(
+    switch_parameter_space(optimization, choice_effects),
+    validated
+  )
+
+  invalid <- parameters
+  invalid$Omega[1, 2] <- invalid$Omega[2, 1] <- 0.1
+  expect_error(
+    validate_choice_parameters(invalid, choice_effects),
+    'Omega\\["A", "B"\\]'
+  )
+
+  generated <- generate_choice_parameters(
+    choice_effects,
+    fixed_parameters = choice_parameters(Sigma = diag(c(0, 1)))
+  )
+  expect_equal(unname(generated$Omega[2, -2]), rep(0, 3))
+  expect_equal(unname(generated$Omega[3, -3]), rep(0, 3))
 })

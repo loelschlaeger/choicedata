@@ -41,11 +41,11 @@ choice model.
 \itemize{
 \item \code{choice_preferences()} constructs a \code{choice_preferences} object.
 \item \code{generate_choice_preferences()} samples choice preferences at random.
-In latent-class models, one class is sampled per decider.
 }
 }
 \examples{
 ### generate choice preferences from choice parameters and effects
+set.seed(1)
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | income | comfort,
@@ -57,20 +57,13 @@ choice_effects <- choice_effects(
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )
-
 choice_parameters <- generate_choice_parameters(
-  choice_effects = choice_effects
+  choice_effects = choice_effects, C = 2
 )
-
-ids <- generate_choice_identifiers(N = 4)
-
 (choice_preferences <- generate_choice_preferences(
   choice_parameters = choice_parameters,
   choice_effects = choice_effects,
-  choice_identifiers = ids
+  choice_identifiers = generate_choice_identifiers(N = 4)
 ))
-
-### inspect decider-specific preference vectors
-head(choice_preferences)
 }
 \keyword{model}

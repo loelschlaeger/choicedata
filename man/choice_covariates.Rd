@@ -61,21 +61,20 @@ Column name with alternative identifiers when \code{format = "long"}.}
 Column names with alternative-constant covariates.}
 
 \item{column_as_covariates}{[\code{character()} | \code{NULL}]\cr
-Column names with alternative-specific covariates in \code{data_frame}.}
+Column names with alternative-specific covariates.}
 
 \item{delimiter}{[\code{character(1)}]\cr
 Delimiter separating alternative identifiers from covariate names in wide
-format. May consist of one or more characters.}
+format.}
 
 \item{cross_section}{[\code{logical(1)}]\cr
 Treat choice data as cross-sectional?}
 
 \item{choice_effects}{[\code{choice_effects} | \code{NULL}]\cr
-Optional \code{\link{choice_effects}} object used to derive and align
-covariate labels. If \code{NULL}, \code{labels} must be supplied.}
+A \code{\link{choice_effects}} object.}
 
 \item{choice_identifiers}{[\code{choice_identifiers}]\cr
-A \code{\link{choice_identifiers}} object describing the simulated panel.}
+A \code{\link{choice_identifiers}} object.}
 
 \item{labels}{[\code{character()}]\cr
 Unique labels for the regressors.}
@@ -136,6 +135,7 @@ the number of choice alternatives and \code{P} the number of effects.
 }
 
 \examples{
+### sample covariates from choice effects
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | income | comfort,
@@ -147,12 +147,9 @@ choice_effects <- choice_effects(
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )
-
-ids <- generate_choice_identifiers(N = 3, Tp = 2)
-
-choice_covariates <- generate_choice_covariates(
+(choice_covariates <- generate_choice_covariates(
   choice_effects = choice_effects,
-  choice_identifiers = ids
-)
+  choice_identifiers = generate_choice_identifiers(N = 3, Tp = 2)
+))
 }
 \keyword{data}

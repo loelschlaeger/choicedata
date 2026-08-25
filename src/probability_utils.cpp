@@ -1,47 +1,29 @@
 #include <RcppArmadillo.h>
 
+#include "probability_utils.h"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <vector>
 
 using namespace Rcpp;
+using namespace choicedata;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-namespace {
+namespace choicedata {
 
 const R_xlen_t interrupt_size = 4096;
-const R_xlen_t interrupt_step = 1024;
 
-void check_interrupt(R_xlen_t i, R_xlen_t step = interrupt_step) {
+// Check for user interruption
+void check_interrupt(R_xlen_t i, R_xlen_t step) {
   if (i % step == 0) {
     Rcpp::checkUserInterrupt();
   }
 }
 
-double inv_logit(double x) {
-  if (x >= 0) {
-    return 1 / (1 + std::exp(-x));
-  }
-  double ex = std::exp(x);
-  return ex / (1 + ex);
-}
-
-double interval_prob(double lower, double upper) {
-  if (lower >= 0) {
-    return inv_logit(-lower) - inv_logit(-upper);
-  }
-  return inv_logit(upper) - inv_logit(lower);
-}
-
-double log_inv_logit(double x) {
-  if (x >= 0) {
-    return -std::log1p(std::exp(-x));
-  }
-  return x - std::log1p(std::exp(x));
-}
-
+// Compute log(exp(x) - exp(y)) for x >= y
 double log_diff_exp(double x, double y) {
   if (y == R_NegInf) {
     return x;
@@ -49,17 +31,7 @@ double log_diff_exp(double x, double y) {
   return x + std::log(-std::expm1(y - x));
 }
 
-double log_interval_prob(double lower, double upper) {
-  if (lower >= 0) {
-    return log_diff_exp(
-      log_inv_logit(-lower), log_inv_logit(-upper)
-    );
-  }
-  return log_diff_exp(
-    log_inv_logit(upper), log_inv_logit(lower)
-  );
-}
-
+// Compute log(exp(x) + exp(y))
 double log_add_exp(double x, double y) {
   if (x == R_NegInf) {
     return y;
@@ -75,11 +47,15 @@ double log_add_exp(double x, double y) {
   return xmax + std::log1p(std::exp(xmin - xmax));
 }
 
+namespace {
+
+// Compute log-sum-exp
 template <typename Vector>
-double log_sum_exp(const Vector& x, const std::vector<bool>& use,
-                   bool interrupt = false) {
+double log_sum_exp_impl(const Vector& x, const std::vector<bool>& use,
+                        bool interrupt) {
   double xmax = R_NegInf;
-  for (R_xlen_t i = 0; i < x.size(); ++i) {
+  for (R_xlen_t i = 0;
+       i < static_cast<R_xlen_t>(x.size()); ++i) {
     if (interrupt) {
       check_interrupt(i);
     }
@@ -88,7 +64,8 @@ double log_sum_exp(const Vector& x, const std::vector<bool>& use,
     }
   }
   double total = 0;
-  for (R_xlen_t i = 0; i < x.size(); ++i) {
+  for (R_xlen_t i = 0;
+       i < static_cast<R_xlen_t>(x.size()); ++i) {
     if (interrupt) {
       check_interrupt(i);
     }
@@ -99,25 +76,21 @@ double log_sum_exp(const Vector& x, const std::vector<bool>& use,
   return xmax + std::log(total);
 }
 
-template <typename Vector>
-double ranked_log_prob(const Vector& u, const IntegerVector& ranking,
-                       std::vector<bool> use) {
-  double value = 0;
-  bool long_loop = ranking.size() >= interrupt_size;
-  for (R_xlen_t r = 0; r < ranking.size(); ++r) {
-    if (long_loop) {
-      check_interrupt(r, 64);
-    }
-    int pos = ranking[r] - 1;
-    if (pos < 0 || pos >= u.size() || !use[pos]) {
-      stop("Rankings must contain available alternatives once.");
-    }
-    value += u[pos] - log_sum_exp(u, use);
-    use[pos] = false;
-  }
-  return value;
 }
 
+// Compute log-sum-exp of an R vector
+double log_sum_exp(const NumericVector& x, const std::vector<bool>& use,
+                   bool interrupt) {
+  return log_sum_exp_impl(x, use, interrupt);
+}
+
+// Compute log-sum-exp of a standard vector
+double log_sum_exp(const std::vector<double>& x,
+                   const std::vector<bool>& use, bool interrupt) {
+  return log_sum_exp_impl(x, use, interrupt);
+}
+
+// Convert validated one-based availability indices into boolean
 std::vector<bool> make_availability_mask(
     int size, const IntegerVector& available, bool use_all) {
   std::vector<bool> use(size, use_all);
@@ -140,6 +113,11 @@ std::vector<bool> make_availability_mask(
   return use;
 }
 
+}
+
+namespace {
+
+// Expand occasion numbers
 IntegerVector chunk_index(const IntegerVector& occasions, int block) {
   IntegerVector out(occasions.size() * block);
   int pos = 0;
@@ -156,6 +134,7 @@ IntegerVector chunk_index(const IntegerVector& occasions, int block) {
   return out;
 }
 
+// Recursively enumerate partial rankings
 void fill_rankings(
     const IntegerVector& values, int depth, std::vector<int>& current,
     std::vector<bool>& used, List& out, R_xlen_t& pos) {
@@ -181,8 +160,9 @@ void fill_rankings(
   }
 }
 
-} // namespace
+}
 
+// Compute log or ordinary softmax probabilities from utilities
 // [[Rcpp::export]]
 NumericVector cpp_softmax(NumericVector u, bool log = false) {
   double umax = max(u);
@@ -206,6 +186,7 @@ NumericVector cpp_softmax(NumericVector u, bool log = false) {
   return out;
 }
 
+// Compute log-sum-exp of all vector entries
 // [[Rcpp::export]]
 double cpp_logsumexp(NumericVector x) {
   std::vector<bool> use(x.size(), true);
@@ -213,7 +194,7 @@ double cpp_logsumexp(NumericVector x) {
   return log_sum_exp(x, use, interrupt);
 }
 
-// Mix classes without allocating a results-by-class matrix.
+// Mix latent-class probabilities
 // [[Rcpp::export]]
 NumericVector cpp_lc_prob(List probs, NumericVector weights,
                           bool log = false) {
@@ -255,70 +236,7 @@ NumericVector cpp_lc_prob(List probs, NumericVector weights,
   return out;
 }
 
-// Compute ordered utilities and probabilities in one pass.
-// [[Rcpp::export]]
-NumericVector cpp_ologit(
-    List x, NumericVector beta, NumericVector gamma,
-    Nullable<IntegerVector> y = R_NilValue, bool log = false) {
-  int n = x.size();
-  int last = gamma.size() + 1;
-  bool observed = y.isNotNull();
-  IntegerVector choices;
-  if (observed) {
-    choices = as<IntegerVector>(y);
-    if (choices.size() != n) {
-      stop("Ordered choices must have one value per observation.");
-    }
-  }
-  NumericVector out(observed ? n : n * last);
-  bool long_loop = out.size() >= interrupt_size;
-  R_xlen_t pos = 0;
-  for (int i = 0; i < n; ++i) {
-    if (long_loop) {
-      check_interrupt(pos);
-    }
-    NumericMatrix design = x[i];
-    if (design.nrow() != 1 || design.ncol() != beta.size()) {
-      stop("Ordered design matrices must have one row and match beta.");
-    }
-    double utility = 0;
-    for (int p = 0; p < design.ncol(); ++p) {
-      utility += design(0, p) * beta[p];
-    }
-    int first_choice = observed ? choices[i] - 1 : 0;
-    int final_choice = observed ? choices[i] : last;
-    if (first_choice < 0 || final_choice > last) {
-      stop("Ordered choices are outside the available categories.");
-    }
-    for (int j = first_choice; j < final_choice; ++j) {
-      if (long_loop) {
-        check_interrupt(pos);
-      }
-      double lower = j == 0 ? R_NegInf : gamma[j - 1];
-      double upper = j == last - 1 ? R_PosInf : gamma[j];
-      lower -= utility;
-      upper -= utility;
-      R_xlen_t index = observed ? i : i + n * j;
-      out[index] = log ? log_interval_prob(lower, upper) :
-        interval_prob(lower, upper);
-      ++pos;
-    }
-  }
-  if (!observed) {
-    out.attr("dim") = IntegerVector::create(n, last);
-  }
-  return out;
-}
-
-// [[Rcpp::export]]
-double cpp_ranked_logit(NumericVector u, IntegerVector ranking,
-                        bool log = false) {
-  std::vector<bool> use(u.size(), true);
-  double value = ranked_log_prob(u, ranking, use);
-  return log ? value : std::exp(value);
-}
-
-// Preallocate partial rankings before filling them recursively.
+// Preallocate partial rankings
 // [[Rcpp::export]]
 List cpp_rankings(IntegerVector values, int depth) {
   if (depth < 1 || depth > values.size()) {
@@ -340,110 +258,7 @@ List cpp_rankings(IntegerVector values, int depth) {
   return out;
 }
 
-// [[Rcpp::export]]
-NumericVector cpp_mnl_chosen(
-    List x, List y, NumericVector beta, bool ranked = false,
-    bool log = false, Nullable<List> availability = R_NilValue) {
-  R_xlen_t n = x.size();
-  bool has_availability = availability.isNotNull();
-  List availability_list(0);
-  if (has_availability) {
-    availability_list = as<List>(availability);
-    if (availability_list.size() != n) {
-      stop("Availability must have one entry per observation.");
-    }
-  }
-  NumericVector out(n);
-  bool long_loop = n >= interrupt_size;
-  std::vector<double> u;
-  for (R_xlen_t obs = 0; obs < n; ++obs) {
-    if (long_loop) {
-      check_interrupt(obs);
-    }
-    NumericMatrix x_obs = x[obs];
-    IntegerVector y_obs = y[obs];
-    IntegerVector available;
-    if (has_availability) {
-      available = availability_list[obs];
-    }
-    std::vector<bool> use = make_availability_mask(
-      x_obs.nrow(), available, !has_availability
-    );
-    bool long_design = x_obs.nrow() >= interrupt_size;
-    u.assign(x_obs.nrow(), 0);
-    for (int j = 0; j < x_obs.nrow(); ++j) {
-      if (long_design) {
-        check_interrupt(j);
-      }
-      for (int p = 0; p < x_obs.ncol(); ++p) {
-        u[j] += x_obs(j, p) * beta[p];
-      }
-    }
-    double value;
-    if (ranked) {
-      value = ranked_log_prob(u, y_obs, use);
-    } else {
-      int choice = y_obs[0] - 1;
-      if (choice < 0 || choice >= x_obs.nrow() || !use[choice]) {
-        stop("The chosen alternative must be available.");
-      }
-      value = u[choice] - log_sum_exp(u, use);
-    }
-    out[obs] = log ? value : std::exp(value);
-  }
-  return out;
-}
-
-// [[Rcpp::export]]
-NumericMatrix cpp_mnl_all(
-    List x, NumericVector beta, bool log = false,
-    Nullable<List> availability = R_NilValue) {
-  NumericMatrix first = x[0];
-  NumericMatrix out(x.size(), first.nrow());
-  std::fill(
-    out.begin(), out.end(), log ? R_NegInf : 0
-  );
-  bool has_availability = availability.isNotNull();
-  List availability_list(0);
-  if (has_availability) {
-    availability_list = as<List>(availability);
-    if (availability_list.size() != x.size()) {
-      stop("Availability must have one entry per observation.");
-    }
-  }
-  bool long_loop = x.size() >= interrupt_size;
-  for (R_xlen_t obs = 0; obs < x.size(); ++obs) {
-    if (long_loop) {
-      check_interrupt(obs);
-    }
-    NumericMatrix x_obs = x[obs];
-    if (x_obs.nrow() != first.nrow()) {
-      stop("Design matrices must share the global alternatives.");
-    }
-    IntegerVector available;
-    if (has_availability) {
-      available = availability_list[obs];
-    }
-    std::vector<bool> use = make_availability_mask(
-      x_obs.nrow(), available, !has_availability
-    );
-    NumericVector utility(x_obs.nrow());
-    for (int j = 0; j < x_obs.nrow(); ++j) {
-      for (int p = 0; p < x_obs.ncol(); ++p) {
-        utility[j] += x_obs(j, p) * beta[p];
-      }
-    }
-    double log_total = log_sum_exp(utility, use);
-    for (int j = 0; j < x_obs.nrow(); ++j) {
-      if (use[j]) {
-        out(obs, j) = log ? utility[j] - log_total :
-          std::exp(utility[j] - log_total);
-      }
-    }
-  }
-  return out;
-}
-
+// Multiply observation probabilities within each panel in log space
 // [[Rcpp::export]]
 NumericVector cpp_panel_prod(NumericVector p, IntegerVector tp,
                              bool log = false,
@@ -465,7 +280,59 @@ NumericVector cpp_panel_prod(NumericVector p, IntegerVector tp,
   return out;
 }
 
-// Transform and aggregate draws without a results-by-draw matrix.
+// Aggregate observation log probabilities for panel CML
+// [[Rcpp::export]]
+NumericVector cpp_cml_log(
+    NumericVector probability, IntegerVector tp, int type) {
+  if (type < 0 || type > 2) {
+    stop("Composite marginal likelihood type must be 0, 1, or 2.");
+  }
+  NumericVector out(tp.size());
+  R_xlen_t pos = 0;
+  bool long_loop = probability.size() >= interrupt_size;
+  for (R_xlen_t n = 0; n < tp.size(); ++n) {
+    if (tp[n] < 1) {
+      stop("Panel lengths must be positive.");
+    }
+    if (long_loop) {
+      check_interrupt(n);
+    }
+    double value = 0;
+    if (type == 0) {
+      for (int t = 0; t < tp[n]; ++t) {
+        if (pos + t >= probability.size()) {
+          stop("Panel lengths must sum to the probability length.");
+        }
+        value += probability[pos + t];
+      }
+    } else if (type == 1) {
+      for (int first = 0; first < tp[n] - 1; ++first) {
+        for (int second = first + 1; second < tp[n]; ++second) {
+          if (pos + second >= probability.size()) {
+            stop("Panel lengths must sum to the probability length.");
+          }
+          value += probability[pos + first] +
+            probability[pos + second];
+        }
+      }
+    } else {
+      for (int t = 0; t < tp[n] - 1; ++t) {
+        if (pos + t + 1 >= probability.size()) {
+          stop("Panel lengths must sum to the probability length.");
+        }
+        value += probability[pos + t] + probability[pos + t + 1];
+      }
+    }
+    out[n] = value;
+    pos += tp[n];
+  }
+  if (pos != probability.size()) {
+    stop("Panel lengths must sum to the probability length.");
+  }
+  return out;
+}
+
+// Transform and aggregate draws
 // [[Rcpp::export]]
 NumericVector cpp_average_draws(
     NumericMatrix draws, NumericVector beta, IntegerVector position,
@@ -568,118 +435,7 @@ NumericVector cpp_average_draws(
   return mean;
 }
 
-// [[Rcpp::export]]
-List cpp_probit_d(
-    NumericVector v, IntegerVector y, bool ranked,
-    Nullable<IntegerVector> availability = R_NilValue) {
-  int j = v.size();
-  bool has_availability = availability.isNotNull();
-  IntegerVector available = has_availability ?
-    as<IntegerVector>(availability) : seq_len(j);
-  std::vector<bool> use = make_availability_mask(
-    j, available, !has_availability
-  );
-  int rows = available.size() - 1;
-  NumericMatrix d(rows, j);
-  NumericVector upper(rows);
-  bool long_loop = rows >= interrupt_size;
-  if (ranked) {
-    if (y.size() == 0 || y.size() > available.size()) {
-      stop("Partial rankings must contain available alternatives.");
-    }
-    std::vector<bool> ranked_mask(j, false);
-    int row = 0;
-    for (R_xlen_t r = 0; r < y.size(); ++r) {
-      int pos = y[r] - 1;
-      if (pos < 0 || pos >= j || !use[pos] || ranked_mask[pos]) {
-        stop("Rankings must contain available alternatives once.");
-      }
-      ranked_mask[pos] = true;
-    }
-    for (R_xlen_t r = 0; r + 1 < y.size(); ++r) {
-      if (long_loop) {
-        check_interrupt(r);
-      }
-      int first = y[r] - 1;
-      int second = y[r + 1] - 1;
-      d(row, first) = -1;
-      d(row, second) = 1;
-      upper[row++] = v[first] - v[second];
-    }
-    int last = y[y.size() - 1] - 1;
-    for (int value : available) {
-      int alt = value - 1;
-      if (!ranked_mask[alt]) {
-        d(row, last) = -1;
-        d(row, alt) = 1;
-        upper[row++] = v[last] - v[alt];
-      }
-    }
-  } else {
-    int ref = y[0] - 1;
-    if (ref < 0 || ref >= j || !use[ref]) {
-      stop("The chosen alternative must be available.");
-    }
-    int row = 0;
-    for (int value : available) {
-      int alt = value - 1;
-      if (long_loop) {
-        check_interrupt(alt);
-      }
-      if (alt != ref) {
-        d(row, ref) = -1;
-        d(row, alt) = 1;
-        upper[row++] = v[ref] - v[alt];
-      }
-    }
-  }
-  return List::create(_["D"] = d, _["upper"] = upper);
-}
-
-// [[Rcpp::export]]
-List cpp_probit_cov(NumericMatrix x, NumericMatrix omega,
-                    NumericMatrix sigma, NumericMatrix d,
-                    int occasions) {
-  int n = x.nrow();
-  int j = sigma.nrow();
-  arma::mat xa(x.begin(), n, x.ncol(), false);
-  arma::mat oa(omega.begin(), omega.nrow(), omega.ncol(), false);
-  arma::mat sa(sigma.begin(), j, j, false);
-  arma::mat da(d.begin(), d.nrow(), n, false);
-  bool large = n >= 512;
-  if (large) {
-    Rcpp::checkUserInterrupt();
-  }
-  arma::mat u = xa * oa * xa.t();
-  if (large) {
-    Rcpp::checkUserInterrupt();
-  }
-  for (int t = 0; t < occasions; ++t) {
-    if (occasions >= interrupt_size) {
-      check_interrupt(t);
-    }
-    int first = t * j;
-    int last = first + j - 1;
-    u.submat(first, first, last, last) += sa;
-  }
-  if (large) {
-    Rcpp::checkUserInterrupt();
-  }
-  arma::mat cov = da * u * da.t();
-  if (large) {
-    Rcpp::checkUserInterrupt();
-  }
-  arma::vec scale = arma::sqrt(cov.diag());
-  arma::mat corr = cov;
-  corr.each_col() /= scale;
-  corr.each_row() /= scale.t();
-  return List::create(
-    _["cov"] = wrap(cov),
-    _["corr"] = wrap(corr),
-    _["scale"] = wrap(scale)
-  );
-}
-
+// Build observation-index chunks for full or pairwise panel CML
 // [[Rcpp::export]]
 List cpp_cml_chunks(int tp, int block, int type) {
   R_xlen_t size = 1;
@@ -718,6 +474,7 @@ List cpp_cml_chunks(int tp, int block, int type) {
   return out;
 }
 
+// Multiply a probability vector and optionally return its logarithm
 // [[Rcpp::export]]
 double cpp_prob_prod(NumericVector p, bool log = false) {
   double value = 0;

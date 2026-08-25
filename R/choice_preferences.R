@@ -6,7 +6,6 @@
 #'
 #' - `choice_preferences()` constructs a `choice_preferences` object.
 #' - `generate_choice_preferences()` samples choice preferences at random.
-#'   In latent-class models, one class is sampled per decider.
 #'
 #' @param data_frame \[`data.frame`\]\cr
 #' Contains the deciders' preferences.
@@ -27,6 +26,7 @@
 #'
 #' @examples
 #' ### generate choice preferences from choice parameters and effects
+#' set.seed(1)
 #' choice_effects <- choice_effects(
 #'   choice_formula = choice_formula(
 #'     formula = choice ~ price | income | comfort,
@@ -38,25 +38,16 @@
 #'   ),
 #'   choice_alternatives = choice_alternatives(J = 3)
 #' )
-#'
 #' choice_parameters <- generate_choice_parameters(
-#'   choice_effects = choice_effects
+#'   choice_effects = choice_effects, C = 2
 #' )
-#'
-#' ids <- generate_choice_identifiers(N = 4)
-#'
 #' (choice_preferences <- generate_choice_preferences(
 #'   choice_parameters = choice_parameters,
 #'   choice_effects = choice_effects,
-#'   choice_identifiers = ids
+#'   choice_identifiers = generate_choice_identifiers(N = 4)
 #' ))
-#'
-#' ### inspect decider-specific preference vectors
-#' head(choice_preferences)
 
-choice_preferences <- function(
-    data_frame, column_decider = "deciderID"
-  ) {
+choice_preferences <- function(data_frame, column_decider = "deciderID") {
 
   ### input checks
   check_not_missing(data_frame)
@@ -91,7 +82,7 @@ is.choice_preferences <- function(
     error = FALSE,
     var_name = oeli::variable_name(x)
   ) {
-  validate_choice_object(
+  check_choice_object(
     x = x,
     class_name = "choice_preferences",
     error = error,
@@ -168,11 +159,12 @@ generate_choice_preferences <- function(
       latent <- matrix(
         latent, nrow = length(index), ncol = length(re_position)
       )
-      latent[, mixing == "cln+"] <- exp(
-        latent[, mixing == "cln+", drop = FALSE]
+      distribution <- random_effect_distribution(mixing)
+      latent[, distribution == "ln"] <- exp(
+        latent[, distribution == "ln", drop = FALSE]
       )
-      latent[, mixing == "cln-"] <- -exp(
-        latent[, mixing == "cln-", drop = FALSE]
+      latent[, distribution == "ln-"] <- -exp(
+        latent[, distribution == "ln-", drop = FALSE]
       )
       preferences[index, re_position] <- latent
     }
@@ -193,8 +185,7 @@ generate_choice_preferences <- function(
 #' @noRd
 
 split_choice_preferences <- function(
-    choice_preferences,
-    choice_identifiers = NULL
+    choice_preferences, choice_identifiers = NULL
   ) {
 
   ### input checks

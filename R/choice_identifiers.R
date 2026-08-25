@@ -152,7 +152,7 @@ is.choice_identifiers <- function(
   error = FALSE,
   var_name = oeli::variable_name(x)
 ) {
-  validate_choice_object(
+  check_choice_object(
     x = x,
     class_name = "choice_identifiers",
     error = error,
@@ -276,8 +276,7 @@ expand_Tp <- function(N = length(Tp), Tp = 1) {
 #' \code{\link{choice_identifiers}} object.
 #'
 #' @param choice_identifiers \[`choice_identifiers`\]\cr
-#' The \code{\link{choice_identifiers}} object that defines the choice
-#' occasions.
+#' A \code{\link{choice_identifiers}} object.
 #'
 #' @return
 #' An \code{integer} \code{vector} of length \code{N}, where \code{N} is the
@@ -362,11 +361,7 @@ get_decider_identifiers <- function(choice_identifiers) {
 #' @rdname choice_identifiers
 #'
 #' @param x
-#' An object of class
-#'
-#' * \code{\link{choice_data}},
-#' * \code{\link{choice_covariates}}, containing the identifiers and covariate
-#'   values for each decider, occasion, and alternative,
+#' A \code{\link{choice_data}} or \code{\link{choice_covariates}} object.
 #'
 #' @export
 
@@ -377,7 +372,7 @@ extract_choice_identifiers <- function(
   column_occasion = attr(x, "column_occasion"),
   cross_section = attr(x, "cross_section")
 ) {
-  validate_choice_class_union(
+  check_choice_class_union(
     x = x,
     class_names = c("choice_data", "choice_covariates"),
     var_name = "x"

@@ -7,27 +7,27 @@
 #' - `choice_likelihood()` pre-computes the design matrices and choice indices
 #'   implied by `choice_data` and `choice_effects`. The returned object stores
 #'   these quantities so that repeated likelihood evaluations during maximum
-#'   likelihood estimation avoid redundant work. Occasions without a response
-#'   are omitted; an entirely unobserved data set has neutral likelihood one.
+#'   likelihood estimation avoid redundant work.
 #' - `compute_choice_likelihood()` evaluates the (log-)likelihood for given
 #'   `choice_parameters` and a pre-computed `choice_likelihood` object.
 #'
 #' @param choice_data \[`choice_data`\]\cr
-#' A \code{\link{choice_data}} object with the observed choices.
+#' A \code{\link{choice_data}} object.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
-#' A \code{\link{choice_effects}} object that determines the model effects.
+#' A \code{\link{choice_effects}} object.
 #'
 #' @param choice_identifiers \[`choice_identifiers`\]\cr
-#' A \code{\link{choice_identifiers}} object. The default extracts identifiers
-#' from `choice_data`.
+#' A \code{\link{choice_identifiers}} object.
+#' The default is extracted from `choice_data`.
 #'
 #' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
-#' A \code{\link{choice_parameters}} object or a numeric vector in optimization
-#' space. Numeric input is converted with `switch_parameter_space()`.
+#' A \code{\link{choice_parameters}} object.
+#' A numeric vector in optimization space is also accepted and converted with
+#' `switch_parameter_space()`.
 #'
 #' @param choice_likelihood \[`choice_likelihood`\]\cr
-#' A pre-computed object returned by `choice_likelihood()`.
+#' A \code{\link{choice_likelihood}} object.
 #'
 #' @param logarithm \[`logical(1)`\]\cr
 #' Return the log-likelihood? If `FALSE`, the likelihood is returned.
@@ -36,29 +36,25 @@
 #' Return the negative (log-)likelihood? Useful for minimization routines.
 #'
 #' @param input_checks \[`logical(1)`\]\cr
-#' Forwarded to the underlying probability engine to control additional input
-#' validation.
+#' Check inputs?
 #'
 #' @param ...
-#' Additional probability arguments. Common choices are `draws` or `n_draws`
-#' for simulated mixed models and `cml = "no"`, `"fp"`, or `"ap"` for Probit
-#' panels. Arguments supplied while computing override those stored by
-#' `choice_likelihood()`. Omitted simulation draws are generated once as
-#' standard normal draws and reused for every evaluation.
+#' Additional arguments.
 #'
 #' @return
 #' `choice_likelihood()` returns an object of class `choice_likelihood`, which
 #' is a `list` containing the design matrices, choice indices, and identifiers.
+#'
 #' `compute_choice_likelihood()` returns a single numeric value with the
-#' (negative) log-likelihood or likelihood, depending on `logarithm` and
-#' `negative`.
+#' (negative) (log-)likelihood.
 #'
 #' @export
 #'
 #' @keywords probability
 #'
 #' @examples
-#' data(train_choice)
+#' ### compute choice likelihood
+#' data(list = "train_choice")
 #'
 #' choice_effects <- choice_effects(
 #'   choice_formula = choice_formula(
@@ -66,7 +62,8 @@
 #'     error_term = "probit"
 #'   ),
 #'   choice_alternatives = choice_alternatives(
-#'     J = 2, alternatives = c("A", "B")
+#'     J = 2,
+#'     alternatives = c("A", "B")
 #'   )
 #' )
 #'
@@ -83,7 +80,9 @@
 #'   choice_effects = choice_effects
 #' )
 #'
-#' choice_parameters <- generate_choice_parameters(choice_effects)
+#' choice_parameters <- generate_choice_parameters(
+#'   choice_effects = choice_effects
+#' )
 #'
 #' compute_choice_likelihood(
 #'   choice_parameters = choice_parameters,
@@ -148,14 +147,13 @@ choice_likelihood <- function(
   P_r <- sum(!is.na(choice_effects$mixing))
   simulated <- P_r > 0L && (
     identical(choice_formula$error_term, "logit") ||
-      any(stats::na.omit(choice_effects$mixing) != "cn")
+      any(random_effect_distribution(
+        stats::na.omit(choice_effects$mixing)
+      ) != "n")
   )
   if (simulated && is.null(prob_args$draws)) {
     n_draws <- if (is.null(prob_args$n_draws)) 200L else prob_args$n_draws
-    oeli::input_check_response(
-      check = checkmate::check_int(n_draws, lower = 1),
-      var_name = "n_draws"
-    )
+    check_n_draws(n_draws)
     prob_args$draws <- matrix(
       stats::rnorm(n_draws * P_r),
       nrow = n_draws,
@@ -252,7 +250,7 @@ is.choice_likelihood <- function(
     error = FALSE,
     var_name = oeli::variable_name(x)
   ) {
-  validate_choice_object(
+  check_choice_object(
     x = x,
     class_name = "choice_likelihood",
     error = error,

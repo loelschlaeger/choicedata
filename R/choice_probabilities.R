@@ -21,58 +21,330 @@
 #' probabilities for the chosen alternatives.
 #'
 #' @return
-#' A `choice_probabilities` tibble. With `choice_only = TRUE`, it contains one
-#' row per occasion and a `choice_probability` column. A joint panel
-#' probability is repeated over the observed occasions of its decider; missing
-#' responses receive `NA`.
-#'
-#' With `choice_only = FALSE`, non-ranked cross-sectional models contain one
-#' row per occasion and one column per alternative. An unavailable alternative
-#' has probability zero. Ranked and panel models instead contain one row per
-#' possible outcome, an `outcome` list-column, and `choice_probability`. These
-#' rows cover complete or partial rankings and complete joint panel sequences,
-#' and their probabilities sum to one per decider. Enumerating them can grow
-#' combinatorially with ranking depth and panel length.
-#' For a missing ranked response, a common observed depth of the same decider
-#' is reused; without one, all available alternatives are ranked.
-#'
-#' @section Supported models:
-#' The public API supports every combination of Logit or Probit errors, fixed,
-#' correlated normal, or correlated log-normal coefficients, discrete,
-#' ordered, or ranked responses, and cross-sectional or panel data. It also
-#' supports latent classes with or without random effects. Probit panels can
-#' use the full likelihood (`cml = "no"`), full pairwise CML (`"fp"`), or
-#' adjacent pairwise CML (`"ap"`). All-outcome output always uses the full
-#' likelihood.
+#' A `choice_probabilities` tibble.
 #'
 #' @export
 #'
 #' @keywords probability
 #'
 #' @examples
-#' data(train_choice)
-#' choice_effects <- choice_effects(
+#' ### multinomial logit
+#' set.seed(1)
+#' effects <- choice_effects(
 #'   choice_formula = choice_formula(
-#'     formula = choice ~ price | time,
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "logit"
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(beta = c(0.2, -0.1))
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### multinomial probit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "probit"
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(
+#'   beta = c(0.2, -0.1),
+#'   Sigma = diag(c(0, 1))
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### ordered logit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "logit"
+#'   ),
+#'   choice_alternatives = choice_alternatives(
+#'     J = 3,
+#'     ordered = TRUE
+#'   )
+#' )
+#' parameters <- choice_parameters(
+#'   beta = c(0.2, -0.1),
+#'   gamma = c(0, 1)
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters,
+#'   choice_type = "ordered"
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### ordered probit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
 #'     error_term = "probit"
 #'   ),
 #'   choice_alternatives = choice_alternatives(
-#'     J = 2, alternatives = c("A", "B")
+#'     J = 3,
+#'     ordered = TRUE
 #'   )
 #' )
-#' choice_parameters <- generate_choice_parameters(choice_effects)
-#' choice_data <- choice_data(
-#'   data_frame = train_choice,
-#'   format = "wide",
-#'   column_choice = "choice",
-#'   column_decider = "deciderID",
-#'   column_occasion = "occasionID"
+#' parameters <- choice_parameters(
+#'   beta = c(0.2, -0.1),
+#'   Sigma = 1,
+#'   gamma = c(0, 1)
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters,
+#'   choice_type = "ordered"
 #' )
 #' compute_choice_probabilities(
-#'   choice_parameters = choice_parameters,
-#'   choice_data = choice_data,
-#'   choice_effects = choice_effects,
-#'   choice_only = TRUE
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### ranked logit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "logit"
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(beta = c(0.2, -0.1))
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters,
+#'   choice_type = "ranked"
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### ranked probit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "probit"
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(
+#'   beta = c(0.2, -0.1),
+#'   Sigma = diag(c(0, 1))
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters,
+#'   choice_type = "ranked"
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### mixed logit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "logit",
+#'     random_effects = c(
+#'       x = "cn",
+#'       z = "cn"
+#'     )
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(
+#'   beta = c(0.2, -0.1),
+#'   Omega = matrix(c(0.1, 0.02, 0.02, 0.1), nrow = 2)
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### mixed probit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "probit",
+#'     random_effects = c(
+#'       x = "cn",
+#'       z = "cn"
+#'     )
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(
+#'   beta = c(0.2, -0.1),
+#'   Omega = matrix(c(0.1, 0.02, 0.02, 0.1), nrow = 2),
+#'   Sigma = diag(c(0, 1))
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### panel logit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "logit",
+#'     random_effects = c(
+#'       x = "cn",
+#'       z = "cn"
+#'     )
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(
+#'   beta = c(0.2, -0.1),
+#'   Omega = matrix(c(0.1, 0.02, 0.02, 0.1), nrow = 2)
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(
+#'     N = 1L,
+#'     Tp = 2L
+#'   ),
+#'   choice_parameters = parameters
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### panel probit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "probit",
+#'     random_effects = c(
+#'       x = "cn",
+#'       z = "cn"
+#'     )
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(
+#'   beta = c(0.2, -0.1),
+#'   Omega = matrix(c(0.1, 0.02, 0.02, 0.1), nrow = 2),
+#'   Sigma = diag(c(0, 1))
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(
+#'     N = 1L,
+#'     Tp = 2L
+#'   ),
+#'   choice_parameters = parameters
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects,
+#'   cml = "ap"
+#' )
+#'
+#' ### latent class logit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "logit"
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(
+#'   beta = list(c(0.2, -0.1), c(-0.2, 0.1)),
+#'   weights = c(0.5, 0.5)
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
+#' )
+#'
+#' ### latent class probit
+#' set.seed(1)
+#' effects <- choice_effects(
+#'   choice_formula = choice_formula(
+#'     formula = choice ~ x + z | 0,
+#'     error_term = "probit"
+#'   ),
+#'   choice_alternatives = choice_alternatives(J = 2)
+#' )
+#' parameters <- choice_parameters(
+#'   beta = list(c(0.2, -0.1), c(-0.2, 0.1)),
+#'   Sigma = diag(c(0, 1)),
+#'   weights = c(0.5, 0.5)
+#' )
+#' simulated_data <- generate_choice_data(
+#'   choice_effects = effects,
+#'   choice_identifiers = generate_choice_identifiers(N = 1L),
+#'   choice_parameters = parameters
+#' )
+#' compute_choice_probabilities(
+#'   choice_parameters = parameters,
+#'   choice_data = simulated_data,
+#'   choice_effects = effects
 #' )
 
 choice_probabilities <- function(
@@ -84,7 +356,6 @@ choice_probabilities <- function(
   column_probabilities = if (choice_only) "choice_probability"
 ) {
 
-  # Validate values before attaching probability metadata.
   check_not_missing(data_frame)
   check_choice_only(choice_only)
   check_column_decider(column_decider, null.ok = FALSE)
@@ -130,7 +401,6 @@ choice_probabilities <- function(
     cross_section = cross_section
   )
 
-  # Preserve identifier metadata on the result.
   choice_probabilities <- tibble::as_tibble(cbind(
     choice_identifiers, data_frame[column_probabilities]
   ))
@@ -149,24 +419,22 @@ choice_probabilities <- function(
 #' @rdname choice_probabilities
 #'
 #' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
-#' Either a \code{\link{choice_parameters}} object or a numeric vector in
-#' optimization space, as created by \code{\link{switch_parameter_space}}.
+#' A \code{\link{choice_parameters}} object.
+#' A numeric vector in optimization space, as created by
+#' \code{\link{switch_parameter_space}}, is also accepted.
 #'
 #' @param choice_data \[`choice_data`\]\cr
-#' A \code{\link{choice_data}} object providing responses and covariates.
+#' A \code{\link{choice_data}} object.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
-#' A \code{\link{choice_effects}} object defining the specification.
+#' A \code{\link{choice_effects}} object.
 #'
 #' @param input_checks \[`logical(1)`\]\cr
 #' Should additional internal input checks be performed before computing the
 #' probabilities?
 #'
 #' @param ...
-#' Additional probability arguments. Common choices are `draws` or `n_draws`
-#' for simulated mixed models and `cml = "no"`, `"fp"`, or `"ap"` for Probit
-#' panels. Supplied draws are standard normal and are transformed using the
-#' current random-effect covariance matrix.
+#' Additional arguments.
 #'
 #' @export
 
@@ -179,7 +447,6 @@ compute_choice_probabilities <- function(
   ...
 ) {
 
-  # Convert optimization vectors before validating public inputs.
   if (!is.list(choice_parameters)) {
     choice_parameters <- switch_parameter_space(
       choice_parameters = choice_parameters,
@@ -200,7 +467,6 @@ compute_choice_probabilities <- function(
     allow_missing = FALSE
   )
 
-  # Build shared model inputs once for every probability path.
   choice_identifiers <- extract_choice_identifiers(choice_data)
   design_list <- design_matrices(
     x = choice_data,
@@ -214,7 +480,6 @@ compute_choice_probabilities <- function(
   )
 
   ranked <- identical(attr(choice_data, "choice_type"), "ranked")
-  # Joint output enumerates sequences instead of marginal occasions.
   joint_outcomes <- !isTRUE(choice_only) &&
     (ranked || any(attr(design_list, "Tp") > 1L))
   if (joint_outcomes) {
@@ -228,7 +493,6 @@ compute_choice_probabilities <- function(
     ))
   }
 
-  # Keep missing responses as NA in public choice-only output.
   observed <- lengths(choice_indices) > 0L
   all_identifiers <- NULL
   if (isTRUE(choice_only) && any(!observed)) {
@@ -254,7 +518,6 @@ compute_choice_probabilities <- function(
     }
   }
 
-  # Delegate observed outcomes to the common model dispatcher.
   probabilities <- if (is.null(all_identifiers) || any(observed)) {
     evaluate_choice_probabilities(
       design_list = design_list,
@@ -325,14 +588,12 @@ evaluate_choice_outcomes <- function(
     omega_ref <- omega_ref[[1]]
   }
   needs_draws <- !is.null(omega_ref) && (
-    identical(error_term, "logit") || any(mixing != "cn")
+    identical(error_term, "logit") ||
+      any(random_effect_distribution(mixing) != "n")
   )
   if (needs_draws && is.null(dots$draws)) {
     n_draws <- if (is.null(dots$n_draws)) 200L else dots$n_draws
-    oeli::input_check_response(
-      check = checkmate::check_int(n_draws, lower = 1),
-      var_name = "n_draws"
-    )
+    check_n_draws(n_draws)
     dots$draws <- matrix(
       stats::rnorm(n_draws * nrow(omega_ref)),
       nrow = n_draws,
@@ -356,7 +617,6 @@ evaluate_choice_outcomes <- function(
   prob_group <- vector("list", length(groups))
   decider_group <- vector("list", length(groups))
 
-  # Enumerate feasible joint outcomes separately for each decider.
   for (g in seq_along(groups)) {
     idx <- groups[[g]]
     depths <- unique(lengths(choice_indices[idx]))
@@ -409,7 +669,6 @@ evaluate_choice_outcomes <- function(
       if (is.null(class_weights)) {
         class_weights <- 1
       }
-      # Fixed coefficients allow occasion probabilities to be cached.
       class_probs <- vector("list", length(class_betas))
       for (class in seq_along(class_betas)) {
         option_prob <- vector("list", length(options))
@@ -493,7 +752,6 @@ evaluate_choice_outcomes <- function(
         call = NULL
       )
     }
-    # Normalize only after checking the numerical integration error.
     prob <- prob / total
 
     labels <- vector("list", length(sequences))
@@ -621,7 +879,7 @@ evaluate_choice_probabilities <- function(
   if (identical(error_term, "logit") && !is.null(prob_args$cml)) {
     if (!identical(prob_args$cml, "no")) {
       cli::cli_abort(
-        "Composite marginal likelihood is only available for Probit.",
+        "Composite marginal likelihood is only available for probit.",
         call = NULL
       )
     }
@@ -641,17 +899,7 @@ evaluate_choice_probabilities <- function(
         prob_args$cml <- NULL
         prob_args$logarithm <- TRUE
         obs_log <- do.call(choiceprob_probit, prob_args)
-        pos <- c(0L, cumsum(Tp))
-        panel_log <- numeric(length(Tp))
-        for (n in seq_along(Tp)) {
-          idx <- pos[n] + seq_len(Tp[n])
-          chunks <- build_panel_chunks(Tp[n], cml_type)
-          chunk_log <- numeric(length(chunks))
-          for (k in seq_along(chunks)) {
-            chunk_log[k] <- sum(obs_log[idx[chunks[[k]]]])
-          }
-          panel_log[n] <- sum(chunk_log)
-        }
+        panel_log <- cpp_cml_log(obs_log, as.integer(Tp), cml_type)
         if (logarithm) panel_log else exp(panel_log)
       } else {
         do.call(choiceprob_probit, prob_args)
@@ -887,140 +1135,6 @@ compute_ordered_panel_probability <- function(
   )
 }
 
-#' Calculate probit choice probabilities
-#'
-#' @description
-#' These helper functions calculate probit choice probabilities for various
-#' scenarios:
-#'
-#' - in the regular (`choiceprob_mnp_*`), ordered (`*_ordered`), and
-#'   ranked (`ranked = TRUE`) case,
-#' - in the normally mixed (`choiceprob_mmnp_*`) and latent class (`*_lc`) case,
-#' - for panel data (`*_panel`),
-#' - based on the full likelihood (`cml = "no"`), the full pairwise composite
-#'   marginal likelihood (`cml = "fp"`), and the adjacent pairwise composite
-#'   marginal likelihood (`cml = "ap"`),
-#' - for the observed choices or for all alternatives (if `y` is `NULL`).
-#'
-#' The function `choiceprob_probit()` is the general API which calls the
-#' specialized functions and can perform input checks.
-#'
-#' @param X \[`list(N)`\]\cr
-#' A `list` of length `N` (number observations) of design matrices, each of
-#' dimension `J` (number alternatives) times `P` (number effects).
-#'
-#' In the ordered case (`ordered = TRUE`), the design matrices are of dimension
-#' `1` times `P`.
-#'
-#' @param y \[`list(N)` | `NULL`\]\cr
-#' A `list` of length `N` (number observations) of single integers from `1` to
-#' `J` (number alternatives).
-#'
-#' In the ranked case (`ranked = TRUE`), each entry is a unique sequence of
-#' available alternative indices in rank order. Its length determines the
-#' observed ranking depth and may be smaller than the choice-set size.
-#'
-#' In the non-panel case (`panel = FALSE`), `y` can also be `NULL`, in which
-#' case probabilities are calculated for all choice alternatives.
-#' In the ranked case (`ranked = TRUE`), if `y` is `NULL`,
-#' only first place choice probabilities are computed, which is equivalent to
-#' computing choice probabilities in the regular (maximum utility) model.
-#'
-#' @param Tp \[`NULL` | `integer(N)`\]\cr
-#' The panel identifier of length `N` (number observations) for panel data.
-#' The number `Tp[1]` indicates, that the first `Tp[1]` observations in `X` and
-#' `y` belong to decider 1, the next `Tp[2]` observations belong to decider 2,
-#' and so on.
-#'
-#' Can be `NULL` for no panel data.
-#'
-#' @param cml \[`character(1)`\]\cr
-#' The composite marginal likelihood (CML) type for panel data. It can be one of
-#' `"no"` (full likelihood), `"fp"` (full pairwise), or `"ap"` (adjacent
-#' pairwise).
-#'
-#' @param beta \[`numeric(P)` | `list`\]\cr
-#' The coefficient vector of length `P` (number effects) for computing the
-#' systematic utility \eqn{V = X\beta}.
-#'
-#' In the latent class case (`lc = TRUE`), `beta` is a `list` of length `C` of
-#' such coefficients, where `C` is the number of latent classes.
-#'
-#' @param Omega \[`matrix(nrow = P_r, ncol = P_r)` | `NULL` | `list`\]\cr
-#' The covariance matrix of random effects of dimension `P_r` times `P_r`,
-#' where `P_r` less than `P` is the number of random effects.
-#'
-#' Can be `NULL` for no random effects.
-#'
-#' In the latent class case (`lc = TRUE`), `Omega` is a `list` of length `C` of
-#' such covariance matrices, where `C` is the number of latent classes.
-#'
-#' @param re_mixing [`character(P_r)` | `NULL`\]\cr
-#' Random-effect distributions: `"cn"`, `"cln+"`, or `"cln-"`.
-#'
-#' @param availability [`list(N)` | `NULL`\]\cr
-#' Available global alternative indices for each observation. The default uses
-#' every row of each design matrix.
-#'
-#' @param draws [`NULL` | `matrix` | `list`\]\cr
-#' Standard normal simulation draws for non-normal random effects. A list can
-#' supply class-specific draws.
-#'
-#' @param n_draws [`integer(1)`\]\cr
-#' Number of standard normal draws generated when `draws` is `NULL`.
-#'
-#' @param Sigma \[`matrix(nrow = J, ncol = J)` | `numeric(1)`\]\cr
-#' The covariance matrix of dimension `J` times `J` (number alternatives) for
-#' the Gaussian error term \eqn{\epsilon = U - V}.
-#'
-#' In the ordered case (`ordered = TRUE`), `Sigma` is a single, non-negative
-#' `numeric`.
-#'
-#' @param gamma \[`NULL` | `numeric(J - 1)`\]\cr
-#' Only relevant in the ordered case (`ordered = TRUE`). It defines the
-#' non-decreasing boundaries of the utility categories.
-#'
-#' The event \eqn{U \leq \gamma_j} means that alternative \eqn{j} is chosen,
-#' while \eqn{U > \gamma_{J - 1}} means that alternative \eqn{J} is chosen.
-#'
-#' @param weights \[`NULL` | `numeric(C)`\]\cr
-#' The weights for the latent classes in the latent class case (`lc = TRUE`).
-#'
-#' @param re_position \[`integer(P_r)`\]\cr
-#' The index positions of the random effects in the coefficient vector `beta`.
-#'
-#' By default, the last \eqn{P_r} entries of `beta` are considered as random,
-#' where \eqn{P_r} is the dimension of Omega.
-#'
-#' @param gcdf \[`function(upper, corr)`\]\cr
-#' A function that computes (or approximates) the centered Gaussian CDF
-#' (mean is zero) based on the upper integration limit `upper` and correlation
-#' matrix `corr`. The output is expected to be a single `numeric` value between
-#' zero and one.
-#'
-#' In the no-panel (`panel = FALSE`) ordered case (`ordered = TRUE`),
-#' `stats::pnorm()` is used to calculate the one-dimensional Gaussian CDF.
-#'
-#' @param input_checks \[`logical(1)`\]\cr
-#' Perform input checks. Set to `FALSE` to skip them.
-#'
-#' @param ordered,ranked,mixed,panel,lc \[`logical(1)`\]\cr
-#' Flags indicating the model type. These are determined automatically based on
-#' the input arguments.
-#'
-#' @return
-#' A `numeric` `vector` of length `N`, the probabilities for the observed
-#' choices `y`.
-#'
-#' In the panel case (`panel = TRUE`), one joint or composite contribution is
-#' returned per decider, so the vector has length `length(Tp)`.
-#'
-#' If `y` is `NULL` and in the non-panel case (`panel = FALSE`), a matrix of
-#' dimension `N` times `J`, the probabilities for all alternatives.
-#' In the ranked case (`ranked = TRUE`), only first place choice probabilities
-#' are computed, which is equivalent to computing choice probabilities in the
-#' regular (maximum utility) model.
-#'
 #' @noRd
 
 choiceprob_probit <- function(
@@ -1063,23 +1177,21 @@ choiceprob_probit <- function(
     if (is.null(re_mixing)) {
       re_mixing <- rep("cn", nrow(omega_ref))
     }
-    re_mixing[re_mixing == "cln"] <- "cln+"
     oeli::input_check_response(
       check = checkmate::check_character(
         re_mixing, len = nrow(omega_ref), any.missing = FALSE
       ),
       var_name = "re_mixing"
     )
-    if (!all(re_mixing %in% c("cn", "cln+", "cln-"))) {
+    if (!all(re_mixing %in% c("cn", "n", "cln", "ln", "cln-", "ln-"))) {
       cli::cli_abort(
-        "Random-effect distributions must be cn, cln+, or cln-.",
+        "Random-effect distributions must be cn, n, cln, ln, cln-, or ln-.",
         call = NULL
       )
     }
   }
 
   if (isTRUE(input_checks)) {
-    # Validate common inputs before deriving the model flags.
     input_res <- choiceprob_probit_input_checks(
       X, y, Tp, cml, beta, Omega, Sigma, gamma, weights, re_position, gcdf,
       availability, model_type = NA
@@ -1094,7 +1206,6 @@ choiceprob_probit <- function(
   }
   logarithm <- isTRUE(logarithm) && !is.null(y)
 
-  # Encode ordered, ranked, mixed, panel, and class flags as bits.
   flags <- c(ordered, ranked, mixed, panel, lc)
   oeli::input_check_response(
     check = checkmate::check_logical(
@@ -1117,7 +1228,6 @@ choiceprob_probit <- function(
   model_type <- sum(flags * 2^(seq_along(flags) - 1))
 
   if (isTRUE(input_checks)) {
-    # Apply checks that depend on the encoded model type.
     input_res <- choiceprob_probit_input_checks(
       X, y, Tp, cml, beta, Omega, Sigma, gamma, weights, re_position, gcdf,
       availability, model_type = model_type
@@ -1131,7 +1241,7 @@ choiceprob_probit <- function(
       !is.null(Tp) && any(Tp > 1)
   }
 
-  if (mixed && any(re_mixing != "cn")) {
+  if (mixed && any(random_effect_distribution(re_mixing) != "n")) {
     return(choiceprob_smnp(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta,
       Omega = Omega, Sigma = Sigma, gamma = gamma,
@@ -1142,7 +1252,6 @@ choiceprob_probit <- function(
     ))
   }
 
-  # Dispatch once from the encoded model type.
   switch(
     as.character(model_type),
     `0` = choiceprob_mnp(
@@ -1371,6 +1480,12 @@ choiceprob_mnp <- function(
 ) {
   N <- length(X)
   J <- dim(Sigma)[1]
+  if (J == 2L && identical(gcdf, pmvnorm_cdf_default)) {
+    return(cpp_binary_probit(
+      X, y, beta, Sigma, log = logarithm,
+      availability = availability
+    ))
+  }
   if (is.null(y)) {
     probs_all <- matrix(0, N, J)
     for (n in seq_len(N)) {
@@ -1422,45 +1537,9 @@ choiceprob_mnp <- function(
 choiceprob_mnp_ordered <- function(
     X, y, beta, Sigma, gamma, logarithm = FALSE
 ) {
-  N <- length(X)
-  J <- length(gamma) + 1
-  if (is.null(y)) {
-    probs_all <- vector("list", J)
-    for (j in seq_len(J)) {
-      probs_all[[j]] <- choiceprob_mnp_ordered(
-        X = X, y = as.list(rep(j, times = N)), beta = beta,
-        Sigma = Sigma, gamma = gamma, logarithm = FALSE
-      )
-    }
-    probs_all <- do.call(cbind, probs_all)
-    return(probs_all / rowSums(probs_all))
-  }
-  gamma_augmented <- c(-Inf, gamma, +Inf)
-  probabilities <- numeric(N)
-  for (n in seq_len(N)) {
-    V_n <- as.numeric(X[[n]] %*% beta)
-    ub <- (gamma_augmented[y[[n]] + 1] - V_n) / sqrt(Sigma)
-    lb <- (gamma_augmented[y[[n]]] - V_n) / sqrt(Sigma)
-    if (logarithm) {
-      if (lb > 0) {
-        log_large <- stats::pnorm(lb, lower.tail = FALSE, log.p = TRUE)
-        log_small <- stats::pnorm(ub, lower.tail = FALSE, log.p = TRUE)
-      } else {
-        log_large <- stats::pnorm(ub, log.p = TRUE)
-        log_small <- stats::pnorm(lb, log.p = TRUE)
-      }
-      log_prob <- log_large + log1p(-exp(log_small - log_large))
-      probabilities[n] <- if (is.finite(log_prob)) {
-        log_prob
-      } else {
-        log(.Machine$double.xmin)
-      }
-    } else {
-      prob_n <- stats::pnorm(ub) - stats::pnorm(lb)
-      probabilities[n] <- max(prob_n, 0)
-    }
-  }
-  probabilities
+  cpp_ordered_probit(
+    X, y, beta, Sigma, gamma, log = logarithm
+  )
 }
 
 #' @noRd
@@ -1475,6 +1554,13 @@ choiceprob_mmnp <- function(
   N <- length(X)
   P <- length(beta)
   J <- dim(Sigma)[1]
+  if (J == 2L && identical(gcdf, pmvnorm_cdf_default)) {
+    return(cpp_binary_probit(
+      X, y, beta, Sigma, omega = Omega,
+      position = as.integer(re_position), log = logarithm,
+      availability = availability
+    ))
+  }
   if (is.null(y)) {
     probs_all <- matrix(0, N, J)
     for (n in seq_len(N)) {
@@ -1530,50 +1616,10 @@ choiceprob_mmnp_ordered <- function(
     re_position = utils::tail(seq_along(beta), nrow(Omega)),
     logarithm = FALSE
 ) {
-  N <- length(X)
-  P <- length(beta)
-  J <- length(gamma) + 1
-  if (is.null(y)) {
-    probs_all <- vector("list", J)
-    for (j in seq_len(J)) {
-      probs_all[[j]] <- choiceprob_mmnp_ordered(
-        X = X, y = as.list(rep(j, times = N)), beta = beta, Omega = Omega,
-        Sigma = Sigma, gamma = gamma, re_position = re_position,
-        logarithm = FALSE
-      )
-    }
-    probs_all <- do.call(cbind, probs_all)
-    return(probs_all / rowSums(probs_all))
-  }
-  Omega_completed <- matrix(0, P, P)
-  Omega_completed[re_position, re_position] <- Omega
-  gamma_augmented <- c(-Inf, gamma, +Inf)
-  probabilities <- numeric(N)
-  for (n in seq_len(N)) {
-    V_n <- as.numeric(X[[n]] %*% beta)
-    sd <- sqrt(X[[n]] %*% Omega_completed %*% t(X[[n]]) + Sigma)
-    ub <- (gamma_augmented[y[[n]] + 1] - V_n) / sd
-    lb <- (gamma_augmented[y[[n]]] - V_n) / sd
-    if (logarithm) {
-      if (lb > 0) {
-        log_large <- stats::pnorm(lb, lower.tail = FALSE, log.p = TRUE)
-        log_small <- stats::pnorm(ub, lower.tail = FALSE, log.p = TRUE)
-      } else {
-        log_large <- stats::pnorm(ub, log.p = TRUE)
-        log_small <- stats::pnorm(lb, log.p = TRUE)
-      }
-      log_prob <- log_large + log1p(-exp(log_small - log_large))
-      probabilities[n] <- if (is.finite(log_prob)) {
-        log_prob
-      } else {
-        log(.Machine$double.xmin)
-      }
-    } else {
-      prob_n <- stats::pnorm(ub) - stats::pnorm(lb)
-      probabilities[n] <- max(prob_n, 0)
-    }
-  }
-  probabilities
+  cpp_ordered_probit(
+    X, y, beta, Sigma, gamma, omega = Omega,
+    position = as.integer(re_position), log = logarithm
+  )
 }
 
 #' @noRd
@@ -1862,37 +1908,6 @@ choiceprob_mmnp_ordered_panel_lc <- function(
   if (logarithm) log_prob else exp(log_prob)
 }
 
-#' Calculate logit choice probabilities
-#'
-#' @description
-#' These helper functions compute logit choice probabilities for unordered and
-#' ordered outcomes. Panel inputs reuse the observation-level logit formulae,
-#' which remain valid because the logit error term is independent across
-#' occasions. Latent class models are supported via weighted averages of
-#' class-specific probabilities. When `Omega` is supplied, the coefficients are
-#' assumed to follow a multivariate normal distribution and the resulting
-#' probabilities are evaluated by averaging over simulation draws.
-#'
-#' @inheritParams choiceprob_probit
-#' @param weights \[`NULL` | `numeric()`\]\cr
-#'   Optional class weights for latent class specifications.
-#' @param draws \[`NULL` | `matrix` | `list`\]\cr
-#'   Optional standard normal simulation draws when `Omega` is not `NULL`.
-#'   They are transformed using `Omega`. A matrix provides shared draws for all
-#'   classes; a list can supply class-specific draw matrices.
-#' @param n_draws \[`integer(1)`\]\cr
-#'   Number of draws to generate when `draws` is `NULL` and `Omega` is provided.
-#'
-#' @param ordered,ranked,panel,lc \[`logical(1)`\]\cr
-#'   Flags indicating whether the specification is ordered, ranked, panel, or
-#'   latent class. These defaults are inferred from the other inputs so callers
-#'   typically do not need to override them.
-#'
-#' @return
-#' A numeric vector with the choice probabilities for the observed choices when
-#' `y` is supplied. If `y` is `NULL`, a matrix with one row per observation and
-#' one column per alternative is returned.
-#'
 #' @noRd
 
 choiceprob_logit <- function(
@@ -1934,7 +1949,6 @@ choiceprob_logit <- function(
   }
 
   if (lc) {
-    # Latent classes reuse the same fixed or mixed Logit kernel.
     lc_panel <- !is.null(y) && isTRUE(panel)
     if (!is.null(Omega)) {
       re_position <- utils::tail(seq_along(beta[[1]]), nrow(Omega[[1]]))
@@ -1954,7 +1968,6 @@ choiceprob_logit <- function(
   }
 
   if (!is.null(Omega)) {
-    # Random coefficients are averaged over transformed standard draws.
     re_position <- utils::tail(seq_along(beta), nrow(Omega))
     return(choiceprob_mmnl(
       X = X, y = y, Tp = if (!is.null(y) && isTRUE(panel)) Tp else NULL,
@@ -1982,19 +1995,38 @@ choiceprob_mmnl <- function(
   availability = Map(seq_len, lapply(X, nrow))
 ) {
   draws_mat <- prepare_mixed_logit_draws(draws, n_draws, Omega)
-  average_over_draws(
-    draws = draws_mat,
-    beta = beta,
-    re_position = re_position,
-    Omega = Omega,
-    re_mixing = re_mixing,
-    compute_fun = choiceprob_mnl,
-    compute_args = list(
-      X = X, y = y, gamma = gamma, Tp = Tp, ranked = ranked,
-      logarithm = logarithm,
-      availability = availability
+  if (!is.null(gamma)) {
+    return(average_over_draws(
+      draws = draws_mat,
+      beta = beta,
+      re_position = re_position,
+      Omega = Omega,
+      re_mixing = re_mixing,
+      compute_fun = choiceprob_mnl,
+      compute_args = list(
+        X = X, y = y, gamma = gamma, Tp = Tp, ranked = ranked,
+        logarithm = logarithm,
+        availability = availability
+      ),
+      logarithm = logarithm
+    ))
+  }
+  if (is.null(re_mixing)) {
+    re_mixing <- rep("cn", length(re_position))
+  }
+  type <- match(
+    random_effect_distribution(re_mixing), c("ln-", "n", "ln")
+  ) - 2L
+  oeli::input_check_response(
+    check = checkmate::check_integer(
+      type, len = length(re_position), any.missing = FALSE
     ),
-    logarithm = logarithm
+    var_name = "re_mixing"
+  )
+  cpp_mmnl(
+    X, y, beta, chol(Omega), draws_mat, as.integer(re_position), type,
+    tp = if (is.null(Tp)) NULL else as.integer(Tp),
+    ranked = ranked, log = logarithm, availability = availability
   )
 }
 
@@ -2032,15 +2064,20 @@ prepare_mixed_logit_draws <- function(draws, n_draws, Omega) {
     )
   }
   if (!is.null(draws)) {
-    draw_mat <- as.matrix(draws)
-    if (nrow(draw_mat) == 0) {
-      cli::cli_abort(
-        "At least one draw is required to evaluate mixed logit probabilities.",
-        call = NULL
-      )
-    }
-    return(draw_mat)
+    oeli::input_check_response(
+      check = checkmate::check_matrix(
+        draws, mode = "numeric", min.rows = 1,
+        ncols = dim_random, any.missing = FALSE
+      ),
+      var_name = "draws"
+    )
+    oeli::input_check_response(
+      check = checkmate::check_numeric(as.numeric(draws), finite = TRUE),
+      var_name = "draws"
+    )
+    return(draws)
   }
+  check_n_draws(n_draws)
   n <- as.integer(n_draws)
   matrix(stats::rnorm(n * dim_random), nrow = n, ncol = dim_random)
 }
@@ -2048,27 +2085,8 @@ prepare_mixed_logit_draws <- function(draws, n_draws, Omega) {
 #' @noRd
 
 prepare_lc_draws <- function(draws, n_draws, Omega_list) {
-  if (is.null(draws)) {
-    shared <- prepare_mixed_logit_draws(NULL, n_draws, Omega_list[[1]])
-    replicate(length(Omega_list), shared, simplify = FALSE)
-  } else if (checkmate::test_list(draws)) {
-    draw_list <- vector("list", length(draws))
-    for (idx in seq_along(draws)) {
-      draw_mat <- as.matrix(draws[[idx]])
-      if (nrow(draw_mat) == 0) {
-        cli::cli_abort(
-          "At least one draw is required to evaluate mixed logit
-          probabilities.",
-          call = NULL
-        )
-      }
-      draw_list[[idx]] <- draw_mat
-    }
-    draw_list
-  } else {
-    shared_draws <- prepare_mixed_logit_draws(draws, n_draws, Omega_list[[1]])
-    replicate(length(Omega_list), shared_draws, simplify = FALSE)
-  }
+  shared_draws <- prepare_mixed_logit_draws(draws, n_draws, Omega_list[[1]])
+  replicate(length(Omega_list), shared_draws, simplify = FALSE)
 }
 
 #' @noRd
@@ -2080,15 +2098,15 @@ average_over_draws <- function(
   if (is.null(re_mixing)) {
     re_mixing <- rep("cn", length(re_position))
   }
-  re_mixing[re_mixing == "cln"] <- "cln+"
-  type <- match(re_mixing, c("cln-", "cn", "cln+")) - 2L
+  type <- match(
+    random_effect_distribution(re_mixing), c("ln-", "n", "ln")
+  ) - 2L
   oeli::input_check_response(
     check = checkmate::check_integer(
       type, len = length(re_position), any.missing = FALSE
     ),
     var_name = "re_mixing"
   )
-  # Scale and aggregate all draws in one native pass.
   cpp_average_draws(
     draws, beta, as.integer(re_position), compute_fun, log = logarithm,
     chol = chol(Omega), type = type, args = compute_args, chunks = chunks

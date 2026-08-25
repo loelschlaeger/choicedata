@@ -4,9 +4,9 @@ test_that("choice preferences can be generated", {
       formula = choice ~ price | income | comfort,
       error_term = "probit",
       random_effects = c(
-        "price" = "cn",
-        "income" = "cln+",
-        "comfort" = "cln-"
+        "price" = "n",
+        "income" = "ln",
+        "comfort" = "ln-"
       )
     ),
     choice_alternatives = choice_alternatives(J = 3)
@@ -14,8 +14,7 @@ test_that("choice preferences can be generated", {
   P <- compute_P(choice_effects)
   re_position <- which(!is.na(choice_effects$mixing))
   P_r <- length(re_position)
-  Omega <- matrix(0.2, nrow = P_r, ncol = P_r)
-  diag(Omega) <- 1
+  Omega <- diag(P_r)
   params <- choice_parameters(
     beta = seq_len(P),
     Omega = Omega,
@@ -30,8 +29,8 @@ test_that("choice preferences can be generated", {
     Sigma = params$Omega
   )
   mixing <- as.character(choice_effects$mixing[re_position])
-  latent[, mixing == "cln+"] <- exp(latent[, mixing == "cln+"])
-  latent[, mixing == "cln-"] <- -exp(latent[, mixing == "cln-"])
+  latent[, mixing == "ln"] <- exp(latent[, mixing == "ln"])
+  latent[, mixing == "ln-"] <- -exp(latent[, mixing == "ln-"])
   expected[, re_position] <- latent
   set.seed(1)
   choice_preferences <- generate_choice_preferences(
@@ -70,8 +69,8 @@ test_that("choice preferences can be generated", {
   set.seed(1)
   class <- sample.int(2, N, replace = TRUE, prob = weights)
   expected_lc <- do.call(rbind, beta_lc[class])
-  positive <- re_position[mixing == "cln+"]
-  negative <- re_position[mixing == "cln-"]
+  positive <- re_position[mixing == "ln"]
+  negative <- re_position[mixing == "ln-"]
   expected_lc[, positive] <- exp(
     expected_lc[, positive, drop = FALSE]
   )

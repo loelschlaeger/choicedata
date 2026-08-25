@@ -58,12 +58,7 @@ The number of choice occasions per decider.
 Can also be of length \code{N} for a variable number of choice occasions per
 decider.}
 
-\item{x}{An object of class
-\itemize{
-\item \code{\link{choice_data}},
-\item \code{\link{choice_covariates}}, containing the identifiers and covariate
-values for each decider, occasion, and alternative,
-}}
+\item{x}{A \code{\link{choice_data}} or \code{\link{choice_covariates}} object.}
 }
 \value{
 An object of class \code{choice_identifiers}, which is a \code{tibble} with columns:

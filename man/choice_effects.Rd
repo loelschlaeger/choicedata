@@ -30,7 +30,7 @@ Required to resolve data-dependent elements in \code{choice_formula} (if any).}
 The delimiter between covariate and alternative name.}
 
 \item{x}{[\code{choice_effects}]\cr
-The \code{choice_effects} object to be printed.}
+A \code{\link{choice_effects}} object.}
 
 \item{...}{Currently not used.}
 }
@@ -49,8 +49,11 @@ if the effect is alternative-specific),
 \item \code{"mixing"}, a factor with levels in the order
 \enumerate{
 \item \code{"cn"} (correlated normal distribution),
-\item \code{"cln+"} (positively signed correlated log-normal distribution),
+\item \code{"cln"} (positively signed correlated log-normal distribution),
 \item \code{"cln-"} (negatively signed correlated log-normal distribution),
+\item \code{"n"} (uncorrelated normal distribution),
+\item \code{"ln"} (positively signed uncorrelated log-normal distribution),
+\item \code{"ln-"} (negatively signed uncorrelated log-normal distribution),
 }
 
 indicating the type of random effect.
@@ -71,6 +74,7 @@ This function constructs an object of class \code{choice_effects}, which
 defines the effects of a choice model.
 }
 \examples{
+### construct choice effects
 choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | income | I(comfort == 1),

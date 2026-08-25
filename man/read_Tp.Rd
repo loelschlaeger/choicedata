@@ -8,8 +8,7 @@ read_Tp(choice_identifiers)
 }
 \arguments{
 \item{choice_identifiers}{[\code{choice_identifiers}]\cr
-The \code{\link{choice_identifiers}} object that defines the choice
-occasions.}
+A \code{\link{choice_identifiers}} object.}
 }
 \value{
 An \code{integer} \code{vector} of length \code{N}, where \code{N} is the

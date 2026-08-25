@@ -18,7 +18,7 @@ choice_parameters(
 generate_choice_parameters(
   choice_effects,
   fixed_parameters = choice_parameters(),
-  n_classes = 1L
+  C = 1L
 )
 
 validate_choice_parameters(
@@ -31,55 +31,55 @@ switch_parameter_space(choice_parameters, choice_effects)
 }
 \arguments{
 \item{beta}{[\code{numeric(P)} | \code{list(C)} | \code{NULL}]\cr
-The coefficient vector of length \code{P} (number of effects) for computing the
-linear-in-parameters systematic utility \eqn{V = X\beta}. For a latent class
-model, a list of one coefficient vector per class.}
+The coefficient vector for computing the linear-in-parameters systematic
+utility \eqn{V = X\beta}.
+
+For a latent class model, a list of one coefficient vector per class.}
 
 \item{Omega}{[\code{matrix(nrow = P_r, ncol = P_r)} | \code{list(C)} | \code{NULL}]\cr
-The covariance matrix of random effects of dimension \code{P_r} times \code{P_r},
-where \code{P_r} \eqn{\leq} \code{P} is the number of random effects.
+The covariance matrix of random effects.
 
-In a latent class model, a list of one covariance matrix per class. Can be
-\code{NULL} in the case of \code{P_r = 0}.}
+Not used when \code{P_r = 0}.
+
+In a latent class model, a list of one covariance matrix per class.
+
+Covariances involving uncorrelated random effects are fixed to zero.}
 
 \item{Sigma}{[\code{matrix(nrow = J, ncol = J)} | \code{numeric(1)} | \code{NULL}]\cr
-Only relevant in the probit model. For unordered alternatives it is the
-covariance matrix of dimension \code{J} times \code{J} (number of alternatives) for
-the Gaussian error term \eqn{\epsilon = U - V}. In ordered models it reduces
-to a single variance term.}
+Only relevant in the probit model.
+
+For unordered alternatives it is the covariance matrix for the Gaussian error
+term \eqn{\epsilon = U - V}.
+
+In ordered models it reduces to a single variance term.}
 
 \item{gamma}{[\code{numeric(J - 1)} | \code{NULL}]\cr
-Optional vector of strictly increasing threshold parameters for ordered
-models. The first element must equal zero for identification. Ignored for
-unordered alternatives.}
+Vector of strictly increasing threshold parameters required for ordered
+models.
+
+The first element must equal zero for identification.}
 
 \item{weights}{[\code{numeric(C)} | \code{NULL}]\cr
-Positive latent class weights. They are shared across choice occasions and
-normalized to sum to one during validation.
-
-Class-specific \code{beta}, \code{Omega}, and \code{weights} entries use their supplied
-order. As usual for finite mixtures, permuting all class-specific entries
-leaves the model unchanged, so class labels are not identified.}
+Positive latent class weights.}
 
 \item{choice_effects}{[\code{choice_effects}]\cr
-A \code{\link{choice_effects}} object describing the utility
-specification.}
+A \code{\link{choice_effects}} object.}
 
 \item{fixed_parameters}{[\code{choice_parameters}]\cr
-Optionally a \code{choice_parameters} object of parameters to keep
-fixed when sampling other parameters.}
+A \code{\link{choice_parameters}} object.
+Its supplied components are kept fixed.
+Missing components are completed as described below.}
 
-\item{n_classes}{[\code{integer(1)}]\cr
-Number of latent classes. The default \code{1} generates a regular model.}
+\item{C}{[\code{integer(1)}]\cr
+Number of latent classes.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
-A \code{choice_parameters} object. For \code{switch_parameter_space()}, a numeric
-vector in optimization space is also accepted and converted back to a
-\code{choice_parameters} object.}
+A \code{\link{choice_parameters}} object.
+For \code{switch_parameter_space()}, a numeric vector in optimization space is
+also accepted and converted back to a \code{choice_parameters} object.}
 
 \item{allow_missing}{[\code{logical(1)}]\cr
-Should parameters be allowed to be missing (\code{TRUE}) or must all required
-elements be present (\code{FALSE})?}
+Allow required parameter components to be omitted?}
 }
 \value{
 \code{choice_parameters()}, \code{generate_choice_parameters()}, and
@@ -87,12 +87,14 @@ elements be present (\code{FALSE})?}
 elements:
 \describe{
 \item{\code{beta}}{The coefficient vector (if any).}
-\item{\code{Omega}}{The covariance matrix of random effects (if any).}
+\item{\code{Omega}}{The random-effect covariance matrix on the underlying
+normal scale (if any).}
 \item{\code{Sigma}}{The error term covariance matrix (or variance in ordered
 models).}
 \item{\code{gamma}}{Threshold parameters for ordered models (if any).}
 \item{\code{weights}}{The latent class weights (if any).}
 }
+
 \code{switch_parameter_space()} returns a named numeric vector when given a
 \code{choice_parameters} object and a \code{choice_parameters} object when given a
 numeric optimization vector.
@@ -103,7 +105,7 @@ These functions construct, validate, and transform an object of class
 \itemize{
 \item \code{choice_parameters()} constructs a \code{choice_parameters} object.
 \item \code{generate_choice_parameters()} samples parameters at random, see details.
-\item \code{validate_choice_parameters()} validates a \code{choice_parameters} object.
+\item \code{validate_choice_parameters()} checks model-specific dimensions.
 \item \code{switch_parameter_space()} transforms a \code{choice_parameters} object between
 the interpretation and optimization space, see details.
 }
@@ -111,18 +113,26 @@ the interpretation and optimization space, see details.
 \section{Sampling missing choice model parameters}{
 
 
-Unspecified choice model parameters (if required) are drawn
-independently from the following distributions:
+\code{generate_choice_parameters()} completes required components that are absent
+from \code{fixed_parameters}.
+
+Missing components are generated as follows:
 \describe{
-\item{\code{beta}}{Drawn from a multivariate normal distribution with zero
-mean and a diagonal covariance matrix with value 10 on the diagonal.}
-\item{\code{Omega}}{Drawn from an Inverse-Wishart distribution with degrees
-of freedom equal to \code{P_r} + 2 and scale matrix equal to the identity.}
-\item{\code{Sigma}}{The first row and column are fixed to 0 for level
-normalization. The \eqn{(2, 2)}-value is fixed to 1 for scale
-normalization. The lower right block is drawn from an Inverse-Wishart
-distribution with degrees of freedom equal to \code{J} + 1 and scale matrix
-equal to the identity.}
+\item{\code{beta}}{Drawn independently for each class from a multivariate normal
+distribution with zero mean and covariance matrix \code{10 * diag(P)}.}
+\item{\code{Omega}}{Drawn independently for each class from an Inverse-Wishart
+distribution with \code{P_r + 2} degrees of freedom and identity scale matrix.
+Covariances involving uncorrelated random effects are then set to zero.}
+\item{\code{Sigma}}{For unordered probit models, the lower right block is drawn
+from an Inverse-Wishart distribution with \code{J + 1} degrees of freedom and
+identity scale matrix. The first row and column are fixed to zero and the
+matrix is scaled so that element \eqn{(2, 2)} equals one. For ordered
+probit models, \code{Sigma} is set to one; logit models do not use \code{Sigma}.}
+\item{\code{gamma}}{For ordered models with two categories, set to zero.
+Otherwise, positive increments are drawn as \code{exp(z)}, where the elements
+of \code{z} are independent standard normal draws, and cumulatively added to
+the first threshold zero. Unordered models do not use \code{gamma}.}
+\item{\code{weights}}{Set to equal class probabilities \code{1 / C}.}
 }
 }
 
@@ -138,11 +148,14 @@ parameters that can be interpreted.
 can be optimized:
 \itemize{
 \item \code{beta} is not transformed
-\item the first row and column of \code{Sigma} are fixed to 0 for level
-normalization and the second diagonal element is fixed to 1 for scale
-normalization
-\item the covariance matrices (\code{Omega} and \code{Sigma}) are transformed to their
-vectorized Cholesky factor (diagonal fixed to be positive for uniqueness)
+\item \code{Omega} is represented by its vectorized unique Cholesky factor;
+elements involving uncorrelated random effects are omitted
+\item for unordered probit models, \code{Sigma} is represented through utility
+differences relative to the first alternative, with the first variance
+fixed to one, and transformed to a vectorized unique Cholesky factor
+\item for ordered probit models, the positive scalar \code{Sigma} is log-transformed
+\item the first ordered threshold is fixed to zero and omitted; logarithms of
+the remaining positive threshold increments are used
 \item latent class parameters are concatenated in class order, and \code{C - 1}
 log weight ratios use the first class as reference
 }
@@ -154,23 +167,26 @@ log weight ratios use the first class as reference
 J <- 3
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ A | B, error_term = "probit",
-    random_effects = c("A" = "cn")
+    formula = choice ~ x | y, error_term = "probit",
+    random_effects = c("x" = "cn")
   ),
   choice_alternatives = choice_alternatives(J = J)
 )
-choice_parameters <- generate_choice_parameters(
+(parameters <- generate_choice_parameters(
   choice_effects = choice_effects,
   fixed_parameters = choice_parameters(
     Sigma = diag(c(0, rep(1, J - 1))) # scale and level normalization
   )
-)
+))
 
-### generate a two-class model with class-specific random effects
-latent_parameters <- generate_choice_parameters(
-  choice_effects = choice_effects,
-  n_classes = 2L
+### switch between interpretation and optimization spaces
+(optimization_parameters <- switch_parameter_space(
+  choice_parameters = parameters,
+  choice_effects = choice_effects
+))
+switch_parameter_space(
+  choice_parameters = optimization_parameters,
+  choice_effects = choice_effects
 )
-latent_parameters$weights
 }
 \keyword{model}

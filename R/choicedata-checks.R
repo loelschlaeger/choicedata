@@ -1,4 +1,4 @@
-# Input helpers return the checked value invisibly or raise a clear error.
+# Input helpers return the checked value invisibly or raise an error.
 
 check_allow_missing <- function(allow_missing) {
   check_not_missing(allow_missing)
@@ -22,6 +22,15 @@ check_alternatives <- function(alternatives, J = length(alternatives)) {
   invisible(alternatives)
 }
 
+check_base <- function(base, alternatives) {
+  check_not_missing(base)
+  oeli::input_check_response(
+    check = checkmate::check_choice(base, choices = alternatives),
+    var_name = "base"
+  )
+  invisible(base)
+}
+
 check_cross_section <- function(cross_section) {
   check_not_missing(cross_section)
   oeli::input_check_response(
@@ -31,16 +40,6 @@ check_cross_section <- function(cross_section) {
   invisible(cross_section)
 }
 
-check_base <- function(base, alternatives, J) {
-  check_not_missing(base)
-  alternatives <- check_alternatives(alternatives = alternatives, J = J)
-  oeli::input_check_response(
-    check = checkmate::check_choice(base, choices = alternatives),
-    var_name = "base"
-  )
-  invisible(base)
-}
-
 check_choice_only <- function(choice_only) {
   check_not_missing(choice_only)
   oeli::input_check_response(
@@ -48,6 +47,36 @@ check_choice_only <- function(choice_only) {
     var_name = "choice_only"
   )
   invisible(choice_only)
+}
+
+check_choice_class_union <- function(
+    x,
+    class_names,
+    error = TRUE,
+    var_name = oeli::variable_name(x)
+) {
+  check_not_missing(x, var_name = var_name)
+  oeli::input_check_response(
+    check = lapply(class_names, function(class_name) {
+      checkmate::check_class(x, class_name)
+    }),
+    var_name = var_name,
+    error = error
+  )
+}
+
+check_choice_object <- function(
+    x,
+    class_name,
+    error = FALSE,
+    var_name = oeli::variable_name(x)
+) {
+  check_not_missing(x, var_name = var_name)
+  oeli::input_check_response(
+    check = checkmate::check_class(x, class_name),
+    var_name = var_name,
+    error = error
+  )
 }
 
 check_column_alternative <- function(column_alternative, null.ok = TRUE) {
@@ -253,15 +282,6 @@ check_J <- function(J) {
   invisible(J)
 }
 
-check_list <- function(x, types = character(0), len = NULL) {
-  check_not_missing(x)
-  oeli::input_check_response(
-    check = checkmate::check_list(x, types = types, len = len),
-    var_name = "x"
-  )
-  invisible(x)
-}
-
 check_N <- function(N) {
   check_not_missing(N)
   oeli::input_check_response(
@@ -269,6 +289,15 @@ check_N <- function(N) {
     var_name = "N"
   )
   invisible(N)
+}
+
+check_n_draws <- function(n_draws) {
+  check_not_missing(n_draws)
+  oeli::input_check_response(
+    check = checkmate::check_int(n_draws, lower = 1),
+    var_name = "n_draws"
+  )
+  invisible(n_draws)
 }
 
 check_not_missing <- function(x, var_name = oeli::variable_name(x)) {
@@ -354,7 +383,7 @@ choiceprob_probit_input_checks <- function(
     Tp = Tp, cml = cml, weights = weights, re_position = re_position
   )
   if (is.na(model_type)) {
-    # Validate shared structure before applying model-specific checks.
+    ### validate shared structure before applying model-specific checks
     oeli::input_check_response(
       check = checkmate::check_list(X, min.len = 1),
       var_name = "X"
@@ -369,7 +398,7 @@ choiceprob_probit_input_checks <- function(
       var_name = "availability"
     )
 
-    # Panel counts define the observation blocks.
+    ### panel counts define the observation blocks
     if (!is.null(Tp)) {
       oeli::input_check_response(
         check = checkmate::check_integerish(
@@ -388,7 +417,7 @@ choiceprob_probit_input_checks <- function(
       }
     }
 
-    # Composite likelihood requires observed panel responses.
+    ### composite likelihood requires observed panel responses
     oeli::input_check_response(
       check = checkmate::check_choice(
         cml, choices = c("no", "fp", "ap")
@@ -404,7 +433,7 @@ choiceprob_probit_input_checks <- function(
         call = NULL
       )
     }
-    # Latent classes store one coefficient vector per class.
+    ### latent classes store one coefficient vector per class
     oeli::input_check_response(
       check = list(
         oeli::check_numeric_vector(beta, finite = TRUE, any.missing = FALSE),
@@ -413,7 +442,7 @@ choiceprob_probit_input_checks <- function(
       var_name = "beta"
     )
 
-    # Reuse coefficient dimensions in subsequent matrix checks.
+    ### reuse coefficient dimensions in subsequent matrix checks
     if (checkmate::test_list(beta)) {
       beta_lengths <- vapply(beta, length, integer(1))
       beta_dim <- if (length(beta_lengths)) beta_lengths[1] else 0L
@@ -435,7 +464,7 @@ choiceprob_probit_input_checks <- function(
       )
     }
 
-    # Random-effect covariance may be common or class-specific.
+    ### random-effect covariance may be common or class-specific
     P_r <- 0L
     if (is.null(Omega)) {
       P_r <- 0L
@@ -490,7 +519,7 @@ choiceprob_probit_input_checks <- function(
       )
     }
 
-    # Ordered models use a variance; unordered models use covariance.
+    ### ordered models use a variance; unordered models use covariance
     if (is.null(gamma)) {
       oeli::input_check_response(
         check = oeli::check_covariance_matrix(Sigma),
@@ -498,16 +527,18 @@ choiceprob_probit_input_checks <- function(
       )
     } else {
       oeli::input_check_response(
-        check = checkmate::check_number(Sigma, lower = 0),
+        check = checkmate::check_number(
+          Sigma, lower = .Machine$double.eps
+        ),
         var_name = "Sigma"
       )
     }
 
-    # Ordered thresholds must be finite and strictly increasing.
+    ### ordered thresholds must be finite and strictly increasing
     oeli::input_check_response(
       check = oeli::check_numeric_vector(
         gamma, sorted = TRUE, finite = TRUE, any.missing = FALSE,
-        null.ok = TRUE
+        min.len = 1, null.ok = TRUE
       ),
       var_name = "gamma"
     )
@@ -518,8 +549,14 @@ choiceprob_probit_input_checks <- function(
       )
     }
 
-    # Every design and response must match its available choice set.
+    ### every design and response must match its available choice set
     J <- if (is.matrix(Sigma)) nrow(Sigma) else length(gamma) + 1L
+    if (is.null(gamma) && J < 2L) {
+      cli::cli_abort(
+        "Unordered probit models require at least two alternatives.",
+        call = NULL
+      )
+    }
     expected_rows <- if (is.null(gamma)) J else 1L
     for (n in seq_along(X)) {
       oeli::input_check_response(
@@ -570,7 +607,7 @@ choiceprob_probit_input_checks <- function(
       }
     }
 
-    # Normalize valid class weights once for all downstream paths.
+    ### normalize valid class weights once for all downstream paths
     if (!is.null(weights)) {
       oeli::input_check_response(
         check = checkmate::check_numeric(
@@ -607,7 +644,7 @@ choiceprob_probit_input_checks <- function(
       }
     }
 
-    # Random-effect positions must index the coefficient vector.
+    ### random-effect positions must index the coefficient vector
     if (P_r > 0) {
       oeli::input_check_response(
         check = checkmate::check_integerish(
@@ -641,7 +678,7 @@ choiceprob_probit_input_checks <- function(
       }
     }
 
-    # The Gaussian CDF callback must accept upper bounds and correlation.
+    ### the Gaussian CDF callback must accept upper bounds and correlation
     oeli::input_check_response(
       check = checkmate::check_function(gcdf, args = c("upper", "corr")),
       var_name = "gcdf"
@@ -732,7 +769,9 @@ choiceprob_logit_input_checks <- function(
 
   if (panel) {
     oeli::input_check_response(
-      check = checkmate::check_integer(Tp, lower = 1),
+      check = checkmate::check_integerish(
+        Tp, lower = 1, any.missing = FALSE
+      ),
       var_name = "Tp"
     )
     if (!length(Tp) || sum(Tp) != length(X)) {
@@ -757,7 +796,7 @@ choiceprob_logit_input_checks <- function(
   if (ordered) {
     oeli::input_check_response(
       check = oeli::check_numeric_vector(
-        gamma, finite = TRUE, any.missing = FALSE
+        gamma, finite = TRUE, any.missing = FALSE, min.len = 1
       ),
       var_name = "gamma"
     )
@@ -772,7 +811,7 @@ choiceprob_logit_input_checks <- function(
   if (lc) {
     oeli::input_check_response(
       check = checkmate::check_numeric(
-        weights, lower = 0, finite = TRUE, min.len = 1
+        weights, lower = 0, finite = TRUE, any.missing = FALSE, min.len = 1
       ),
       var_name = "weights"
     )
@@ -835,48 +874,21 @@ choiceprob_logit_input_checks <- function(
         )
       }
       if (!is.null(draws)) {
-        if (checkmate::test_list(draws)) {
-          if (length(draws) != length(weights)) {
-            cli::cli_abort(
-              "Latent class draws must match the number of classes.",
-              call = NULL
-            )
-          }
-          for (c in seq_along(draws)) {
-            oeli::input_check_response(
-              check = checkmate::check_matrix(
-                draws[[c]], mode = "numeric", min.rows = 1,
-                ncols = dims[c], any.missing = FALSE
-              ),
-              var_name = "draws"
-            )
-            oeli::input_check_response(
-              check = checkmate::check_numeric(
-                as.numeric(draws[[c]]), finite = TRUE
-              ),
-              var_name = "draws"
-            )
-          }
-        } else {
-          oeli::input_check_response(
-            check = checkmate::check_matrix(
-              draws, mode = "numeric", min.rows = 1,
-              ncols = dims[1], any.missing = FALSE
-            ),
-            var_name = "draws"
-          )
-          oeli::input_check_response(
-            check = checkmate::check_numeric(
-              as.numeric(draws), finite = TRUE
-            ),
-            var_name = "draws"
-          )
-        }
-      } else {
         oeli::input_check_response(
-          check = checkmate::check_int(n_draws, lower = 1),
-          var_name = "n_draws"
+          check = checkmate::check_matrix(
+            draws, mode = "numeric", min.rows = 1,
+            ncols = dims[1], any.missing = FALSE
+          ),
+          var_name = "draws"
         )
+        oeli::input_check_response(
+          check = checkmate::check_numeric(
+            as.numeric(draws), finite = TRUE
+          ),
+          var_name = "draws"
+        )
+      } else {
+        check_n_draws(n_draws)
       }
     }
   } else {
@@ -907,10 +919,7 @@ choiceprob_logit_input_checks <- function(
           var_name = "draws"
         )
       } else {
-        oeli::input_check_response(
-          check = checkmate::check_int(n_draws, lower = 1),
-          var_name = "n_draws"
-        )
+        check_n_draws(n_draws)
       }
     }
   }

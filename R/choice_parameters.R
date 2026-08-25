@@ -6,43 +6,44 @@
 #'
 #' - `choice_parameters()` constructs a `choice_parameters` object.
 #' - `generate_choice_parameters()` samples parameters at random, see details.
-#' - `validate_choice_parameters()` validates a `choice_parameters` object.
+#' - `validate_choice_parameters()` checks model-specific dimensions.
 #' - `switch_parameter_space()` transforms a `choice_parameters` object between
 #'    the interpretation and optimization space, see details.
 #'
 #' @param beta \[`numeric(P)` | `list(C)` | `NULL`\]\cr
-#' The coefficient vector of length `P` (number of effects) for computing the
-#' linear-in-parameters systematic utility \eqn{V = X\beta}. For a latent class
-#' model, a list of one coefficient vector per class.
+#' The coefficient vector for computing the linear-in-parameters systematic
+#' utility \eqn{V = X\beta}.
+#'
+#' For a latent class model, a list of one coefficient vector per class.
 #'
 #' @param Omega \[`matrix(nrow = P_r, ncol = P_r)` | `list(C)` | `NULL`\]\cr
-#' The covariance matrix of random effects of dimension `P_r` times `P_r`,
-#' where `P_r` \eqn{\leq} `P` is the number of random effects.
+#' The covariance matrix of random effects.
 #'
-#' In a latent class model, a list of one covariance matrix per class. Can be
-#' `NULL` in the case of `P_r = 0`.
+#' Not used when `P_r = 0`.
+#'
+#' In a latent class model, a list of one covariance matrix per class.
+#'
+#' Covariances involving uncorrelated random effects are fixed to zero.
 #'
 #' @param Sigma \[`matrix(nrow = J, ncol = J)` | `numeric(1)` | `NULL`\]\cr
-#' Only relevant in the probit model. For unordered alternatives it is the
-#' covariance matrix of dimension `J` times `J` (number of alternatives) for
-#' the Gaussian error term \eqn{\epsilon = U - V}. In ordered models it reduces
-#' to a single variance term.
+#' Only relevant in the probit model.
+#'
+#' For unordered alternatives it is the covariance matrix for the Gaussian error
+#' term \eqn{\epsilon = U - V}.
+#'
+#' In ordered models it reduces to a single variance term.
 #'
 #' @param gamma \[`numeric(J - 1)` | `NULL`\]\cr
-#' Optional vector of strictly increasing threshold parameters for ordered
-#' models. The first element must equal zero for identification. Ignored for
-#' unordered alternatives.
+#' Vector of strictly increasing threshold parameters required for ordered
+#' models.
+#'
+#' The first element must equal zero for identification.
 #'
 #' @param weights \[`numeric(C)` | `NULL`\]\cr
-#' Positive latent class weights. They are shared across choice occasions and
-#' normalized to sum to one during validation.
-#'
-#' Class-specific `beta`, `Omega`, and `weights` entries use their supplied
-#' order. As usual for finite mixtures, permuting all class-specific entries
-#' leaves the model unchanged, so class labels are not identified.
+#' Positive latent class weights.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
-#' The \code{\link{choice_effects}} object that defines the choice effects.
+#' A \code{\link{choice_effects}} object.
 #'
 #' @return
 #' `choice_parameters()`, `generate_choice_parameters()`, and
@@ -50,12 +51,14 @@
 #' elements:
 #' \describe{
 #'   \item{`beta`}{The coefficient vector (if any).}
-#'   \item{`Omega`}{The covariance matrix of random effects (if any).}
+#'   \item{`Omega`}{The random-effect covariance matrix on the underlying
+#'     normal scale (if any).}
 #'   \item{`Sigma`}{The error term covariance matrix (or variance in ordered
 #'     models).}
 #'   \item{`gamma`}{Threshold parameters for ordered models (if any).}
 #'   \item{`weights`}{The latent class weights (if any).}
 #' }
+#'
 #' `switch_parameter_space()` returns a named numeric vector when given a
 #' `choice_parameters` object and a `choice_parameters` object when given a
 #' numeric optimization vector.
@@ -69,24 +72,27 @@
 #' J <- 3
 #' choice_effects <- choice_effects(
 #'   choice_formula = choice_formula(
-#'     formula = choice ~ A | B, error_term = "probit",
-#'     random_effects = c("A" = "cn")
+#'     formula = choice ~ x | y, error_term = "probit",
+#'     random_effects = c("x" = "cn")
 #'   ),
 #'   choice_alternatives = choice_alternatives(J = J)
 #' )
-#' choice_parameters <- generate_choice_parameters(
+#' (parameters <- generate_choice_parameters(
 #'   choice_effects = choice_effects,
 #'   fixed_parameters = choice_parameters(
 #'     Sigma = diag(c(0, rep(1, J - 1))) # scale and level normalization
 #'   )
-#' )
+#' ))
 #'
-#' ### generate a two-class model with class-specific random effects
-#' latent_parameters <- generate_choice_parameters(
-#'   choice_effects = choice_effects,
-#'   n_classes = 2L
+#' ### switch between interpretation and optimization spaces
+#' (optimization_parameters <- switch_parameter_space(
+#'   choice_parameters = parameters,
+#'   choice_effects = choice_effects
+#' ))
+#' switch_parameter_space(
+#'   choice_parameters = optimization_parameters,
+#'   choice_effects = choice_effects
 #' )
-#' latent_parameters$weights
 
 choice_parameters <- function(
     beta = NULL,
@@ -160,7 +166,7 @@ is.choice_parameters <- function(
     error = TRUE,
     var_name = oeli::variable_name(x)
   ) {
-  validate_choice_object(
+  check_choice_object(
     x = x,
     class_name = "choice_parameters",
     error = error,
@@ -171,26 +177,35 @@ is.choice_parameters <- function(
 #' @rdname choice_parameters
 #'
 #' @param fixed_parameters \[`choice_parameters`\]\cr
-#' Optionally a `choice_parameters` object of parameters to keep
-#' fixed when sampling other parameters.
+#' A \code{\link{choice_parameters}} object.
+#' Its supplied components are kept fixed.
+#' Missing components are completed as described below.
 #'
-#' @param n_classes \[`integer(1)`\]\cr
-#' Number of latent classes. The default `1` generates a regular model.
+#' @param C \[`integer(1)`\]\cr
+#' Number of latent classes.
 #'
 #' @section Sampling missing choice model parameters:
 #'
-#' Unspecified choice model parameters (if required) are drawn
-#' independently from the following distributions:
+#' `generate_choice_parameters()` completes required components that are absent
+#' from `fixed_parameters`.
+#'
+#' Missing components are generated as follows:
 #' \describe{
-#'   \item{`beta`}{Drawn from a multivariate normal distribution with zero
-#'   mean and a diagonal covariance matrix with value 10 on the diagonal.}
-#'   \item{`Omega`}{Drawn from an Inverse-Wishart distribution with degrees
-#'   of freedom equal to `P_r` + 2 and scale matrix equal to the identity.}
-#'   \item{`Sigma`}{The first row and column are fixed to 0 for level
-#'   normalization. The \eqn{(2, 2)}-value is fixed to 1 for scale
-#'   normalization. The lower right block is drawn from an Inverse-Wishart
-#'   distribution with degrees of freedom equal to `J` + 1 and scale matrix
-#'   equal to the identity.}
+#'   \item{`beta`}{Drawn independently for each class from a multivariate normal
+#'   distribution with zero mean and covariance matrix `10 * diag(P)`.}
+#'   \item{`Omega`}{Drawn independently for each class from an Inverse-Wishart
+#'   distribution with `P_r + 2` degrees of freedom and identity scale matrix.
+#'   Covariances involving uncorrelated random effects are then set to zero.}
+#'   \item{`Sigma`}{For unordered probit models, the lower right block is drawn
+#'   from an Inverse-Wishart distribution with `J + 1` degrees of freedom and
+#'   identity scale matrix. The first row and column are fixed to zero and the
+#'   matrix is scaled so that element \eqn{(2, 2)} equals one. For ordered
+#'   probit models, `Sigma` is set to one; logit models do not use `Sigma`.}
+#'   \item{`gamma`}{For ordered models with two categories, set to zero.
+#'   Otherwise, positive increments are drawn as `exp(z)`, where the elements
+#'   of `z` are independent standard normal draws, and cumulatively added to
+#'   the first threshold zero. Unordered models do not use `gamma`.}
+#'   \item{`weights`}{Set to equal class probabilities `1 / C`.}
 #' }
 #'
 #' @export
@@ -198,24 +213,20 @@ is.choice_parameters <- function(
 generate_choice_parameters <- function(
     choice_effects,
     fixed_parameters = choice_parameters(),
-    n_classes = 1L
+    C = 1L
   ) {
 
   ### input checks
   check_not_missing(choice_effects)
   is.choice_parameters(fixed_parameters, error = TRUE)
-  supplied_n_classes <- !missing(n_classes)
+  supplied_C <- !missing(C)
   oeli::input_check_response(
-    check = checkmate::check_int(n_classes, lower = 1),
-    var_name = "n_classes"
+    check = checkmate::check_int(C, lower = 1),
+    var_name = "C"
   )
   fixed_counts <- c(
-    if (is.list(fixed_parameters$beta)) {
-      length(fixed_parameters$beta)
-    },
-    if (is.list(fixed_parameters$Omega)) {
-      length(fixed_parameters$Omega)
-    },
+    if (is.list(fixed_parameters$beta)) length(fixed_parameters$beta),
+    if (is.list(fixed_parameters$Omega)) length(fixed_parameters$Omega),
     length(fixed_parameters$weights)
   )
   fixed_counts <- fixed_counts[fixed_counts > 0L]
@@ -226,18 +237,18 @@ generate_choice_parameters <- function(
     )
   }
   if (length(fixed_counts)) {
-    fixed_n_classes <- fixed_counts[1]
-    if (!supplied_n_classes) {
-      n_classes <- fixed_n_classes
-    } else if (fixed_n_classes != n_classes) {
+    fixed_C <- fixed_counts[1]
+    if (!supplied_C) {
+      C <- fixed_C
+    } else if (fixed_C != C) {
       cli::cli_abort(
-        "Input {.var n_classes} must match the fixed latent class parameters.",
+        "Input {.var C} must match the fixed latent class parameters.",
         call = NULL
       )
     }
   }
-  if (n_classes > 1L && is.null(fixed_parameters$weights)) {
-    fixed_parameters$weights <- rep(1 / n_classes, n_classes)
+  if (C > 1L && is.null(fixed_parameters$weights)) {
+    fixed_parameters$weights <- rep(1 / C, C)
   }
   choice_formula <- attr(choice_effects, "choice_formula")
   error_term <- choice_formula[["error_term"]]
@@ -257,11 +268,11 @@ generate_choice_parameters <- function(
 
   # beta
   if (P > 0 && is.null(x$beta)) {
-    x$beta <- if (n_classes == 1L) {
+    x$beta <- if (C == 1L) {
       oeli::rmvnorm(mean = numeric(P), Sigma = 10 * diag(P))
     } else {
       replicate(
-        n_classes,
+        C,
         oeli::rmvnorm(mean = numeric(P), Sigma = 10 * diag(P)),
         simplify = FALSE
       )
@@ -270,12 +281,26 @@ generate_choice_parameters <- function(
 
   # Omega
   if (P_r > 0 && is.null(x$Omega)) {
-    x$Omega <- if (n_classes == 1L) {
-      oeli::rwishart(df = P_r + 2, scale = diag(P_r), inv = TRUE)
+    mixing <- as.character(stats::na.omit(choice_effects$mixing))
+    correlated <- startsWith(mixing, "c")
+    omega_mask <- outer(correlated, correlated, `&`)
+    diag(omega_mask) <- TRUE
+    x$Omega <- if (C == 1L) {
+      Omega <- oeli::rwishart(
+        df = P_r + 2, scale = diag(P_r), inv = TRUE
+      )
+      Omega[!omega_mask] <- 0
+      Omega
     } else {
       replicate(
-        n_classes,
-        oeli::rwishart(df = P_r + 2, scale = diag(P_r), inv = TRUE),
+        C,
+        {
+          Omega <- oeli::rwishart(
+            df = P_r + 2, scale = diag(P_r), inv = TRUE
+          )
+          Omega[!omega_mask] <- 0
+          Omega
+        },
         simplify = FALSE
       )
     }
@@ -327,17 +352,15 @@ generate_choice_parameters <- function(
 #' @rdname choice_parameters
 #'
 #' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
-#' A `choice_parameters` object. For `switch_parameter_space()`, a numeric
-#' vector in optimization space is also accepted and converted back to a
-#' `choice_parameters` object.
+#' A \code{\link{choice_parameters}} object.
+#' For `switch_parameter_space()`, a numeric vector in optimization space is
+#' also accepted and converted back to a `choice_parameters` object.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
-#' A \code{\link{choice_effects}} object describing the utility
-#' specification.
+#' A \code{\link{choice_effects}} object.
 #'
 #' @param allow_missing \[`logical(1)`\]\cr
-#' Should parameters be allowed to be missing (`TRUE`) or must all required
-#' elements be present (`FALSE`)?
+#' Allow required parameter components to be omitted?
 #'
 #' @export
 
@@ -358,6 +381,8 @@ validate_choice_parameters <- function(
   choice_alternatives <- attr(choice_effects, "choice_alternatives")
   J <- attr(choice_alternatives, "J")
   ordered_alternatives <- isTRUE(attr(choice_alternatives, "ordered"))
+  effect_names <- as.character(choice_effects$effect_name)
+  alternative_names <- as.character(choice_alternatives)
   P <- compute_P(choice_effects)
   P_r <- compute_P_r(choice_effects)
   allow_missing <- check_allow_missing(allow_missing)
@@ -414,12 +439,14 @@ validate_choice_parameters <- function(
             check = oeli::check_numeric_vector(x$beta[[c]], len = P),
             var_name = paste0("beta[[", c, "]]")
           )
+          names(x$beta[[c]]) <- effect_names
         }
       } else {
         oeli::input_check_response(
           check = oeli::check_numeric_vector(x$beta, len = P),
           var_name = "beta"
         )
+        names(x$beta) <- effect_names
       }
     } else if (!allow_missing) {
       cli::cli_abort("Parameter {.var beta} is required", call = NULL)
@@ -431,25 +458,49 @@ validate_choice_parameters <- function(
   # Omega
   if (P_r > 0) {
     if ("Omega" %in% names(x)) {
+      random_effects <- !is.na(choice_effects$mixing)
+      random_effect_names <- effect_names[random_effects]
+      mixing <- as.character(choice_effects$mixing[random_effects])
+      correlated <- startsWith(mixing, "c")
+      omega_mask <- outer(correlated, correlated, `&`)
+      diag(omega_mask) <- TRUE
       if (C > 1L) {
         oeli::input_check_response(
           check = checkmate::check_list(x$Omega, len = C),
           var_name = "Omega"
         )
-        for (c in seq_len(C)) {
-          oeli::input_check_response(
-            check = oeli::check_covariance_matrix(
-              x$Omega[[c]], dim = P_r
-            ),
-            var_name = paste0("Omega[[", c, "]]")
+      }
+      Omega <- if (C > 1L) x$Omega else list(x$Omega)
+      var_names <- if (C > 1L) {
+        paste0("Omega[[", seq_len(C), "]]")
+      } else {
+        "Omega"
+      }
+      for (c in seq_along(Omega)) {
+        var_name <- var_names[c]
+        oeli::input_check_response(
+          check = oeli::check_covariance_matrix(Omega[[c]], dim = P_r),
+          var_name = var_name
+        )
+        invalid_covariance <- abs(Omega[[c]]) > sqrt(.Machine$double.eps) &
+          !omega_mask & upper.tri(omega_mask)
+        if (any(invalid_covariance)) {
+          index <- which(invalid_covariance, arr.ind = TRUE)[1, ]
+          entry_name <- paste0(
+            var_name, "[\"", random_effect_names[index[1]], "\", \"",
+            random_effect_names[index[2]], "\"]"
+          )
+          cli::cli_abort(
+            "Parameter {.var {entry_name}} must be zero because it involves a
+            random effect specified without a 'c' prefix.",
+            call = NULL
           )
         }
-      } else {
-        oeli::input_check_response(
-          check = oeli::check_covariance_matrix(x$Omega, dim = P_r),
-          var_name = "Omega"
+        dimnames(Omega[[c]]) <- list(
+          random_effect_names, random_effect_names
         )
       }
+      x$Omega <- if (C > 1L) Omega else Omega[[1]]
     } else if (!allow_missing) {
       cli::cli_abort("Parameter {.var Omega} is required", call = NULL)
     }
@@ -470,6 +521,7 @@ validate_choice_parameters <- function(
           check = oeli::check_covariance_matrix(x$Sigma, dim = J),
           var_name = "Sigma"
         )
+        dimnames(x$Sigma) <- list(alternative_names, alternative_names)
       }
     } else if (!allow_missing) {
       cli::cli_abort("Parameter {.var Sigma} is required", call = NULL)
@@ -497,7 +549,7 @@ validate_choice_parameters <- function(
           )
         }
         if (required_len > 0 && length(gamma_vec) > 0 &&
-            !isTRUE(all.equal(gamma_vec[1], 0))) {
+            !isTRUE(all.equal(unname(gamma_vec[1]), 0))) {
           cli::cli_abort(
             "The first ordered threshold must be fixed at zero for
             identification.",
@@ -510,6 +562,7 @@ validate_choice_parameters <- function(
             call = NULL
           )
         }
+        names(x$gamma) <- alternative_names[-J]
       } else if (!allow_missing) {
         cli::cli_abort("Parameter {.var gamma} is required", call = NULL)
       }
@@ -535,11 +588,14 @@ validate_choice_parameters <- function(
 #'   can be optimized:
 #'
 #'   - `beta` is not transformed
-#'   - the first row and column of `Sigma` are fixed to 0 for level
-#'     normalization and the second diagonal element is fixed to 1 for scale
-#'     normalization
-#'   - the covariance matrices (`Omega` and `Sigma`) are transformed to their
-#'     vectorized Cholesky factor (diagonal fixed to be positive for uniqueness)
+#'   - `Omega` is represented by its vectorized unique Cholesky factor;
+#'     elements involving uncorrelated random effects are omitted
+#'   - for unordered probit models, `Sigma` is represented through utility
+#'     differences relative to the first alternative, with the first variance
+#'     fixed to one, and transformed to a vectorized unique Cholesky factor
+#'   - for ordered probit models, the positive scalar `Sigma` is log-transformed
+#'   - the first ordered threshold is fixed to zero and omitted; logarithms of
+#'     the remaining positive threshold increments are used
 #'   - latent class parameters are concatenated in class order, and `C - 1`
 #'     log weight ratios use the first class as reference
 #'
@@ -567,6 +623,11 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
     0L
   }
   gamma_length <- if (ordered_alternatives) max(J - 2L, 0L) else 0L
+  mixing <- as.character(stats::na.omit(choice_effects$mixing))
+  correlated <- startsWith(mixing, "c")
+  omega_mask <- outer(correlated, correlated, `&`)
+  diag(omega_mask) <- TRUE
+  omega_chol_mask <- omega_mask[lower.tri(omega_mask, diag = TRUE)]
 
   sigma_o2i <- if (identical(error_term, "probit")) {
     if (ordered_alternatives) {
@@ -631,7 +692,7 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
   }
 
   ### determine the number of classes
-  omega_length <- P_r * (P_r + 1) / 2
+  omega_length <- sum(omega_chol_mask)
   numeric_input <- !is.list(choice_parameters)
   if (numeric_input) {
     oeli::input_check_response(
@@ -692,7 +753,9 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
         values <- omega_values[
           seq.int(first, length.out = omega_length)
         ]
-        oeli::chol_to_cov(values)
+        chol <- numeric(P_r * (P_r + 1L) / 2L)
+        chol[omega_chol_mask] <- values
+        oeli::chol_to_cov(chol)
       })
     } else {
       NULL
@@ -733,7 +796,7 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
       unlist(lapply(seq_len(C), function(c) {
         values <- oeli::cov_to_chol(
           choice_parameters$Omega[[c]], unique = TRUE
-        )
+        )[omega_chol_mask]
         names(values) <- paste0("o_", c, "_", seq_along(values))
         values
       }), use.names = TRUE)
@@ -760,7 +823,7 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
   parameter_names <- c("beta", "Omega", "Sigma", "gamma")
   parameter_lengths_in_o_space <- c(
     P,
-    P_r * (P_r + 1) / 2,
+    omega_length,
     sigma_length,
     gamma_length
   )
@@ -772,8 +835,10 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
     o2i(
       "beta" = function(x) unname(x),
       "Omega" = function(x) {
-        if (length(x) == 0) return(NULL)
-        oeli::chol_to_cov(x)
+        if (!length(x)) return(NULL)
+        chol <- numeric(P_r * (P_r + 1L) / 2L)
+        chol[omega_chol_mask] <- x
+        oeli::chol_to_cov(chol)
       },
       "Sigma" = sigma_o2i,
       "gamma" = gamma_o2i
@@ -787,7 +852,7 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
       },
       "Omega" = function(x) {
         if (is.null(x)) return(numeric())
-        o <- oeli::cov_to_chol(x, unique = TRUE)
+        o <- oeli::cov_to_chol(x, unique = TRUE)[omega_chol_mask]
         structure(
           o,
           names = paste0("o_", seq_along(o), recycle0 = TRUE)
@@ -799,8 +864,16 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
 
   ### transform and return
   choice_parameters_transformed <- par$switch(choice_parameters)
-  structure(
+  choice_parameters_transformed <- structure(
     choice_parameters_transformed,
     class = unique(c("choice_parameters", class(choice_parameters_transformed)))
   )
+  if (numeric_input) {
+    return(validate_choice_parameters(
+      choice_parameters = choice_parameters_transformed,
+      choice_effects = choice_effects,
+      allow_missing = FALSE
+    ))
+  }
+  choice_parameters_transformed
 }

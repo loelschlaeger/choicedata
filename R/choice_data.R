@@ -4,22 +4,6 @@
 #' The `choice_data` object defines the choice data, it is a combination of
 #' `choice_responses` and `choice_covariates`.
 #'
-#' @details
-#' `choice_data()` acts as the main entry point for observed data. It accepts
-#' either long or wide layouts and performs validation before
-#' returning a tidy tibble with consistent identifiers. Columns that refer to
-#' the same alternative are aligned using `delimiter` so that downstream
-#' helpers can detect them automatically. For ranked or ordered choices, the
-#' function checks the response encoding and reports invalid inputs.
-#'
-#' In long format, omit rows for alternatives that are unavailable in a choice
-#' occasion. The long layout is retained so that individual choice sets remain
-#' distinguishable. Missing responses are allowed, but covariates must be
-#' observed because otherwise the corresponding utilities are undefined.
-#'
-#' - `generate_choice_data()` simulates choice data.
-#' - `wide_to_long()` and `long_to_wide()` transform to wide and long format.
-#'
 #' @param data_frame \[`data.frame`\]\cr
 #' Contains the choice data.
 #'
@@ -29,15 +13,18 @@
 #'
 #' @param column_choice \[`character(1)` | `NULL`\]\cr
 #' Column name with the observed choices. In wide layout this column should
-#' contain a single value per observation: for discrete data the value is the
+#' contain a single value per observation: for unordered data the value is the
 #' label of the chosen alternative, for ordered data it is the ordered factor or
 #' integer score, and for ranked data it is omitted in favor of one column per
-#' alternative (see `choice_type`). In long layout the same column is evaluated
-#' once per alternative: discrete data must use a binary indicator (1 for the
-#' chosen alternative, 0 otherwise), ordered data repeats the ordinal value for
-#' every alternative, and ranked data stores consecutive ranks `1:k` for the
-#' observed top `k` alternatives and `NA` for unranked alternatives. An
-#' entirely missing response marks an occasion that is omitted from the
+#' alternative (see `choice_type`).
+#'
+#' In long layout the same column is evaluated once per alternative: unordered
+#' data must use a binary indicator (1 for the chosen alternative, 0 otherwise),
+#' ordered data repeats the ordinal value for every alternative, and ranked data
+#' stores consecutive ranks `1:k` for the observed top `k` alternatives and `NA`
+#' for unranked alternatives.
+#'
+#' An entirely missing response marks an occasion that is omitted from the
 #' likelihood. Set to `NULL` for purely covariate tables.
 #'
 #' @param column_as_covariates \[`character()` | `NULL`\]\cr
@@ -57,29 +44,26 @@
 #'
 #' @param delimiter \[`character(1)`\]\cr
 #' Delimiter separating alternative identifiers from covariate names in wide
-#' format. May consist of one or more characters.
+#' format.
 #'
 #' @param choice_type \[`character(1)`\]\cr
-#' Type of choice responses. Use `"discrete"` for standard multinomial choice
-#' data, `"ordered"` for ordered outcomes (declare the order via
-#' `choice_alternatives(ordered = TRUE)`), and `"ranked"` for ranked choice
-#' data. Ranked responses may be complete or partial and use consecutive
+#' Type of choice responses.
+#'
+#' Use `"unordered"` (default) for standard multinomial choice data, `"ordered"`
+#' for ordered outcomes (declare the order via
+#' `choice_alternatives(ordered = TRUE)`), and `"ranked"` for ranked
+#' choice data.
+#'
+#' Ranked responses may be complete or partial and use consecutive
 #' integers `1:k`, where `k` can vary by observation. In wide format, rankings
-#' are stored in columns named
-#' `paste0(column_choice, delimiter, alternative)`; use `NA` for an unranked
-#' alternative.
+#' are stored in columns named `paste0(column_choice, delimiter, alternative)`;
+#' use `NA` for an unranked alternative.
 #'
 #' @inheritParams choice_alternatives
 #' @inheritParams choice_responses
 #'
 #' @return
-#' `choice_data()` and `generate_choice_data()` return a `choice_data` tibble.
-#' `long_to_wide()` and `wide_to_long()` return a tibble in the requested
-#' layout.
-#'
-#' @seealso
-#' [choice_responses()], [choice_covariates()], and [choice_identifiers()] for
-#' the helper objects that feed into `choice_data()`.
+#' A `choice_data` tibble.
 #'
 #' @export
 #'
@@ -89,12 +73,13 @@
 #' ### simulate data from a multinomial probit model
 #' choice_effects <- choice_effects(
 #'   choice_formula = choice_formula(
-#'     formula = choice ~ A | B, error_term = "probit",
+#'     formula = choice ~ A | B,
+#'     error_term = "probit",
 #'     random_effects = c("A" = "cn")
 #'   ),
 #'   choice_alternatives = choice_alternatives(J = 3)
 #' )
-#' generate_choice_data(choice_effects)
+#' generate_choice_data(choice_effects = choice_effects)
 #'
 #' ### transform between long/wide format
 #' long_to_wide(
@@ -132,7 +117,7 @@ choice_data <- function(
   column_as_covariates = NULL,
   delimiter = "_",
   cross_section = is.null(column_occasion),
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 ) {
 
   ### input checks
@@ -314,7 +299,7 @@ is.choice_data <- function(
     error = TRUE,
     var_name = oeli::variable_name(x)
   ) {
-  validate_choice_object(
+  check_choice_object(
     x = x,
     class_name = "choice_data",
     error = error,
@@ -322,35 +307,164 @@ is.choice_data <- function(
   )
 }
 
+#' @noRd
+
+prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
+
+  format <- attr(x, "format")
+  column_choice <- attr(x, "column_choice")
+  column_decider <- attr(x, "column_decider")
+  column_occasion <- attr(x, "column_occasion")
+  column_alternative <- attr(x, "column_alternative")
+  delimiter <- attr(x, "delimiter")
+  choice_alternatives <- attr(choice_effects, "choice_alternatives")
+  alts <- as.character(choice_alternatives)
+  choice_type <- attr(x, "choice_type")
+  if (is.null(choice_type)) {
+    ordered_alternatives <- isTRUE(attr(choice_alternatives, "ordered"))
+    choice_type <- if (ordered_alternatives) "ordered" else "unordered"
+  }
+  rank_prefix <- paste0(column_choice, delimiter)
+  has_choice <- !is.null(column_choice) && (
+    column_choice %in% names(x) ||
+      identical(choice_type, "ranked") &&
+      any(startsWith(names(x), rank_prefix))
+  )
+
+  if (identical(format, "wide")) {
+    base_alt <- attr(choice_alternatives, "base")
+    tmp_choice <- column_choice
+    missing_choice <- is.null(tmp_choice) || !(tmp_choice %in% names(x))
+    if (missing_choice && !identical(choice_type, "ranked")) {
+      tmp_choice <- ".choicedata_dummy_choice"
+      x[[tmp_choice]] <- base_alt
+    }
+    x_long <- wide_to_long(
+      data_frame = x,
+      column_choice = tmp_choice,
+      column_alternative = "alternative",
+      alternatives = alts,
+      delimiter = delimiter,
+      choice_type = choice_type
+    )
+    column_choice_long <- tmp_choice
+    column_alternative_long <- "alternative"
+  } else {
+    x_long <- x
+    column_alternative_long <- if (is.null(column_alternative)) {
+      "alternative"
+    } else {
+      column_alternative
+    }
+    if (!column_alternative_long %in% names(x_long)) {
+      cli::cli_abort(
+        "Missing {.val {column_alternative_long}} column in {.var x}
+        (long format expected).",
+        call = NULL
+      )
+    }
+    if (!identical(column_alternative_long, "alternative")) {
+      x_long[["alternative"]] <- x_long[[column_alternative_long]]
+    }
+    column_choice_long <- column_choice
+  }
+
+  if (!column_decider %in% names(x_long)) {
+    cli::cli_abort(
+      "Missing {.val {column_decider}} column in {.var x}.",
+      call = NULL
+    )
+  }
+  if (!is.null(column_occasion) && !column_occasion %in% names(x_long)) {
+    cli::cli_abort(
+      "Missing {.val {column_occasion}} column in {.var x}.",
+      call = NULL
+    )
+  }
+
+  ids_df <- as.data.frame(choice_identifiers)
+  cd_id <- attr(choice_identifiers, "column_decider")
+  co_id <- attr(choice_identifiers, "column_occasion")
+  co_vals <- if (!is.null(co_id)) ids_df[[co_id]] else rep(1L, nrow(ids_df))
+
+  list(
+    x_long = x_long,
+    column_choice = column_choice_long,
+    column_decider = column_decider,
+    column_occasion = column_occasion,
+    alts = alts,
+    J = attr(choice_alternatives, "J"),
+    Tp = read_Tp(choice_identifiers),
+    ids_df = ids_df,
+    cd_id = cd_id,
+    co_vals = co_vals,
+    choice_type = choice_type,
+    has_choice = has_choice
+  )
+}
+
+#' @noRd
+
+subset_choice_occasion <- function(prep, index) {
+  dec_val <- prep$ids_df[[prep$cd_id]][index]
+  occ_val <- prep$co_vals[index]
+  if (is.null(prep$column_occasion)) {
+    id_prep <- prep$x_long[[prep$column_decider]] == dec_val
+    df_nt <- prep$x_long[id_prep, , drop = FALSE]
+  } else {
+    df_nt <- prep$x_long[
+      prep$x_long[[prep$column_decider]] == dec_val &
+        prep$x_long[[prep$column_occasion]] == occ_val,
+      , drop = FALSE
+    ]
+  }
+  observed_alts <- as.character(df_nt[["alternative"]])
+  unknown_alts <- setdiff(observed_alts, prep$alts)
+  if (length(unknown_alts)) {
+    cli::cli_abort(
+      "Unknown alternative(s) {.val {unknown_alts}} in {.var x}.",
+      call = NULL
+    )
+  }
+  if (anyDuplicated(observed_alts)) {
+    cli::cli_abort(
+      "Alternatives must be unique within each choice occasion.",
+      call = NULL
+    )
+  }
+  ord <- match(prep$alts, observed_alts)
+  available <- which(!is.na(ord))
+  if (!length(available)) {
+    cli::cli_abort(
+      "Missing rows: each choice occasion needs at least one alternative.",
+      call = NULL
+    )
+  }
+  df_nt <- df_nt[ord[available], , drop = FALSE]
+  attr(df_nt, "availability") <- as.integer(available)
+  df_nt
+}
+
 #' @rdname choice_data
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
-#' A \code{\link{choice_effects}} object describing the model.
+#' A \code{\link{choice_effects}} object.
 #'
 #' @param choice_identifiers \[`choice_identifiers`\]\cr
-#' A \code{\link{choice_identifiers}} object that provides the decider and
-#' occasion identifiers.
+#' A \code{\link{choice_identifiers}} object.
 #'
 #' @param choice_covariates \[`choice_covariates`\]\cr
-#' Covariates to include in the generated data.
+#' A \code{\link{choice_covariates}} object.
 #'
 #' @param choice_parameters \[`choice_parameters`\]\cr
-#' Model parameters supplying utilities and covariance structures.
+#' A \code{\link{choice_parameters}} object.
 #'
 #' @param choice_preferences \[`choice_preferences`\]\cr
-#' Decider-specific preference draws used for simulation.
+#' A \code{\link{choice_preferences}} object.
 #'
 #' @param choice_type \[`character(1)`\]\cr
-#' Requested response type. Use `"auto"` (default) to infer the mode from
-#' `choice_alternatives()`, or explicitly simulate `"discrete"`, `"ordered"`,
-#' or `"ranked"` outcomes.
-#'
-#' @details
-#' The generated `choice_data` object inherits a `choice_type` attribute for
-#' the requested simulation mode. Ordered alternatives (`ordered = TRUE`)
-#' yield ordered responses, unordered alternatives default to discrete
-#' multinomial outcomes, and ranked simulations return complete rankings for
-#' every observation.
+#' Requested response type. Use `"unordered"` (default), `"ordered"`, or
+#' `"ranked"`.
 #'
 #' @export
 
@@ -365,7 +479,7 @@ generate_choice_data <- function(
     choice_effects, choice_parameters, choice_identifiers
   ),
   column_choice = "choice",
-  choice_type = c("auto", "discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 ) {
 
   choice_alternatives <- attr(choice_effects, "choice_alternatives")
@@ -374,15 +488,18 @@ generate_choice_data <- function(
   } else {
     isTRUE(attr(choice_alternatives, "ordered"))
   }
-  inferred_type <- if (ordered_alternatives) "ordered" else "discrete"
   choice_type <- match.arg(choice_type)
-  if (identical(choice_type, "auto")) {
-    choice_type <- inferred_type
-  }
   if (identical(choice_type, "ordered") && !ordered_alternatives) {
     cli::cli_abort(
       "Simulating ordered choice data requires {.code ordered = TRUE}
       alternatives.",
+      call = NULL
+    )
+  }
+  if (identical(choice_type, "unordered") && ordered_alternatives) {
+    cli::cli_abort(
+      "Simulating unordered choice data requires alternatives without an
+      ordering.",
       call = NULL
     )
   }
@@ -518,7 +635,7 @@ generate_choice_data <- function(
   if (long_format) {
     column_alternative <- attr(choice_covariates, "column_alternative")
     alternative <- as.character(data_frame[[column_alternative]])
-    if (identical(choice_type, "discrete")) {
+    if (identical(choice_type, "unordered")) {
       chosen <- as.character(data_frame[[column_choice]])
       data_frame[[column_choice]] <- as.integer(chosen == alternative)
     } else if (identical(choice_type, "ranked")) {
@@ -571,7 +688,7 @@ long_to_wide <- function(
   column_occasion = NULL,
   alternatives = unique(data_frame[[column_alternative]]),
   delimiter = "_",
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 ) {
 
   ### input checks
@@ -620,7 +737,7 @@ long_to_wide <- function(
   if (!is.null(column_choice)) {
     response <- data_frame[[column_choice]]
     response_by_obs <- split(response, obs)
-    if (identical(choice_type, "discrete")) {
+    if (identical(choice_type, "unordered")) {
       oeli::input_check_response(
         check = checkmate::check_integerish(
           response, lower = 0, upper = 1, any.missing = TRUE
@@ -735,7 +852,7 @@ long_to_wide <- function(
   }
   id_cols_join <- id_cols
   if (!is.null(column_choice)) {
-    if (identical(choice_type, "discrete")) {
+    if (identical(choice_type, "unordered")) {
       choice_labels <- data_frame |>
         dplyr::filter(.data[[column_choice]] == 1) |>
         dplyr::distinct(dplyr::across(
@@ -749,7 +866,8 @@ long_to_wide <- function(
           dplyr::all_of(c(id_cols_join, column_alternative))
         )) |>
         dplyr::rename(!!column_choice := !!rlang::sym(column_alternative))
-    } else { # ordered
+    } else {
+      ### process ordered responses
       choice_labels <- data_frame |>
         dplyr::group_by(dplyr::across(dplyr::all_of(id_cols_join))) |>
         dplyr::summarise(
@@ -826,7 +944,7 @@ wide_to_long <- function(
   column_alternative = "alternative",
   alternatives = NULL,
   delimiter = "_",
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 ) {
 
   ### input checks
@@ -861,7 +979,7 @@ wide_to_long <- function(
   }
   check_alternatives(alternatives)
   check_delimiter(delimiter)
-  if (!is.null(column_choice) && identical(choice_type, "discrete")) {
+  if (!is.null(column_choice) && identical(choice_type, "unordered")) {
     observed <- stats::na.omit(as.character(data_frame[[column_choice]]))
     unknown <- setdiff(observed, alternatives)
     oeli::input_check_response(
@@ -978,7 +1096,7 @@ wide_to_long <- function(
   if (!is.null(column_choice)) {
     if (identical(choice_type, "ranked")) {
       long[[column_choice]] <- as.integer(long[[column_choice]])
-    } else if (identical(choice_type, "discrete")) {
+    } else if (identical(choice_type, "unordered")) {
       long[[column_choice]] <- as.integer(
         long[[column_alternative]] == long[[column_choice]]
       )

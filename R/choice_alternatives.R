@@ -73,7 +73,7 @@ choice_alternatives <- function(
   alternatives <- check_alternatives(alternatives = alternatives, J = J)
   if (!isTRUE(ordered)) alternatives <- sort(alternatives)
   if (is.null(base)) base <- alternatives[1]
-  check_base(base = base, alternatives = alternatives, J = J)
+  check_base(base = base, alternatives = alternatives)
 
   ### build object
   structure(
@@ -92,7 +92,7 @@ is.choice_alternatives <- function(
   error = FALSE,
   var_name = oeli::variable_name(x)
 ) {
-  validate_choice_object(
+  check_choice_object(
     x = x,
     class_name = "choice_alternatives",
     error = error,
@@ -103,7 +103,7 @@ is.choice_alternatives <- function(
 #' @rdname choice_alternatives
 #'
 #' @param x \[`choice_alternatives`\]\cr
-#' A `choice_alternatives` object.
+#' A \code{\link{choice_alternatives}} object.
 #'
 #' @param ... Currently not used.
 #'

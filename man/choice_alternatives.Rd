@@ -38,7 +38,7 @@ When \code{TRUE}, the alternatives are kept in the given order.
 Otherwise, they are sorted alphabetically.}
 
 \item{x}{[\code{choice_alternatives}]\cr
-A \code{choice_alternatives} object.}
+A \code{\link{choice_alternatives}} object.}
 
 \item{...}{Currently not used.}
 }

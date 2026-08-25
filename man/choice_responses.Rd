@@ -21,7 +21,7 @@ generate_choice_responses(
   choice_preferences = generate_choice_preferences(choice_parameters = choice_parameters,
     choice_effects = choice_effects, choice_identifiers = choice_identifiers),
   column_choice = "choice",
-  choice_type = c("auto", "discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 }
 \arguments{
@@ -42,37 +42,35 @@ Can be \code{NULL} for the cross-sectional case.}
 Treat choice data as cross-sectional?}
 
 \item{choice_effects}{[\code{choice_effects}]\cr
-A \code{\link{choice_effects}} object describing the model structure.}
+A \code{\link{choice_effects}} object.}
 
 \item{choice_covariates}{[\code{choice_covariates}]\cr
-Covariates used to construct utilities.}
+A \code{\link{choice_covariates}} object.}
 
 \item{choice_parameters}{[\code{choice_parameters}]\cr
-Model parameters supplying the mean and covariance components.}
+A \code{\link{choice_parameters}} object.}
 
 \item{choice_identifiers}{[\code{choice_identifiers}]\cr
-Identifiers describing the panel or cross-sectional structure.}
+A \code{\link{choice_identifiers}} object.}
 
 \item{choice_preferences}{[\code{choice_preferences}]\cr
-Preference draws to simulate the choices.}
+A \code{\link{choice_preferences}} object.}
 
 \item{choice_type}{[\code{character(1)}]\cr
-The response type to simulate. Use \code{"auto"} (default) to derive the type
-from \code{choice_alternatives}, or explicitly request \code{"discrete"},
-\code{"ordered"}, or \code{"ranked"} outcomes.}
+The response type to simulate. Use \code{"unordered"} (default), \code{"ordered"},
+or \code{"ranked"}.}
 }
 \value{
 A \code{choice_responses} tibble.
 }
 \description{
-The \code{choice_responses} object defines the observed discrete responses.
-Additional response columns (for example ranked choice indicators) are
-preserved so they can be merged with covariates downstream.
+The \code{choice_responses} object defines the observed choice responses.
 \itemize{
 \item \code{generate_choice_responses()} simulates choices
 }
 }
 \examples{
+### generate choice responses from choice effects
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | time,
@@ -80,6 +78,9 @@ choice_effects <- choice_effects(
   ),
   choice_alternatives = choice_alternatives(J = 5)
 )
-generate_choice_responses(choice_effects = choice_effects)
+(generate_choice_responses(
+  choice_effects = choice_effects,
+  choice_type = "ranked"
+))
 }
 \keyword{data}

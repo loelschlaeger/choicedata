@@ -33,8 +33,11 @@
 #' 7. `"mixing"`, a factor with levels in the order
 #'
 #'    1. `"cn"` (correlated normal distribution),
-#'    2. `"cln+"` (positively signed correlated log-normal distribution),
+#'    2. `"cln"` (positively signed correlated log-normal distribution),
 #'    3. `"cln-"` (negatively signed correlated log-normal distribution),
+#'    4. `"n"` (uncorrelated normal distribution),
+#'    5. `"ln"` (positively signed uncorrelated log-normal distribution),
+#'    6. `"ln-"` (negatively signed uncorrelated log-normal distribution),
 #'
 #'    indicating the type of random effect.
 #'
@@ -52,6 +55,7 @@
 #' @keywords model
 #'
 #' @examples
+#' ### construct choice effects
 #' choice_effects(
 #'   choice_formula = choice_formula(
 #'     formula = choice ~ price | income | I(comfort == 1),
@@ -103,7 +107,16 @@ choice_effects <- function(
   }
 
   ### build choice model effects
-  overview <- new_effect_overview()
+  overview <- data.frame(
+    effect_name = character(),
+    generic_name = character(),
+    covariate = character(),
+    alternative = character(),
+    as_covariate = logical(),
+    as_effect = logical(),
+    mixing = character(),
+    stringsAsFactors = FALSE
+  )
   for (var in covariate_types[[1]]) {
     overview <- append_effects(
       overview = overview,
@@ -119,7 +132,11 @@ choice_effects <- function(
     covariate_types[[2]],
     if (choice_formula$ASC) "ASC"
   )
-  non_base_alternatives <- remove_base_alternative(alt, base)
+  non_base_alternatives <- if (is.null(base) || isTRUE(is.na(base))) {
+    alt
+  } else {
+    alt[alt != base]
+  }
   for (var in alternative_specific_covariates) {
     overview <- append_effects(
       overview = overview,
@@ -151,13 +168,13 @@ choice_effects <- function(
   overview$as_effect <- as.logical(overview$as_effect)
   overview$mixing <- factor(
     overview$mixing,
-    levels = c("cn", "cln+", "cln-"),
+    levels = c("cn", "cln", "cln-", "n", "ln", "ln-"),
     ordered = TRUE
   )
 
   ### sort effects
   effect_order <- order(
-    !is.na(overview$mixing),        # random effects before non-random effects
+    !is.na(overview$mixing),        # non-random effects before random effects
     as.numeric(rownames(overview)), # otherwise sort by occurrence in formula
     decreasing = FALSE,
     na.last = FALSE
@@ -181,117 +198,61 @@ choice_effects <- function(
 
 #' @noRd
 
-new_effect_overview <- function() {
-  data.frame(
-    effect_name = character(),
-    generic_name = character(),
-    covariate = character(),
-    alternative = character(),
-    as_covariate = logical(),
-    as_effect = logical(),
-    mixing = character(),
-    stringsAsFactors = FALSE
-  )
-}
-
-#' @noRd
-
 append_effects <- function(
-  overview,
-  covariate,
-  alternatives,
-  as_covariate,
-  as_effect,
-  mixing,
-  delimiter,
+  overview, covariate, alternatives, as_covariate, as_effect, mixing, delimiter,
   covariate_label = covariate
 ) {
-  mixing <- prepare_mixing_value(mixing)
+  mixing <- if (length(mixing) == 0L || isTRUE(all(is.na(mixing)))) {
+    NA_character_
+  } else {
+    unname(as.character(mixing))[1]
+  }
   for (alternative in alternatives) {
-    overview <- add_effect_row(
-      overview = overview,
-      effect_name = create_effect_name(covariate, alternative, delimiter),
-      covariate = covariate_label,
-      alternative = alternative,
-      as_covariate = as_covariate,
-      as_effect = as_effect,
-      mixing = mixing
+    effect_name <- if (isTRUE(is.na(alternative))) {
+      covariate
+    } else {
+      paste(covariate, alternative, sep = delimiter)
+    }
+    new_row <- data.frame(
+      effect_name = effect_name,
+      generic_name = NA_character_,
+      covariate = if (isTRUE(is.na(covariate_label))) {
+        NA_character_
+      } else {
+        covariate_label
+      },
+      alternative = if (isTRUE(is.na(alternative))) {
+        NA_character_
+      } else {
+        alternative
+      },
+      as_covariate = as.logical(as_covariate),
+      as_effect = as.logical(as_effect),
+      mixing = if (isTRUE(is.na(mixing))) {
+        NA_character_
+      } else {
+        mixing
+      },
+      stringsAsFactors = FALSE
     )
+    rownames(new_row) <- NULL
+    overview <- rbind(overview, new_row)
   }
   overview
 }
 
 #' @noRd
 
-prepare_mixing_value <- function(mixing) {
-  if (length(mixing) == 0L || isTRUE(all(is.na(mixing)))) return(NA_character_)
-  unname(as.character(mixing))[1]
-}
-
-#' @noRd
-
-create_effect_name <- function(covariate, alternative, delimiter) {
-  if (isTRUE(is.na(alternative))) {
-    covariate
-  } else {
-    paste(covariate, alternative, sep = delimiter)
-  }
-}
-
-#' @noRd
-
-add_effect_row <- function(
-  overview,
-  effect_name,
-  covariate,
-  alternative,
-  as_covariate,
-  as_effect,
-  mixing
-) {
-  new_row <- data.frame(
-    effect_name = effect_name,
-    generic_name = NA_character_,
-    covariate = if (isTRUE(is.na(covariate))) {
-      NA_character_
-    } else {
-      covariate
-    },
-    alternative = if (isTRUE(is.na(alternative))) {
-      NA_character_
-    } else {
-      alternative
-    },
-    as_covariate = as.logical(as_covariate),
-    as_effect = as.logical(as_effect),
-    mixing = if (isTRUE(is.na(mixing))) {
-      NA_character_
-    } else {
-      mixing
-    },
-    stringsAsFactors = FALSE
-  )
-  rownames(new_row) <- NULL
-  rbind(overview, new_row)
-}
-
-#' @noRd
-
-remove_base_alternative <- function(alternatives, base) {
-  if (is.null(base) || isTRUE(is.na(base))) {
-    return(alternatives)
-  }
-  alternatives[alternatives != base]
+random_effect_distribution <- function(mixing) {
+  sub("^c", "", as.character(mixing))
 }
 
 #' @noRd
 
 is.choice_effects <- function(
-  x,
-  error = TRUE,
-  var_name = oeli::variable_name(x)
-) {
-  validate_choice_object(
+    x, error = TRUE, var_name = oeli::variable_name(x)
+  ) {
+  check_choice_object(
     x = x,
     class_name = "choice_effects",
     error = error,
@@ -302,7 +263,7 @@ is.choice_effects <- function(
 #' @rdname choice_effects
 #'
 #' @param x \[`choice_effects`\]\cr
-#' The `choice_effects` object to be printed.
+#' A \code{\link{choice_effects}} object.
 #'
 #' @param ...
 #' Currently not used.

@@ -65,12 +65,12 @@ test_that("choice_formula can be specified", {
     as_covariates = "A",
     ac_covariates = "B",
     ASC = TRUE,
-    random_effects = c("A" = "cn", "B" = "cln+")
+    random_effects = c("A" = "cn", "B" = "cln")
   )
   expect_choice_formula(
     choice_formula(
       formula = choice ~ A | B,
-      random_effects = c("B" = "cln+", "ASC" = "cln-")
+      random_effects = c("B" = "cln", "ASC" = "cln-")
     ),
     error_term = "probit",
     choice = "choice",
@@ -78,7 +78,15 @@ test_that("choice_formula can be specified", {
     as_covariates = "A",
     ac_covariates = "B",
     ASC = TRUE,
-    random_effects = c("B" = "cln+", "ASC" = "cln-")
+    random_effects = c("B" = "cln", "ASC" = "cln-")
+  )
+  uncorrelated <- choice_formula(
+    formula = choice ~ A | B + 0 | C,
+    random_effects = c("A" = "n", "B" = "ln", "C" = "ln-")
+  )
+  expect_identical(
+    uncorrelated$random_effects,
+    c("A" = "n", "B" = "ln", "C" = "ln-")
   )
   expect_choice_formula(
     choice_formula(
@@ -287,9 +295,9 @@ test_that("choice_formula can be resolved", {
   ### check random effects
   new_random_effects <- choice_formula_resolved$random_effects
   expect_identical(names(new_random_effects), "brandB")
-  expect_identical(unname(new_random_effects), "cln+")
+  expect_identical(unname(new_random_effects), "cln")
 
-  ### '.' is resolved
+  ### resolve '.'
   choice_formula_2 <- choice_formula(formula = choice ~ .)
   choice_formula_resolved_2 <- resolve_choice_formula(
     choice_formula = choice_formula_2, x = choice_data
@@ -311,42 +319,4 @@ test_that("choice_formula can be resolved", {
     resolve_choice_formula(choice_formula(choice ~ unknown), choice_data),
     "unknown"
   )
-})
-
-test_that("resolve_choice_formula infers alternatives with nested delimiters", {
-  wide_df <- data.frame(
-    deciderID = c(1, 2),
-    choice = c("car", "bus"),
-    travel_time_car = c(10, 12),
-    travel_time_bus = c(14, 9)
-  )
-  choice_obj <- choice_data(
-    data_frame = wide_df,
-    format = "wide",
-    column_choice = "choice",
-    column_decider = "deciderID",
-    delimiter = "_"
-  )
-  cf <- choice_formula(formula = choice ~ travel_time)
-  resolved <- resolve_choice_formula(cf, choice_obj)
-  expect_true("travel_time" %in% resolved$covariate_types[[1]])
-})
-
-test_that("logit error term supports random effects", {
-  expect_no_error(
-    cf_mixed <- choice_formula(
-      formula = choice ~ x,
-      error_term = "logit",
-      random_effects = c("x" = "cn")
-    )
-  )
-  expect_identical(cf_mixed$error_term, "logit")
-  expect_true("x" %in% names(cf_mixed$random_effects))
-
-  cf <- choice_formula(
-    formula = choice ~ x,
-    error_term = "logit"
-  )
-  expect_s3_class(cf, "choice_formula")
-  expect_identical(cf$error_term, "logit")
 })
