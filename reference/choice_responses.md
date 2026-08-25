@@ -1,8 +1,6 @@
 # Define choice response
 
-The `choice_responses` object defines the observed discrete responses.
-Additional response columns (for example ranked choice indicators) are
-preserved so they can be merged with covariates downstream.
+The `choice_responses` object defines the observed choice responses.
 
 - `generate_choice_responses()` simulates choices
 
@@ -25,7 +23,7 @@ generate_choice_responses(
   choice_preferences = generate_choice_preferences(choice_parameters = choice_parameters,
     choice_effects = choice_effects, choice_identifiers = choice_identifiers),
   column_choice = "choice",
-  choice_type = c("auto", "discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 ```
 
@@ -62,34 +60,41 @@ generate_choice_responses(
   \[`choice_effects`\]  
   A
   [`choice_effects`](https://loelschlaeger.de/choicedata/reference/choice_effects.md)
-  object describing the model structure.
+  object.
 
 - choice_covariates:
 
   \[`choice_covariates`\]  
-  Covariates used to construct utilities.
+  A
+  [`choice_covariates`](https://loelschlaeger.de/choicedata/reference/choice_covariates.md)
+  object.
 
 - choice_parameters:
 
   \[`choice_parameters`\]  
-  Model parameters supplying the mean and covariance components.
+  A
+  [`choice_parameters`](https://loelschlaeger.de/choicedata/reference/choice_parameters.md)
+  object.
 
 - choice_identifiers:
 
   \[`choice_identifiers`\]  
-  Identifiers describing the panel or cross-sectional structure.
+  A
+  [`choice_identifiers`](https://loelschlaeger.de/choicedata/reference/choice_identifiers.md)
+  object.
 
 - choice_preferences:
 
   \[`choice_preferences`\]  
-  Preference draws to simulate the choices.
+  A
+  [`choice_preferences`](https://loelschlaeger.de/choicedata/reference/choice_preferences.md)
+  object.
 
 - choice_type:
 
   \[`character(1)`\]  
-  The response type to simulate. Use `"auto"` (default) to derive the
-  type from `choice_alternatives`, or explicitly request `"discrete"`,
-  `"ordered"`, or `"ranked"` outcomes.
+  The response type to simulate. Use `"unordered"` (default),
+  `"ordered"`, or `"ranked"`.
 
 ## Value
 
@@ -98,6 +103,7 @@ A `choice_responses` tibble.
 ## Examples
 
 ``` r
+### generate choice responses from choice effects
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | time,
@@ -105,19 +111,22 @@ choice_effects <- choice_effects(
   ),
   choice_alternatives = choice_alternatives(J = 5)
 )
-generate_choice_responses(choice_effects = choice_effects)
-#> # A tibble: 100 × 3
-#>    deciderID occasionID choice
-#>  * <chr>     <chr>      <chr> 
-#>  1 1         1          B     
-#>  2 2         1          D     
-#>  3 3         1          D     
-#>  4 4         1          B     
-#>  5 5         1          D     
-#>  6 6         1          B     
-#>  7 7         1          A     
-#>  8 8         1          D     
-#>  9 9         1          B     
-#> 10 10        1          D     
+(generate_choice_responses(
+  choice_effects = choice_effects,
+  choice_type = "ranked"
+))
+#> # A tibble: 100 × 8
+#>    deciderID occasionID choice choice_A choice_B choice_C choice_D choice_E
+#>  * <chr>     <chr>      <chr>     <int>    <int>    <int>    <int>    <int>
+#>  1 1         1          D             4        5        3        1        2
+#>  2 2         1          E             3        5        4        2        1
+#>  3 3         1          C             2        5        1        4        3
+#>  4 4         1          C             2        4        1        5        3
+#>  5 5         1          C             2        3        1        5        4
+#>  6 6         1          C             2        4        1        5        3
+#>  7 7         1          C             2        3        1        4        5
+#>  8 8         1          E             2        5        4        3        1
+#>  9 9         1          D             3        4        5        1        2
+#> 10 10        1          C             2        4        1        5        3
 #> # ℹ 90 more rows
 ```

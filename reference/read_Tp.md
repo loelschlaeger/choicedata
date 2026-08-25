@@ -15,9 +15,9 @@ read_Tp(choice_identifiers)
 - choice_identifiers:
 
   \[`choice_identifiers`\]  
-  The
+  A
   [`choice_identifiers`](https://loelschlaeger.de/choicedata/reference/choice_identifiers.md)
-  object that defines the choice occasions.
+  object.
 
 ## Value
 

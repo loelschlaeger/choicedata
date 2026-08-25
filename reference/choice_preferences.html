@@ -3,13 +3,11 @@
 choice model.
 choice_preferences() constructs a choice_preferences object.
 generate_choice_preferences() samples choice preferences at random.
-In latent-class models, one class is sampled per decider.
 
 "><meta property="og:description" content="The choice_preferences object defines the deciders' preferences in the
 choice model.
 choice_preferences() constructs a choice_preferences object.
 generate_choice_preferences() samples choice preferences at random.
-In latent-class models, one class is sampled per decider.
 
 "><meta property="og:image" content="https://loelschlaeger.de/choicedata/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -47,8 +45,7 @@ In latent-class models, one class is sampled per decider.
     <div class="ref-description section level2">
     <p>The <code>choice_preferences</code> object defines the deciders' preferences in the
 choice model.</p><ul><li><p><code>choice_preferences()</code> constructs a <code>choice_preferences</code> object.</p></li>
-<li><p><code>generate_choice_preferences()</code> samples choice preferences at random.
-In latent-class models, one class is sampled per decider.</p></li>
+<li><p><code>generate_choice_preferences()</code> samples choice preferences at random.</p></li>
 </ul></div>
 
     <div class="section level2">
@@ -102,6 +99,7 @@ choice model. The first column contains the decider identifiers.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">### generate choice preferences from choice parameters and effects</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">choice_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_effects.html">choice_effects</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_formula <span class="op">=</span> <span class="fu"><a href="choice_formula.html">choice_formula</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">price</span> <span class="op">|</span> <span class="va">income</span> <span class="op">|</span> <span class="va">comfort</span>,</span></span>
@@ -113,35 +111,21 @@ choice model. The first column contains the decider identifiers.</p>
 <span class="r-in"><span>  <span class="op">)</span>,</span></span>
 <span class="r-in"><span>  choice_alternatives <span class="op">=</span> <span class="fu"><a href="choice_alternatives.html">choice_alternatives</a></span><span class="op">(</span>J <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">choice_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_parameters.html">generate_choice_parameters</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span></span></span>
+<span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span>, C <span class="op">=</span> <span class="fl">2</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_identifiers.html">generate_choice_identifiers</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">choice_preferences</span> <span class="op">&lt;-</span> <span class="fu">generate_choice_preferences</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_parameters <span class="op">=</span> <span class="va">choice_parameters</span>,</span></span>
 <span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span>,</span></span>
-<span class="r-in"><span>  choice_identifiers <span class="op">=</span> <span class="va">ids</span></span></span>
+<span class="r-in"><span>  choice_identifiers <span class="op">=</span> <span class="fu"><a href="choice_identifiers.html">generate_choice_identifiers</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 9</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   deciderID ASC_B ASC_C comfort_A comfort_B comfort_C price income_B income_C</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1         -<span style="color: #BB0000;">1.72</span>  2.94     -<span style="color: #BB0000;">1.70</span>     -<span style="color: #BB0000;">1.43</span>     -<span style="color: #BB0000;">1.39</span> -<span style="color: #BB0000;">2.37</span>     1.92    1.07 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2         -<span style="color: #BB0000;">1.72</span>  2.94     -<span style="color: #BB0000;">1.70</span>     -<span style="color: #BB0000;">1.43</span>     -<span style="color: #BB0000;">1.39</span> -<span style="color: #BB0000;">1.37</span>     1.37    1.12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 3         -<span style="color: #BB0000;">1.72</span>  2.94     -<span style="color: #BB0000;">1.70</span>     -<span style="color: #BB0000;">1.43</span>     -<span style="color: #BB0000;">1.39</span> -<span style="color: #BB0000;">1.38</span>     1.37    0.143</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 4         -<span style="color: #BB0000;">1.72</span>  2.94     -<span style="color: #BB0000;">1.70</span>     -<span style="color: #BB0000;">1.43</span>     -<span style="color: #BB0000;">1.39</span> -<span style="color: #BB0000;">2.33</span>     1.33    2.22 </span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">### inspect decider-specific preference vectors</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">choice_preferences</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 9</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   deciderID ASC_B ASC_C comfort_A comfort_B comfort_C price income_B income_C</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1         -<span style="color: #BB0000;">1.72</span>  2.94     -<span style="color: #BB0000;">1.70</span>     -<span style="color: #BB0000;">1.43</span>     -<span style="color: #BB0000;">1.39</span> -<span style="color: #BB0000;">2.37</span>     1.92    1.07 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2         -<span style="color: #BB0000;">1.72</span>  2.94     -<span style="color: #BB0000;">1.70</span>     -<span style="color: #BB0000;">1.43</span>     -<span style="color: #BB0000;">1.39</span> -<span style="color: #BB0000;">1.37</span>     1.37    1.12 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 3         -<span style="color: #BB0000;">1.72</span>  2.94     -<span style="color: #BB0000;">1.70</span>     -<span style="color: #BB0000;">1.43</span>     -<span style="color: #BB0000;">1.39</span> -<span style="color: #BB0000;">1.38</span>     1.37    0.143</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 4         -<span style="color: #BB0000;">1.72</span>  2.94     -<span style="color: #BB0000;">1.70</span>     -<span style="color: #BB0000;">1.43</span>     -<span style="color: #BB0000;">1.39</span> -<span style="color: #BB0000;">2.33</span>     1.33    2.22 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   deciderID ASC_B  ASC_C comfort_A comfort_B comfort_C price income_B income_C</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1         -<span style="color: #BB0000;">1.98</span>  0.581     -<span style="color: #BB0000;">2.64</span>      5.04      1.04 -<span style="color: #BB0000;">1.92</span>     1.59    2.71 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2          1.82 -<span style="color: #BB0000;">0.966</span>      4.78      1.23     -<span style="color: #BB0000;">1.96</span> -<span style="color: #BB0000;">8.04</span>     3.34   -<span style="color: #BB0000;">1.35</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 3         -<span style="color: #BB0000;">1.98</span>  0.581     -<span style="color: #BB0000;">2.64</span>      5.04      1.04 -<span style="color: #BB0000;">2.78</span>     2.23    3.10 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 4          1.82 -<span style="color: #BB0000;">0.966</span>      4.78      1.23     -<span style="color: #BB0000;">1.96</span> -<span style="color: #BB0000;">9.44</span>     3.21    0.438</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

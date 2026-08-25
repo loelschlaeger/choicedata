@@ -3,7 +3,7 @@
 choice_parameters, which defines the parameters of a choice model.
 choice_parameters() constructs a choice_parameters object.
 generate_choice_parameters() samples parameters at random, see details.
-validate_choice_parameters() validates a choice_parameters object.
+validate_choice_parameters() checks model-specific dimensions.
 switch_parameter_space() transforms a choice_parameters object between
 the interpretation and optimization space, see details.
 
@@ -11,7 +11,7 @@ the interpretation and optimization space, see details.
 choice_parameters, which defines the parameters of a choice model.
 choice_parameters() constructs a choice_parameters object.
 generate_choice_parameters() samples parameters at random, see details.
-validate_choice_parameters() validates a choice_parameters object.
+validate_choice_parameters() checks model-specific dimensions.
 switch_parameter_space() transforms a choice_parameters object between
 the interpretation and optimization space, see details.
 
@@ -52,7 +52,7 @@ the interpretation and optimization space, see details.
     <p>These functions construct, validate, and transform an object of class
 <code>choice_parameters</code>, which defines the parameters of a choice model.</p><ul><li><p><code>choice_parameters()</code> constructs a <code>choice_parameters</code> object.</p></li>
 <li><p><code>generate_choice_parameters()</code> samples parameters at random, see details.</p></li>
-<li><p><code>validate_choice_parameters()</code> validates a <code>choice_parameters</code> object.</p></li>
+<li><p><code>validate_choice_parameters()</code> checks model-specific dimensions.</p></li>
 <li><p><code>switch_parameter_space()</code> transforms a <code>choice_parameters</code> object between
 the interpretation and optimization space, see details.</p></li>
 </ul></div>
@@ -70,7 +70,7 @@ the interpretation and optimization space, see details.</p></li>
 <span><span class="fu">generate_choice_parameters</span><span class="op">(</span></span>
 <span>  <span class="va">choice_effects</span>,</span>
 <span>  fixed_parameters <span class="op">=</span> <span class="fu">choice_parameters</span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  n_classes <span class="op">=</span> <span class="fl">1L</span></span>
+<span>  C <span class="op">=</span> <span class="fl">1L</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">validate_choice_parameters</span><span class="op">(</span></span>
@@ -88,71 +88,66 @@ the interpretation and optimization space, see details.</p></li>
 
 <dl><dt id="arg-beta">beta<a class="anchor" aria-label="anchor" href="#arg-beta"></a></dt>
 <dd><p>[<code>numeric(P)</code> | <code>list(C)</code> | <code>NULL</code>]<br>
-The coefficient vector of length <code>P</code> (number of effects) for computing the
-linear-in-parameters systematic utility \(V = X\beta\). For a latent class
-model, a list of one coefficient vector per class.</p></dd>
+The coefficient vector for computing the linear-in-parameters systematic
+utility \(V = X\beta\).</p>
+<p>For a latent class model, a list of one coefficient vector per class.</p></dd>
 
 
 <dt id="arg-omega">Omega<a class="anchor" aria-label="anchor" href="#arg-omega"></a></dt>
 <dd><p>[<code>matrix(nrow = P_r, ncol = P_r)</code> | <code>list(C)</code> | <code>NULL</code>]<br>
-The covariance matrix of random effects of dimension <code>P_r</code> times <code>P_r</code>,
-where <code>P_r</code> \(\leq\) <code>P</code> is the number of random effects.</p>
-<p>In a latent class model, a list of one covariance matrix per class. Can be
-<code>NULL</code> in the case of <code>P_r = 0</code>.</p></dd>
+The covariance matrix of random effects.</p>
+<p>Not used when <code>P_r = 0</code>.</p>
+<p>In a latent class model, a list of one covariance matrix per class.</p>
+<p>Covariances involving uncorrelated random effects are fixed to zero.</p></dd>
 
 
 <dt id="arg-sigma">Sigma<a class="anchor" aria-label="anchor" href="#arg-sigma"></a></dt>
 <dd><p>[<code>matrix(nrow = J, ncol = J)</code> | <code>numeric(1)</code> | <code>NULL</code>]<br>
-Only relevant in the probit model. For unordered alternatives it is the
-covariance matrix of dimension <code>J</code> times <code>J</code> (number of alternatives) for
-the Gaussian error term \(\epsilon = U - V\). In ordered models it reduces
-to a single variance term.</p></dd>
+Only relevant in the probit model.</p>
+<p>For unordered alternatives it is the covariance matrix for the Gaussian error
+term \(\epsilon = U - V\).</p>
+<p>In ordered models it reduces to a single variance term.</p></dd>
 
 
 <dt id="arg-gamma">gamma<a class="anchor" aria-label="anchor" href="#arg-gamma"></a></dt>
 <dd><p>[<code>numeric(J - 1)</code> | <code>NULL</code>]<br>
-Optional vector of strictly increasing threshold parameters for ordered
-models. The first element must equal zero for identification. Ignored for
-unordered alternatives.</p></dd>
+Vector of strictly increasing threshold parameters required for ordered
+models.</p>
+<p>The first element must equal zero for identification.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
 <dd><p>[<code>numeric(C)</code> | <code>NULL</code>]<br>
-Positive latent class weights. They are shared across choice occasions and
-normalized to sum to one during validation.</p>
-<p>Class-specific <code>beta</code>, <code>Omega</code>, and <code>weights</code> entries use their supplied
-order. As usual for finite mixtures, permuting all class-specific entries
-leaves the model unchanged, so class labels are not identified.</p></dd>
+Positive latent class weights.</p></dd>
 
 
 <dt id="arg-choice-effects">choice_effects<a class="anchor" aria-label="anchor" href="#arg-choice-effects"></a></dt>
 <dd><p>[<code>choice_effects</code>]<br>
-A <code><a href="choice_effects.html">choice_effects</a></code> object describing the utility
-specification.</p></dd>
+A <code><a href="choice_effects.html">choice_effects</a></code> object.</p></dd>
 
 
 <dt id="arg-fixed-parameters">fixed_parameters<a class="anchor" aria-label="anchor" href="#arg-fixed-parameters"></a></dt>
 <dd><p>[<code>choice_parameters</code>]<br>
-Optionally a <code>choice_parameters</code> object of parameters to keep
-fixed when sampling other parameters.</p></dd>
+A <code>choice_parameters</code> object.
+Its supplied components are kept fixed.
+Missing components are completed as described below.</p></dd>
 
 
-<dt id="arg-n-classes">n_classes<a class="anchor" aria-label="anchor" href="#arg-n-classes"></a></dt>
+<dt id="arg-c">C<a class="anchor" aria-label="anchor" href="#arg-c"></a></dt>
 <dd><p>[<code>integer(1)</code>]<br>
-Number of latent classes. The default <code>1</code> generates a regular model.</p></dd>
+Number of latent classes.</p></dd>
 
 
 <dt id="arg-choice-parameters">choice_parameters<a class="anchor" aria-label="anchor" href="#arg-choice-parameters"></a></dt>
 <dd><p>[<code>choice_parameters</code> | <code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric()</a></code>]<br>
-A <code>choice_parameters</code> object. For <code>switch_parameter_space()</code>, a numeric
-vector in optimization space is also accepted and converted back to a
-<code>choice_parameters</code> object.</p></dd>
+A <code>choice_parameters</code> object.
+For <code>switch_parameter_space()</code>, a numeric vector in optimization space is
+also accepted and converted back to a <code>choice_parameters</code> object.</p></dd>
 
 
 <dt id="arg-allow-missing">allow_missing<a class="anchor" aria-label="anchor" href="#arg-allow-missing"></a></dt>
 <dd><p>[<code>logical(1)</code>]<br>
-Should parameters be allowed to be missing (<code>TRUE</code>) or must all required
-elements be present (<code>FALSE</code>)?</p></dd>
+Allow required parameter components to be omitted?</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -163,7 +158,8 @@ elements:</p><dl><dt><code>beta</code></dt>
 <dd><p>The coefficient vector (if any).</p></dd>
 
 <dt><code>Omega</code></dt>
-<dd><p>The covariance matrix of random effects (if any).</p></dd>
+<dd><p>The random-effect covariance matrix on the underlying
+normal scale (if any).</p></dd>
 
 <dt><code>Sigma</code></dt>
 <dd><p>The error term covariance matrix (or variance in ordered
@@ -185,21 +181,32 @@ numeric optimization vector.</p>
 
 
 
-<p>Unspecified choice model parameters (if required) are drawn
-independently from the following distributions:</p><dl><dt><code>beta</code></dt>
-<dd><p>Drawn from a multivariate normal distribution with zero
-mean and a diagonal covariance matrix with value 10 on the diagonal.</p></dd>
+<p><code>generate_choice_parameters()</code> completes required components that are absent
+from <code>fixed_parameters</code>.</p>
+<p>Missing components are generated as follows:</p><dl><dt><code>beta</code></dt>
+<dd><p>Drawn independently for each class from a multivariate normal
+distribution with zero mean and covariance matrix <code>10 * diag(P)</code>.</p></dd>
 
 <dt><code>Omega</code></dt>
-<dd><p>Drawn from an Inverse-Wishart distribution with degrees
-of freedom equal to <code>P_r</code> + 2 and scale matrix equal to the identity.</p></dd>
+<dd><p>Drawn independently for each class from an Inverse-Wishart
+distribution with <code>P_r + 2</code> degrees of freedom and identity scale matrix.
+Covariances involving uncorrelated random effects are then set to zero.</p></dd>
 
 <dt><code>Sigma</code></dt>
-<dd><p>The first row and column are fixed to 0 for level
-normalization. The \((2, 2)\)-value is fixed to 1 for scale
-normalization. The lower right block is drawn from an Inverse-Wishart
-distribution with degrees of freedom equal to <code>J</code> + 1 and scale matrix
-equal to the identity.</p></dd>
+<dd><p>For unordered probit models, the lower right block is drawn
+from an Inverse-Wishart distribution with <code>J + 1</code> degrees of freedom and
+identity scale matrix. The first row and column are fixed to zero and the
+matrix is scaled so that element \((2, 2)\) equals one. For ordered
+probit models, <code>Sigma</code> is set to one; logit models do not use <code>Sigma</code>.</p></dd>
+
+<dt><code>gamma</code></dt>
+<dd><p>For ordered models with two categories, set to zero.
+Otherwise, positive increments are drawn as <code>exp(z)</code>, where the elements
+of <code>z</code> are independent standard normal draws, and cumulatively added to
+the first threshold zero. Unordered models do not use <code>gamma</code>.</p></dd>
+
+<dt><code>weights</code></dt>
+<dd><p>Set to equal class probabilities <code>1 / C</code>.</p></dd>
 
 
 </dl></div>
@@ -213,11 +220,14 @@ object between the interpretation and optimization space.</p><ul><li><p>The inte
 parameters that can be interpreted.</p></li>
 <li><p>The optimization space is a <code>numeric</code> vector of identified parameters that
 can be optimized:</p><ul><li><p><code>beta</code> is not transformed</p></li>
-<li><p>the first row and column of <code>Sigma</code> are fixed to 0 for level
-normalization and the second diagonal element is fixed to 1 for scale
-normalization</p></li>
-<li><p>the covariance matrices (<code>Omega</code> and <code>Sigma</code>) are transformed to their
-vectorized Cholesky factor (diagonal fixed to be positive for uniqueness)</p></li>
+<li><p><code>Omega</code> is represented by its vectorized unique Cholesky factor;
+elements involving uncorrelated random effects are omitted</p></li>
+<li><p>for unordered probit models, <code>Sigma</code> is represented through utility
+differences relative to the first alternative, with the first variance
+fixed to one, and transformed to a vectorized unique Cholesky factor</p></li>
+<li><p>for ordered probit models, the positive scalar <code>Sigma</code> is log-transformed</p></li>
+<li><p>the first ordered threshold is fixed to zero and omitted; logarithms of
+the remaining positive threshold increments are used</p></li>
 <li><p>latent class parameters are concatenated in class order, and <code>C - 1</code>
 log weight ratios use the first class as reference</p></li>
 </ul></li>
@@ -229,25 +239,65 @@ log weight ratios use the first class as reference</p></li>
 <span class="r-in"><span><span class="va">J</span> <span class="op">&lt;-</span> <span class="fl">3</span></span></span>
 <span class="r-in"><span><span class="va">choice_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_effects.html">choice_effects</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_formula <span class="op">=</span> <span class="fu"><a href="choice_formula.html">choice_formula</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">A</span> <span class="op">|</span> <span class="va">B</span>, error_term <span class="op">=</span> <span class="st">"probit"</span>,</span></span>
-<span class="r-in"><span>    random_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span> <span class="op">=</span> <span class="st">"cn"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">x</span> <span class="op">|</span> <span class="va">y</span>, error_term <span class="op">=</span> <span class="st">"probit"</span>,</span></span>
+<span class="r-in"><span>    random_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span> <span class="op">=</span> <span class="st">"cn"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span>,</span></span>
 <span class="r-in"><span>  choice_alternatives <span class="op">=</span> <span class="fu"><a href="choice_alternatives.html">choice_alternatives</a></span><span class="op">(</span>J <span class="op">=</span> <span class="va">J</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">choice_parameters</span> <span class="op">&lt;-</span> <span class="fu">generate_choice_parameters</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu">generate_choice_parameters</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span>,</span></span>
 <span class="r-in"><span>  fixed_parameters <span class="op">=</span> <span class="fu">choice_parameters</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    Sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">J</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="co"># scale and level normalization</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $beta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        y_B        y_C      ASC_B      ASC_C          x </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $Omega</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           x</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x 0.1731118</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $Sigma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   A B C</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> A 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B 0 1 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> C 0 0 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "choice_parameters" "list"             </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">### generate a two-class model with class-specific random effects</span></span></span>
-<span class="r-in"><span><span class="va">latent_parameters</span> <span class="op">&lt;-</span> <span class="fu">generate_choice_parameters</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span>,</span></span>
-<span class="r-in"><span>  n_classes <span class="op">=</span> <span class="fl">2L</span></span></span>
+<span class="r-in"><span><span class="co">### switch between interpretation and optimization spaces</span></span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">optimization_parameters</span> <span class="op">&lt;-</span> <span class="fu">switch_parameter_space</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  choice_parameters <span class="op">=</span> <span class="va">parameters</span>,</span></span>
+<span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     beta_1     beta_2     beta_3     beta_4     beta_5        o_1        l_2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793  0.4160670  0.0000000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        l_3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.0000000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "choice_parameters" "numeric"          </span>
+<span class="r-in"><span><span class="fu">switch_parameter_space</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  choice_parameters <span class="op">=</span> <span class="va">optimization_parameters</span>,</span></span>
+<span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">latent_parameters</span><span class="op">$</span><span class="va">weights</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.5 0.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $beta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        y_B        y_C      ASC_B      ASC_C          x </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $Omega</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           x</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x 0.1731118</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $Sigma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   A B C</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> A 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> B 0 1 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> C 0 0 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "choice_parameters" "list"             </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

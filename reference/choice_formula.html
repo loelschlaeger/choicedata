@@ -62,20 +62,7 @@ Defines the model's error term. Current options are:</p><ul><li><p><code>"probit
 
 <dt id="arg-random-effects">random_effects<a class="anchor" aria-label="anchor" href="#arg-random-effects"></a></dt>
 <dd><p>[<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>]<br>
-Defines the random effects in the model. The expected format of elements in
-<code>random_effects</code> is <code>"&lt;covariate&gt;" = "&lt;distribution&gt;"</code>, where
-<code>"&lt;covariate&gt;"</code> is the name of a variable on the <code>formula</code> right-hand side.
-Every random effect must reference an explicit covariate (or <code>"ASC"</code> for
-alternative-specific constants) that appears in the supplied model formula.</p>
-<p>Current options for <code>"&lt;distribution&gt;"</code> are:</p><ul><li><p><code>"cn"</code>: correlated normal distribution</p></li>
-<li><p><code>"cln+"</code>: positively signed correlated log-normal distribution</p></li>
-<li><p><code>"cln-"</code>: negatively signed correlated log-normal distribution</p></li>
-</ul><p><code>"cln"</code> is an alias for <code>"cln+"</code>. All random effects share one latent
-normal distribution. Thus, normal and log-normal effects can be correlated.
-For a log-normal effect, <code>beta</code> is the latent normal log-location and
-<code>Omega</code> is the covariance matrix of the joint latent normal vector. The
-coefficient is <code>exp(eta)</code> for <code>"cln+"</code> and <code>-exp(eta)</code> for <code>"cln-"</code>.</p>
-<p>To have random effects for the ASCs, use <code>"ASC"</code> for <code>"&lt;covariate&gt;"</code>.</p></dd>
+Named vector defining random effects, see details.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
@@ -141,10 +128,25 @@ right-hand side are possible via the function <code><a href="https://rdrr.io/r/b
 for the transformed covariate, e.g.,
 <code>random_effects = c("I(A1^2 + A2 * 2)" = "cn")</code>.</p></li>
 </ol></div>
+    <div class="section level2">
+    <h2 id="specifying-random-effects">Specifying random effects<a class="anchor" aria-label="anchor" href="#specifying-random-effects"></a></h2>
+
+
+<p>Specify random effects as <code>"&lt;covariate&gt;" = "&lt;distribution&gt;"</code>. Each covariate
+must appear explicitly on the right-hand side of <code>formula</code>; use <code>"ASC"</code> for
+alternative-specific constants.</p>
+<p>Available distributions are:</p><ul><li><p><code>"cn"</code>: correlated normal</p></li>
+<li><p><code>"n"</code>: uncorrelated normal</p></li>
+<li><p><code>"cln"</code>: positively signed correlated log-normal</p></li>
+<li><p><code>"ln"</code>: positively signed uncorrelated log-normal</p></li>
+<li><p><code>"cln-"</code>: negatively signed correlated log-normal</p></li>
+<li><p><code>"ln-"</code>: negatively signed uncorrelated log-normal</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">choice_formula</span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">### specify a choice formula</span></span></span>
+<span class="r-in"><span><span class="fu">choice_formula</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">A</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|</span> <span class="va">B</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  error_term <span class="op">=</span> <span class="st">"probit"</span>,</span></span>
 <span class="r-in"><span>  random_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"I(A^2+1)"</span> <span class="op">=</span> <span class="st">"cn"</span>, <span class="st">"B"</span> <span class="op">=</span> <span class="st">"cn"</span><span class="op">)</span></span></span>

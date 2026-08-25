@@ -82,13 +82,13 @@ design_matrices(
 - column_as_covariates:
 
   \[[`character()`](https://rdrr.io/r/base/character.html) \| `NULL`\]  
-  Column names with alternative-specific covariates in `data_frame`.
+  Column names with alternative-specific covariates.
 
 - delimiter:
 
   \[`character(1)`\]  
   Delimiter separating alternative identifiers from covariate names in
-  wide format. May consist of one or more characters.
+  wide format.
 
 - cross_section:
 
@@ -98,17 +98,16 @@ design_matrices(
 - choice_effects:
 
   \[`choice_effects` \| `NULL`\]  
-  Optional
+  A
   [`choice_effects`](https://loelschlaeger.de/choicedata/reference/choice_effects.md)
-  object used to derive and align covariate labels. If `NULL`, `labels`
-  must be supplied.
+  object.
 
 - choice_identifiers:
 
   \[`choice_identifiers`\]  
   A
   [`choice_identifiers`](https://loelschlaeger.de/choicedata/reference/choice_identifiers.md)
-  object describing the simulated panel.
+  object.
 
 - labels:
 
@@ -175,6 +174,7 @@ of choice alternatives and `P` the number of effects.
 ## Examples
 
 ``` r
+### sample covariates from choice effects
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | income | comfort,
@@ -186,11 +186,18 @@ choice_effects <- choice_effects(
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )
-
-ids <- generate_choice_identifiers(N = 3, Tp = 2)
-
-choice_covariates <- generate_choice_covariates(
+(choice_covariates <- generate_choice_covariates(
   choice_effects = choice_effects,
-  choice_identifiers = ids
-)
+  choice_identifiers = generate_choice_identifiers(N = 3, Tp = 2)
+))
+#> # A tibble: 6 × 9
+#>   deciderID occasionID  income price_A price_B price_C comfort_A comfort_B
+#> * <chr>     <chr>        <dbl>   <dbl>   <dbl>   <dbl>     <dbl>     <dbl>
+#> 1 1         1          -1.82    -1.40    0.255  -2.44   -0.00557    0.622 
+#> 2 1         2          -1.63    -0.247  -0.244  -0.283  -0.554      0.629 
+#> 3 2         1           0.468    0.512  -1.86   -0.522  -0.0526     0.543 
+#> 4 2         2          -0.0160   0.363  -1.30    0.738   1.89      -0.0974
+#> 5 3         1           0.112   -0.827  -1.51    0.935   0.176      0.244 
+#> 6 3         2          -0.639   -0.134  -1.91   -0.279  -0.313      1.07  
+#> # ℹ 1 more variable: comfort_C <dbl>
 ```

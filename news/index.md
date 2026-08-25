@@ -2,6 +2,8 @@
 
 ## choicedata 0.2.0
 
+- Added support for uncorrelated normal and log-normal random effects.
+
 - Specialized `choiceprob_*()` functions are now internal; use
   [`compute_choice_probabilities()`](https://loelschlaeger.de/choicedata/reference/choice_probabilities.md)
   as the public interface.

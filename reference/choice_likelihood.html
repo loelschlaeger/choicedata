@@ -4,8 +4,7 @@ choices for a given choice model.
 choice_likelihood() pre-computes the design matrices and choice indices
 implied by choice_data and choice_effects. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
-likelihood estimation avoid redundant work. Occasions without a response
-are omitted; an entirely unobserved data set has neutral likelihood one.
+likelihood estimation avoid redundant work.
 compute_choice_likelihood() evaluates the (log-)likelihood for given
 choice_parameters and a pre-computed choice_likelihood object.
 
@@ -14,8 +13,7 @@ choices for a given choice model.
 choice_likelihood() pre-computes the design matrices and choice indices
 implied by choice_data and choice_effects. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
-likelihood estimation avoid redundant work. Occasions without a response
-are omitted; an entirely unobserved data set has neutral likelihood one.
+likelihood estimation avoid redundant work.
 compute_choice_likelihood() evaluates the (log-)likelihood for given
 choice_parameters and a pre-computed choice_likelihood object.
 
@@ -57,8 +55,7 @@ choice_parameters and a pre-computed choice_likelihood object.
 choices for a given choice model.</p><ul><li><p><code>choice_likelihood()</code> pre-computes the design matrices and choice indices
 implied by <code>choice_data</code> and <code>choice_effects</code>. The returned object stores
 these quantities so that repeated likelihood evaluations during maximum
-likelihood estimation avoid redundant work. Occasions without a response
-are omitted; an entirely unobserved data set has neutral likelihood one.</p></li>
+likelihood estimation avoid redundant work.</p></li>
 <li><p><code>compute_choice_likelihood()</code> evaluates the (log-)likelihood for given
 <code>choice_parameters</code> and a pre-computed <code>choice_likelihood</code> object.</p></li>
 </ul></div>
@@ -88,43 +85,39 @@ are omitted; an entirely unobserved data set has neutral likelihood one.</p></li
 
 <dl><dt id="arg-choice-data">choice_data<a class="anchor" aria-label="anchor" href="#arg-choice-data"></a></dt>
 <dd><p>[<code>choice_data</code>]<br>
-A <code><a href="choice_data.html">choice_data</a></code> object with the observed choices.</p></dd>
+A <code><a href="choice_data.html">choice_data</a></code> object.</p></dd>
 
 
 <dt id="arg-choice-effects">choice_effects<a class="anchor" aria-label="anchor" href="#arg-choice-effects"></a></dt>
 <dd><p>[<code>choice_effects</code>]<br>
-A <code><a href="choice_effects.html">choice_effects</a></code> object that determines the model effects.</p></dd>
+A <code><a href="choice_effects.html">choice_effects</a></code> object.</p></dd>
 
 
 <dt id="arg-choice-identifiers">choice_identifiers<a class="anchor" aria-label="anchor" href="#arg-choice-identifiers"></a></dt>
 <dd><p>[<code>choice_identifiers</code>]<br>
-A <code><a href="choice_identifiers.html">choice_identifiers</a></code> object. The default extracts identifiers
-from <code>choice_data</code>.</p></dd>
+A <code><a href="choice_identifiers.html">choice_identifiers</a></code> object.
+The default is extracted from <code>choice_data</code>.</p></dd>
 
 
 <dt id="arg-input-checks">input_checks<a class="anchor" aria-label="anchor" href="#arg-input-checks"></a></dt>
 <dd><p>[<code>logical(1)</code>]<br>
-Forwarded to the underlying probability engine to control additional input
-validation.</p></dd>
+Check inputs?</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional probability arguments. Common choices are <code>draws</code> or <code>n_draws</code>
-for simulated mixed models and <code>cml = "no"</code>, <code>"fp"</code>, or <code>"ap"</code> for Probit
-panels. Arguments supplied while computing override those stored by
-<code>choice_likelihood()</code>. Omitted simulation draws are generated once as
-standard normal draws and reused for every evaluation.</p></dd>
+<dd><p>Additional arguments.</p></dd>
 
 
 <dt id="arg-choice-parameters">choice_parameters<a class="anchor" aria-label="anchor" href="#arg-choice-parameters"></a></dt>
 <dd><p>[<code>choice_parameters</code> | <code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric()</a></code>]<br>
-A <code><a href="choice_parameters.html">choice_parameters</a></code> object or a numeric vector in optimization
-space. Numeric input is converted with <code><a href="choice_parameters.html">switch_parameter_space()</a></code>.</p></dd>
+A <code><a href="choice_parameters.html">choice_parameters</a></code> object.
+A numeric vector in optimization space is also accepted and converted with
+<code><a href="choice_parameters.html">switch_parameter_space()</a></code>.</p></dd>
 
 
 <dt id="arg-choice-likelihood">choice_likelihood<a class="anchor" aria-label="anchor" href="#arg-choice-likelihood"></a></dt>
 <dd><p>[<code>choice_likelihood</code>]<br>
-A pre-computed object returned by <code>choice_likelihood()</code>.</p></dd>
+A <code>choice_likelihood</code> object.</p></dd>
 
 
 <dt id="arg-logarithm">logarithm<a class="anchor" aria-label="anchor" href="#arg-logarithm"></a></dt>
@@ -140,15 +133,15 @@ Return the negative (log-)likelihood? Useful for minimization routines.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>choice_likelihood()</code> returns an object of class <code>choice_likelihood</code>, which
-is a <code>list</code> containing the design matrices, choice indices, and identifiers.
-<code>compute_choice_likelihood()</code> returns a single numeric value with the
-(negative) log-likelihood or likelihood, depending on <code>logarithm</code> and
-<code>negative</code>.</p>
+is a <code>list</code> containing the design matrices, choice indices, and identifiers.</p>
+<p><code>compute_choice_likelihood()</code> returns a single numeric value with the
+(negative) (log-)likelihood.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">train_choice</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">### compute choice likelihood</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span>list <span class="op">=</span> <span class="st">"train_choice"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">choice_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_effects.html">choice_effects</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_formula <span class="op">=</span> <span class="fu"><a href="choice_formula.html">choice_formula</a></span><span class="op">(</span></span></span>
@@ -156,7 +149,8 @@ is a <code>list</code> containing the design matrices, choice indices, and ident
 <span class="r-in"><span>    error_term <span class="op">=</span> <span class="st">"probit"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span>,</span></span>
 <span class="r-in"><span>  choice_alternatives <span class="op">=</span> <span class="fu"><a href="choice_alternatives.html">choice_alternatives</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    J <span class="op">=</span> <span class="fl">2</span>, alternatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    J <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>    alternatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -173,7 +167,9 @@ is a <code>list</code> containing the design matrices, choice indices, and ident
 <span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">choice_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_parameters.html">generate_choice_parameters</a></span><span class="op">(</span><span class="va">choice_effects</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">choice_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_parameters.html">generate_choice_parameters</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">compute_choice_likelihood</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_parameters <span class="op">=</span> <span class="va">choice_parameters</span>,</span></span>

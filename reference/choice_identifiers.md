@@ -80,13 +80,11 @@ extract_choice_identifiers(
 
 - x:
 
-  An object of class
-
-  - [`choice_data`](https://loelschlaeger.de/choicedata/reference/choice_data.md),
-
-  - [`choice_covariates`](https://loelschlaeger.de/choicedata/reference/choice_covariates.md),
-    containing the identifiers and covariate values for each decider,
-    occasion, and alternative,
+  A
+  [`choice_data`](https://loelschlaeger.de/choicedata/reference/choice_data.md)
+  or
+  [`choice_covariates`](https://loelschlaeger.de/choicedata/reference/choice_covariates.md)
+  object.
 
 ## Value
 

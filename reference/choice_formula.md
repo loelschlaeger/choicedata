@@ -30,29 +30,7 @@ print(x, ...)
 - random_effects:
 
   \[[`character()`](https://rdrr.io/r/base/character.html)\]  
-  Defines the random effects in the model. The expected format of
-  elements in `random_effects` is `"<covariate>" = "<distribution>"`,
-  where `"<covariate>"` is the name of a variable on the `formula`
-  right-hand side. Every random effect must reference an explicit
-  covariate (or `"ASC"` for alternative-specific constants) that appears
-  in the supplied model formula.
-
-  Current options for `"<distribution>"` are:
-
-  - `"cn"`: correlated normal distribution
-
-  - `"cln+"`: positively signed correlated log-normal distribution
-
-  - `"cln-"`: negatively signed correlated log-normal distribution
-
-  `"cln"` is an alias for `"cln+"`. All random effects share one latent
-  normal distribution. Thus, normal and log-normal effects can be
-  correlated. For a log-normal effect, `beta` is the latent normal
-  log-location and `Omega` is the covariance matrix of the joint latent
-  normal vector. The coefficient is `exp(eta)` for `"cln+"` and
-  `-exp(eta)` for `"cln-"`.
-
-  To have random effects for the ASCs, use `"ASC"` for `"<covariate>"`.
+  Named vector defining random effects, see details.
 
 - x:
 
@@ -133,9 +111,30 @@ The following rules apply:
     defined for the transformed covariate, e.g.,
     `random_effects = c("I(A1^2 + A2 * 2)" = "cn")`.
 
+## Specifying random effects
+
+Specify random effects as `"<covariate>" = "<distribution>"`. Each
+covariate must appear explicitly on the right-hand side of `formula`;
+use `"ASC"` for alternative-specific constants.
+
+Available distributions are:
+
+- `"cn"`: correlated normal
+
+- `"n"`: uncorrelated normal
+
+- `"cln"`: positively signed correlated log-normal
+
+- `"ln"`: positively signed uncorrelated log-normal
+
+- `"cln-"`: negatively signed correlated log-normal
+
+- `"ln-"`: negatively signed uncorrelated log-normal
+
 ## Examples
 
 ``` r
+### specify a choice formula
 choice_formula(
   formula = choice ~ I(A^2 + 1) | B | I(log(C)),
   error_term = "probit",

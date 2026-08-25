@@ -8,7 +8,7 @@ These functions construct, validate, and transform an object of class
 - `generate_choice_parameters()` samples parameters at random, see
   details.
 
-- `validate_choice_parameters()` validates a `choice_parameters` object.
+- `validate_choice_parameters()` checks model-specific dimensions.
 
 - `switch_parameter_space()` transforms a `choice_parameters` object
   between the interpretation and optimization space, see details.
@@ -27,7 +27,7 @@ choice_parameters(
 generate_choice_parameters(
   choice_effects,
   fixed_parameters = choice_parameters(),
-  n_classes = 1L
+  C = 1L
 )
 
 validate_choice_parameters(
@@ -44,62 +44,62 @@ switch_parameter_space(choice_parameters, choice_effects)
 - beta:
 
   \[`numeric(P)` \| `list(C)` \| `NULL`\]  
-  The coefficient vector of length `P` (number of effects) for computing
-  the linear-in-parameters systematic utility \\V = X\beta\\. For a
-  latent class model, a list of one coefficient vector per class.
+  The coefficient vector for computing the linear-in-parameters
+  systematic utility \\V = X\beta\\.
+
+  For a latent class model, a list of one coefficient vector per class.
 
 - Omega:
 
   \[`matrix(nrow = P_r, ncol = P_r)` \| `list(C)` \| `NULL`\]  
-  The covariance matrix of random effects of dimension `P_r` times
-  `P_r`, where `P_r` \\\leq\\ `P` is the number of random effects.
+  The covariance matrix of random effects.
+
+  Not used when `P_r = 0`.
 
   In a latent class model, a list of one covariance matrix per class.
-  Can be `NULL` in the case of `P_r = 0`.
+
+  Covariances involving uncorrelated random effects are fixed to zero.
 
 - Sigma:
 
   \[`matrix(nrow = J, ncol = J)` \| `numeric(1)` \| `NULL`\]  
-  Only relevant in the probit model. For unordered alternatives it is
-  the covariance matrix of dimension `J` times `J` (number of
-  alternatives) for the Gaussian error term \\\epsilon = U - V\\. In
-  ordered models it reduces to a single variance term.
+  Only relevant in the probit model.
+
+  For unordered alternatives it is the covariance matrix for the
+  Gaussian error term \\\epsilon = U - V\\.
+
+  In ordered models it reduces to a single variance term.
 
 - gamma:
 
   \[`numeric(J - 1)` \| `NULL`\]  
-  Optional vector of strictly increasing threshold parameters for
-  ordered models. The first element must equal zero for identification.
-  Ignored for unordered alternatives.
+  Vector of strictly increasing threshold parameters required for
+  ordered models.
+
+  The first element must equal zero for identification.
 
 - weights:
 
   \[`numeric(C)` \| `NULL`\]  
-  Positive latent class weights. They are shared across choice occasions
-  and normalized to sum to one during validation.
-
-  Class-specific `beta`, `Omega`, and `weights` entries use their
-  supplied order. As usual for finite mixtures, permuting all
-  class-specific entries leaves the model unchanged, so class labels are
-  not identified.
+  Positive latent class weights.
 
 - choice_effects:
 
   \[`choice_effects`\]  
   A
   [`choice_effects`](https://loelschlaeger.de/choicedata/reference/choice_effects.md)
-  object describing the utility specification.
+  object.
 
 - fixed_parameters:
 
   \[`choice_parameters`\]  
-  Optionally a `choice_parameters` object of parameters to keep fixed
-  when sampling other parameters.
+  A `choice_parameters` object. Its supplied components are kept fixed.
+  Missing components are completed as described below.
 
-- n_classes:
+- C:
 
   \[`integer(1)`\]  
-  Number of latent classes. The default `1` generates a regular model.
+  Number of latent classes.
 
 - choice_parameters:
 
@@ -112,8 +112,7 @@ switch_parameter_space(choice_parameters, choice_effects)
 - allow_missing:
 
   \[`logical(1)`\]  
-  Should parameters be allowed to be missing (`TRUE`) or must all
-  required elements be present (`FALSE`)?
+  Allow required parameter components to be omitted?
 
 ## Value
 
@@ -127,7 +126,8 @@ the elements:
 
 - `Omega`:
 
-  The covariance matrix of random effects (if any).
+  The random-effect covariance matrix on the underlying normal scale (if
+  any).
 
 - `Sigma`:
 
@@ -147,25 +147,42 @@ numeric optimization vector.
 
 ## Sampling missing choice model parameters
 
-Unspecified choice model parameters (if required) are drawn
-independently from the following distributions:
+`generate_choice_parameters()` completes required components that are
+absent from `fixed_parameters`.
+
+Missing components are generated as follows:
 
 - `beta`:
 
-  Drawn from a multivariate normal distribution with zero mean and a
-  diagonal covariance matrix with value 10 on the diagonal.
+  Drawn independently for each class from a multivariate normal
+  distribution with zero mean and covariance matrix `10 * diag(P)`.
 
 - `Omega`:
 
-  Drawn from an Inverse-Wishart distribution with degrees of freedom
-  equal to `P_r` + 2 and scale matrix equal to the identity.
+  Drawn independently for each class from an Inverse-Wishart
+  distribution with `P_r + 2` degrees of freedom and identity scale
+  matrix. Covariances involving uncorrelated random effects are then set
+  to zero.
 
 - `Sigma`:
 
-  The first row and column are fixed to 0 for level normalization. The
-  \\(2, 2)\\-value is fixed to 1 for scale normalization. The lower
-  right block is drawn from an Inverse-Wishart distribution with degrees
-  of freedom equal to `J` + 1 and scale matrix equal to the identity.
+  For unordered probit models, the lower right block is drawn from an
+  Inverse-Wishart distribution with `J + 1` degrees of freedom and
+  identity scale matrix. The first row and column are fixed to zero and
+  the matrix is scaled so that element \\(2, 2)\\ equals one. For
+  ordered probit models, `Sigma` is set to one; logit models do not use
+  `Sigma`.
+
+- `gamma`:
+
+  For ordered models with two categories, set to zero. Otherwise,
+  positive increments are drawn as `exp(z)`, where the elements of `z`
+  are independent standard normal draws, and cumulatively added to the
+  first threshold zero. Unordered models do not use `gamma`.
+
+- `weights`:
+
+  Set to equal class probabilities `1 / C`.
 
 ## Parameter spaces
 
@@ -180,13 +197,19 @@ object between the interpretation and optimization space.
 
   - `beta` is not transformed
 
-  - the first row and column of `Sigma` are fixed to 0 for level
-    normalization and the second diagonal element is fixed to 1 for
-    scale normalization
+  - `Omega` is represented by its vectorized unique Cholesky factor;
+    elements involving uncorrelated random effects are omitted
 
-  - the covariance matrices (`Omega` and `Sigma`) are transformed to
-    their vectorized Cholesky factor (diagonal fixed to be positive for
-    uniqueness)
+  - for unordered probit models, `Sigma` is represented through utility
+    differences relative to the first alternative, with the first
+    variance fixed to one, and transformed to a vectorized unique
+    Cholesky factor
+
+  - for ordered probit models, the positive scalar `Sigma` is
+    log-transformed
+
+  - the first ordered threshold is fixed to zero and omitted; logarithms
+    of the remaining positive threshold increments are used
 
   - latent class parameters are concatenated in class order, and `C - 1`
     log weight ratios use the first class as reference
@@ -198,23 +221,63 @@ object between the interpretation and optimization space.
 J <- 3
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ A | B, error_term = "probit",
-    random_effects = c("A" = "cn")
+    formula = choice ~ x | y, error_term = "probit",
+    random_effects = c("x" = "cn")
   ),
   choice_alternatives = choice_alternatives(J = J)
 )
-choice_parameters <- generate_choice_parameters(
+(parameters <- generate_choice_parameters(
   choice_effects = choice_effects,
   fixed_parameters = choice_parameters(
     Sigma = diag(c(0, rep(1, J - 1))) # scale and level normalization
   )
-)
+))
+#> $beta
+#>        y_B        y_C      ASC_B      ASC_C          x 
+#>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793 
+#> 
+#> $Omega
+#>           x
+#> x 0.1731118
+#> 
+#> $Sigma
+#>   A B C
+#> A 0 0 0
+#> B 0 1 0
+#> C 0 0 1
+#> 
+#> attr(,"class")
+#> [1] "choice_parameters" "list"             
 
-### generate a two-class model with class-specific random effects
-latent_parameters <- generate_choice_parameters(
-  choice_effects = choice_effects,
-  n_classes = 2L
+### switch between interpretation and optimization spaces
+(optimization_parameters <- switch_parameter_space(
+  choice_parameters = parameters,
+  choice_effects = choice_effects
+))
+#>     beta_1     beta_2     beta_3     beta_4     beta_5        o_1        l_2 
+#>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793  0.4160670  0.0000000 
+#>        l_3 
+#>  1.0000000 
+#> attr(,"class")
+#> [1] "choice_parameters" "numeric"          
+switch_parameter_space(
+  choice_parameters = optimization_parameters,
+  choice_effects = choice_effects
 )
-latent_parameters$weights
-#> [1] 0.5 0.5
+#> $beta
+#>        y_B        y_C      ASC_B      ASC_C          x 
+#>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793 
+#> 
+#> $Omega
+#>           x
+#> x 0.1731118
+#> 
+#> $Sigma
+#>   A B C
+#> A 0 0 0
+#> B 0 1 0
+#> C 0 0 1
+#> 
+#> attr(,"class")
+#> [1] "choice_parameters" "list"             
 ```

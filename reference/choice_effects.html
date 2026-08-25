@@ -79,7 +79,7 @@ The delimiter between covariate and alternative name.</p></dd>
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>[<code>choice_effects</code>]<br>
-The <code>choice_effects</code> object to be printed.</p></dd>
+A <code>choice_effects</code> object.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -98,8 +98,11 @@ if the effect is alternative-specific),</p></li>
 <li><p><code>"as_covariate"</code>, indicator whether the covariate is alternative-specific,</p></li>
 <li><p><code>"as_effect"</code>, indicator whether the effect is alternative-specific,</p></li>
 <li><p><code>"mixing"</code>, a factor with levels in the order</p><ol><li><p><code>"cn"</code> (correlated normal distribution),</p></li>
-<li><p><code>"cln+"</code> (positively signed correlated log-normal distribution),</p></li>
+<li><p><code>"cln"</code> (positively signed correlated log-normal distribution),</p></li>
 <li><p><code>"cln-"</code> (negatively signed correlated log-normal distribution),</p></li>
+<li><p><code>"n"</code> (uncorrelated normal distribution),</p></li>
+<li><p><code>"ln"</code> (positively signed uncorrelated log-normal distribution),</p></li>
+<li><p><code>"ln-"</code> (negatively signed uncorrelated log-normal distribution),</p></li>
 </ol><p>indicating the type of random effect.</p></li>
 </ol><p>For identification, the choice effects are ordered according to the following
 rules:</p><ol><li><p>Non-random effects come before random effects.</p></li>
@@ -110,7 +113,8 @@ rules:</p><ol><li><p>Non-random effects come before random effects.</p></li>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">choice_effects</span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">### construct choice effects</span></span></span>
+<span class="r-in"><span><span class="fu">choice_effects</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_formula <span class="op">=</span> <span class="fu"><a href="choice_formula.html">choice_formula</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">price</span> <span class="op">|</span> <span class="va">income</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">comfort</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    error_term <span class="op">=</span> <span class="st">"probit"</span>,</span></span>

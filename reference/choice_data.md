@@ -17,7 +17,7 @@ choice_data(
   column_as_covariates = NULL,
   delimiter = "_",
   cross_section = is.null(column_occasion),
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 
 generate_choice_data(
@@ -28,7 +28,7 @@ generate_choice_data(
   choice_preferences = generate_choice_preferences(choice_effects, choice_parameters,
     choice_identifiers),
   column_choice = "choice",
-  choice_type = c("auto", "discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 
 long_to_wide(
@@ -41,7 +41,7 @@ long_to_wide(
   column_occasion = NULL,
   alternatives = unique(data_frame[[column_alternative]]),
   delimiter = "_",
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 
 wide_to_long(
@@ -50,7 +50,7 @@ wide_to_long(
   column_alternative = "alternative",
   alternatives = NULL,
   delimiter = "_",
-  choice_type = c("discrete", "ordered", "ranked")
+  choice_type = c("unordered", "ordered", "ranked")
 )
 ```
 
@@ -72,17 +72,19 @@ wide_to_long(
 
   \[`character(1)` \| `NULL`\]  
   Column name with the observed choices. In wide layout this column
-  should contain a single value per observation: for discrete data the
+  should contain a single value per observation: for unordered data the
   value is the label of the chosen alternative, for ordered data it is
   the ordered factor or integer score, and for ranked data it is omitted
-  in favor of one column per alternative (see `choice_type`). In long
-  layout the same column is evaluated once per alternative: discrete
-  data must use a binary indicator (1 for the chosen alternative, 0
-  otherwise), ordered data repeats the ordinal value for every
-  alternative, and ranked data stores consecutive ranks `1:k` for the
-  observed top `k` alternatives and `NA` for unranked alternatives. An
-  entirely missing response marks an occasion that is omitted from the
-  likelihood. Set to `NULL` for purely covariate tables.
+  in favor of one column per alternative (see `choice_type`).
+
+  In long layout the same column is evaluated once per alternative:
+  unordered data must use a binary indicator (1 for the chosen
+  alternative, 0 otherwise), ordered data repeats the ordinal value for
+  every alternative, and ranked data stores consecutive ranks `1:k` for
+  the observed top `k` alternatives and `NA` for unranked alternatives.
+
+  An entirely missing response marks an occasion that is omitted from
+  the likelihood. Set to `NULL` for purely covariate tables.
 
 - column_decider:
 
@@ -114,7 +116,7 @@ wide_to_long(
 
   \[`character(1)`\]  
   Delimiter separating alternative identifiers from covariate names in
-  wide format. May consist of one or more characters.
+  wide format.
 
 - cross_section:
 
@@ -124,39 +126,43 @@ wide_to_long(
 - choice_type:
 
   \[`character(1)`\]  
-  Requested response type. Use `"auto"` (default) to infer the mode from
-  [`choice_alternatives()`](https://loelschlaeger.de/choicedata/reference/choice_alternatives.md),
-  or explicitly simulate `"discrete"`, `"ordered"`, or `"ranked"`
-  outcomes.
+  Requested response type. Use `"unordered"` (default), `"ordered"`, or
+  `"ranked"`.
 
 - choice_effects:
 
   \[`choice_effects`\]  
   A
   [`choice_effects`](https://loelschlaeger.de/choicedata/reference/choice_effects.md)
-  object describing the model.
+  object.
 
 - choice_identifiers:
 
   \[`choice_identifiers`\]  
   A
   [`choice_identifiers`](https://loelschlaeger.de/choicedata/reference/choice_identifiers.md)
-  object that provides the decider and occasion identifiers.
+  object.
 
 - choice_covariates:
 
   \[`choice_covariates`\]  
-  Covariates to include in the generated data.
+  A
+  [`choice_covariates`](https://loelschlaeger.de/choicedata/reference/choice_covariates.md)
+  object.
 
 - choice_parameters:
 
   \[`choice_parameters`\]  
-  Model parameters supplying utilities and covariance structures.
+  A
+  [`choice_parameters`](https://loelschlaeger.de/choicedata/reference/choice_parameters.md)
+  object.
 
 - choice_preferences:
 
   \[`choice_preferences`\]  
-  Decider-specific preference draws used for simulation.
+  A
+  [`choice_preferences`](https://loelschlaeger.de/choicedata/reference/choice_preferences.md)
+  object.
 
 - alternatives:
 
@@ -165,43 +171,7 @@ wide_to_long(
 
 ## Value
 
-`choice_data()` and `generate_choice_data()` return a `choice_data`
-tibble. `long_to_wide()` and `wide_to_long()` return a tibble in the
-requested layout.
-
-## Details
-
-`choice_data()` acts as the main entry point for observed data. It
-accepts either long or wide layouts and performs validation before
-returning a tidy tibble with consistent identifiers. Columns that refer
-to the same alternative are aligned using `delimiter` so that downstream
-helpers can detect them automatically. For ranked or ordered choices,
-the function checks the response encoding and reports invalid inputs.
-
-In long format, omit rows for alternatives that are unavailable in a
-choice occasion. The long layout is retained so that individual choice
-sets remain distinguishable. Missing responses are allowed, but
-covariates must be observed because otherwise the corresponding
-utilities are undefined.
-
-- `generate_choice_data()` simulates choice data.
-
-- `wide_to_long()` and `long_to_wide()` transform to wide and long
-  format.
-
-The generated `choice_data` object inherits a `choice_type` attribute
-for the requested simulation mode. Ordered alternatives
-(`ordered = TRUE`) yield ordered responses, unordered alternatives
-default to discrete multinomial outcomes, and ranked simulations return
-complete rankings for every observation.
-
-## See also
-
-[`choice_responses()`](https://loelschlaeger.de/choicedata/reference/choice_responses.md),
-[`choice_covariates()`](https://loelschlaeger.de/choicedata/reference/choice_covariates.md),
-and
-[`choice_identifiers()`](https://loelschlaeger.de/choicedata/reference/choice_identifiers.md)
-for the helper objects that feed into `choice_data()`.
+A `choice_data` tibble.
 
 ## Examples
 
@@ -209,12 +179,13 @@ for the helper objects that feed into `choice_data()`.
 ### simulate data from a multinomial probit model
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ A | B, error_term = "probit",
+    formula = choice ~ A | B,
+    error_term = "probit",
     random_effects = c("A" = "cn")
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )
-generate_choice_data(choice_effects)
+generate_choice_data(choice_effects = choice_effects)
 #> # A tibble: 100 × 7
 #>    deciderID occasionID choice       B     A_A     A_B    A_C
 #>  * <chr>     <chr>      <chr>    <dbl>   <dbl>   <dbl>  <dbl>

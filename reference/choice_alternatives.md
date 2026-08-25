@@ -86,6 +86,7 @@ a `*` when printing a `choice_alternatives` object.
 ## Examples
 
 ``` r
+### unordered choice alternatives: heating
 choice_alternatives(
   J = 3,
   alternatives = c("gas", "electricity", "oil"),
@@ -96,4 +97,17 @@ choice_alternatives(
 #> • electricity
 #> • gas*
 #> • oil
+
+### ordered choice alternatives: opinion
+choice_alternatives(
+  J = 4,
+  alternatives = c("very good", "good", "neither good nor bad", "bad"),
+  ordered = TRUE
+)
+#> 
+#> ── Choice alternatives (ordered) 
+#> • very good*
+#> • good
+#> • neither good nor bad
+#> • bad
 ```

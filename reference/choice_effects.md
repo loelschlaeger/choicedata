@@ -51,7 +51,7 @@ print(x, ...)
 - x:
 
   \[`choice_effects`\]  
-  The `choice_effects` object to be printed.
+  A `choice_effects` object.
 
 - ...:
 
@@ -82,9 +82,16 @@ model effect, and columns are
 
     1.  `"cn"` (correlated normal distribution),
 
-    2.  `"cln+"` (positively signed correlated log-normal distribution),
+    2.  `"cln"` (positively signed correlated log-normal distribution),
 
     3.  `"cln-"` (negatively signed correlated log-normal distribution),
+
+    4.  `"n"` (uncorrelated normal distribution),
+
+    5.  `"ln"` (positively signed uncorrelated log-normal distribution),
+
+    6.  `"ln-"` (negatively signed uncorrelated log-normal
+        distribution),
 
     indicating the type of random effect.
 
@@ -101,6 +108,7 @@ It contains the arguments `choice_formula`, `choice_alternatives`, and
 ## Examples
 
 ``` r
+### construct choice effects
 choice_effects(
   choice_formula = choice_formula(
     formula = choice ~ price | income | I(comfort == 1),
