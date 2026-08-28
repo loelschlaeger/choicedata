@@ -254,7 +254,24 @@ resolve_choice_formula <- function(choice_formula, x) {
     )
   }
 
-  ### ensure long representation & an 'alternative' column
+  extract_model_matrix_covariates <- function(mm) {
+    if (is.null(mm) || ncol(mm) == 0L) {
+      return(list(columns = character(), assignments = integer()))
+    }
+    assignments <- attr(mm, "assign")
+    if (is.null(assignments) || length(assignments) != ncol(mm)) {
+      keep <- colnames(mm) != "(Intercept)"
+      assignments <- seq_len(ncol(mm))
+    } else {
+      keep <- assignments != 0L
+    }
+    list(
+      columns = colnames(mm)[keep],
+      assignments = assignments[keep]
+    )
+  }
+
+  ### ensure long representation and an 'alternative' column
     if (identical(format, "wide")) {
 
       ### infer alternatives from column names if needed
@@ -350,8 +367,11 @@ resolve_choice_formula <- function(choice_formula, x) {
       check = if (inherits(mm, "fail")) as.character(mm) else TRUE,
       var_name = "formula"
     )
-    fail <- inherits(mm, "fail") || is.null(mm) || ncol(mm) < 2L
-    if (isTRUE(fail)) character() else colnames(mm)[-1L]
+    if (inherits(mm, "fail")) {
+      character()
+    } else {
+      extract_model_matrix_covariates(mm)$columns
+    }
   })
   choice_formula$covariate_types <- covariate_types
 
@@ -365,9 +385,11 @@ resolve_choice_formula <- function(choice_formula, x) {
       mm <- oeli::try_silent(
         stats::model.matrix(form, data = x, lhs = 0, rhs = r)
       )
-      if (inherits(mm, "fail") || is.null(mm) || ncol(mm) < 2L) next
-      cols <- colnames(mm)[-1L]
-      asg  <- attr(mm, "assign")[-1L]
+      if (inherits(mm, "fail")) next
+      mm_covariates <- extract_model_matrix_covariates(mm)
+      cols <- mm_covariates$columns
+      asg <- mm_covariates$assignments
+      if (length(cols) == 0L) next
       labs <- stats::terms(form, rhs = r, data = x) |> attr("term.labels")
       all_cols <- c(all_cols, cols)
       if (length(labs)) {
