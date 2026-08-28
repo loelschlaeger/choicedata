@@ -6,9 +6,9 @@ price, the travel time, the number of rail-to-rail transfers (changes),
 and the level of comfort.
 
 The data were obtained in 1987 by Hague Consulting Group for the
-National Dutch Railways. Prices were recorded in Dutch guilder and in
-this data set transformed to Euro at an exchange rate of 2.20371
-guilders = 1 Euro.
+National Dutch Railways. Prices were recorded in cents of Dutch guilders
+and were converted to Euro at an exchange rate of 2.20371 guilders = 1
+Euro.
 
 ## Usage
 
@@ -26,7 +26,7 @@ A `tibble` with 2929 rows and 11 columns:
 
 - occasionID \[`integer`\]:
 
-  The identifier for the choice occasion.
+  The choice occasion within a decider.
 
 - choice \[`character`\]:
 
@@ -65,6 +65,11 @@ A `tibble` with 2929 rows and 11 columns:
 
   The comfort level for alternative `"B"`, where `0` is the best comfort
   and `2` the worst.
+
+## Source
+
+Adapted from `Train` in the [mlogit
+package](https://CRAN.R-project.org/package=mlogit).
 
 ## References
 

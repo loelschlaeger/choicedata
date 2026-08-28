@@ -4,14 +4,14 @@ two hypothetical train trip options "A" and "B" based on the
 price, the travel time, the number of rail-to-rail transfers (changes), and
 the level of comfort.
 The data were obtained in 1987 by Hague Consulting Group for the National
-Dutch Railways. Prices were recorded in Dutch guilder and in this data set
-transformed to Euro at an exchange rate of 2.20371 guilders = 1 Euro.'><meta property="og:description" content='Data set of 2929 stated choices by 235 Dutch individuals deciding between
+Dutch Railways. Prices were recorded in cents of Dutch guilders and were
+converted to Euro at an exchange rate of 2.20371 guilders = 1 Euro.'><meta property="og:description" content='Data set of 2929 stated choices by 235 Dutch individuals deciding between
 two hypothetical train trip options "A" and "B" based on the
 price, the travel time, the number of rail-to-rail transfers (changes), and
 the level of comfort.
 The data were obtained in 1987 by Hague Consulting Group for the National
-Dutch Railways. Prices were recorded in Dutch guilder and in this data set
-transformed to Euro at an exchange rate of 2.20371 guilders = 1 Euro.'><meta property="og:image" content="https://loelschlaeger.de/choicedata/logo.png"></head><body>
+Dutch Railways. Prices were recorded in cents of Dutch guilders and were
+converted to Euro at an exchange rate of 2.20371 guilders = 1 Euro.'><meta property="og:image" content="https://loelschlaeger.de/choicedata/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -50,8 +50,8 @@ two hypothetical train trip options <code>"A"</code> and <code>"B"</code> based 
 price, the travel time, the number of rail-to-rail transfers (changes), and
 the level of comfort.</p>
 <p>The data were obtained in 1987 by Hague Consulting Group for the National
-Dutch Railways. Prices were recorded in Dutch guilder and in this data set
-transformed to Euro at an exchange rate of 2.20371 guilders = 1 Euro.</p>
+Dutch Railways. Prices were recorded in cents of Dutch guilders and were
+converted to Euro at an exchange rate of 2.20371 guilders = 1 Euro.</p>
     </div>
 
     <div class="section level2">
@@ -65,7 +65,7 @@ transformed to Euro at an exchange rate of 2.20371 guilders = 1 Euro.</p>
 <dd><p>The identifier for the decider.</p></dd>
 
 <dt>occasionID [<code>integer</code>]</dt>
-<dd><p>The identifier for the choice occasion.</p></dd>
+<dd><p>The choice occasion within a decider.</p></dd>
 
 <dt>choice [<code>character</code>]</dt>
 <dd><p>The chosen alternative, either <code>"A"</code> or
@@ -103,6 +103,11 @@ where <code>0</code> is the best comfort and <code>2</code> the worst.</p></dd>
 
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
+    <p>Adapted from <code>Train</code> in the
+<a href="https://CRAN.R-project.org/package=mlogit" class="external-link"><span class="pkg">mlogit</span> package</a>.</p>
+    </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Ben-Akiva M, Bolduc D, Bradley M (1993).

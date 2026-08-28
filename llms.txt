@@ -65,29 +65,32 @@ ways to create a range of modeling workflows.
 ### Empirical data
 
 The `travel_mode_choice` data set contains the revealed preferences of
-210 travelers choosing between plane, train, bus, and car. We can
-transform the data from long to wide format or construct model design
-matrices:
+210 travelers choosing between plane, train, bus, and car:
 
 ``` r
 
 library("choicedata")
-
 travel_mode_choice
 #> # A tibble: 840 × 8
 #>    individual mode  choice  wait  cost travel income  size
-#>         <int> <chr>  <int> <int> <int>  <int>  <int> <int>
-#>  1          1 plane      0    69    59    100     35     1
-#>  2          1 train      0    34    31    372     35     1
-#>  3          1 bus        0    35    25    417     35     1
-#>  4          1 car        1     0    10    180     35     1
-#>  5          2 plane      0    64    58     68     30     2
-#>  6          2 train      0    44    31    354     30     2
-#>  7          2 bus        0    53    25    399     30     2
-#>  8          2 car        1     0    11    255     30     2
-#>  9          3 plane      0    69   115    125     40     1
-#> 10          3 train      0    34    98    892     40     1
+#>         <int> <chr>  <int> <int> <dbl>  <int>  <dbl> <int>
+#>  1          1 plane      0    69 36.4     100   21.6     1
+#>  2          1 train      0    34 19.1     372   21.6     1
+#>  3          1 bus        0    35 15.4     417   21.6     1
+#>  4          1 car        1     0  6.17    180   21.6     1
+#>  5          2 plane      0    64 35.8      68   18.5     2
+#>  6          2 train      0    44 19.1     354   18.5     2
+#>  7          2 bus        0    53 15.4     399   18.5     2
+#>  8          2 car        1     0  6.79    255   18.5     2
+#>  9          3 plane      0    69 71.0     125   24.7     1
+#> 10          3 train      0    34 60.5     892   24.7     1
 #> # ℹ 830 more rows
+```
+
+We can transform the data from long (one row per choice alternative) to
+wide format (one row per choice occasion):
+
+``` r
 
 long_to_wide(
   data_frame = travel_mode_choice,
@@ -96,25 +99,30 @@ long_to_wide(
 )
 #> # A tibble: 210 × 16
 #>    individual income  size wait_plane wait_train wait_bus wait_car cost_plane
-#>         <int>  <int> <int>      <int>      <int>    <int>    <int>      <int>
-#>  1          1     35     1         69         34       35        0         59
-#>  2          2     30     2         64         44       53        0         58
-#>  3          3     40     1         69         34       35        0        115
-#>  4          4     70     3         64         44       53        0         49
-#>  5          5     45     2         64         44       53        0         60
-#>  6          6     20     1         69         40       35        0         59
-#>  7          7     45     1         45         34       35        0        148
-#>  8          8     12     1         69         34       35        0        121
-#>  9          9     40     1         69         34       35        0         59
-#> 10         10     70     2         69         34       35        0         58
+#>         <int>  <dbl> <int>      <int>      <int>    <int>    <int>      <dbl>
+#>  1          1  21.6      1         69         34       35        0       36.4
+#>  2          2  18.5      2         64         44       53        0       35.8
+#>  3          3  24.7      1         69         34       35        0       71.0
+#>  4          4  43.2      3         64         44       53        0       30.3
+#>  5          5  27.8      2         64         44       53        0       37.0
+#>  6          6  12.3      1         69         40       35        0       36.4
+#>  7          7  27.8      1         45         34       35        0       91.4
+#>  8          8   7.41     1         69         34       35        0       74.7
+#>  9          9  24.7      1         69         34       35        0       36.4
+#> 10         10  43.2      2         69         34       35        0       35.8
 #> # ℹ 200 more rows
-#> # ℹ 8 more variables: cost_train <int>, cost_bus <int>, cost_car <int>,
+#> # ℹ 8 more variables: cost_train <dbl>, cost_bus <dbl>, cost_car <dbl>,
 #> #   travel_plane <int>, travel_train <int>, travel_bus <int>, travel_car <int>,
 #> #   choice <chr>
+```
+
+We can construct model design matrices:
+
+``` r
 
 mode_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ cost | income + size | travel + wait,
+    formula = choice ~ cost | income | wait,
     error_term = "probit"
   ),
   choice_alternatives = choice_alternatives(
@@ -134,22 +142,17 @@ mode_data <- choice_data(
 )
 
 mode_design <- design_matrices(mode_data, mode_effects)
-mode_design[[1]]
-#>       cost income_car income_plane income_train size_car size_plane size_train
-#> bus     25          0            0            0        0          0          0
-#> car     10         35            0            0        1          0          0
-#> plane   59          0           35            0        0          1          0
-#> train   31          0            0           35        0          0          1
-#>       ASC_car ASC_plane ASC_train travel_bus travel_car travel_plane
-#> bus         0         0         0        417          0            0
-#> car         1         0         0          0        180            0
-#> plane       0         1         0          0          0          100
-#> train       0         0         1          0          0            0
-#>       travel_train wait_bus wait_car wait_plane wait_train
-#> bus              0       35        0          0          0
-#> car              0        0        0          0          0
-#> plane            0        0        0         69          0
-#> train          372        0        0          0         34
+mode_design[[1]] |> round()
+#>       cost income_car income_plane income_train ASC_car ASC_plane ASC_train
+#> bus     15          0            0            0       0         0         0
+#> car      6         22            0            0       1         0         0
+#> plane   36          0           22            0       0         1         0
+#> train   19          0            0           22       0         0         1
+#>       wait_bus wait_car wait_plane wait_train
+#> bus         35        0          0          0
+#> car          0        0          0          0
+#> plane        0        0         69          0
+#> train        0        0          0         34
 ```
 
 ### Simulated choice
@@ -167,7 +170,7 @@ set.seed(1)
 
 sim_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ A | B | C,
+    formula = choice ~ x | y + 0 | z,
     error_term = "logit"
   ),
   choice_alternatives = choice_alternatives(
@@ -178,14 +181,27 @@ sim_effects <- choice_effects(
 
 sim_parameters <- generate_choice_parameters(sim_effects)
 
-sim_data <- generate_choice_data(
+(sim_data <- generate_choice_data(
   choice_effects = sim_effects,
   choice_identifiers = generate_choice_identifiers(N = 200),
   choice_parameters = sim_parameters,
   choice_type = "ranked"
-)
-dim(sim_data)
-#> [1] 200  13
+))
+#> # A tibble: 200 × 13
+#>    deciderID occasionID choice       y    x_A     x_B     x_C     z_A    z_B
+#>  * <chr>     <chr>      <chr>    <dbl>  <dbl>   <dbl>   <dbl>   <dbl>  <dbl>
+#>  1 1         1          B      -0.621   0.487  0.738   0.576  -0.305   1.51 
+#>  2 2         1          A       0.594  -2.21   1.12   -0.0449 -0.0162  0.944
+#>  3 3         1          C      -0.156   0.919  0.782   0.0746 -1.99    0.620
+#>  4 4         1          A      -0.0538 -1.47  -0.478   0.418   1.36   -0.103
+#>  5 5         1          B      -0.165  -1.38  -0.415  -0.394  -0.0593  1.10 
+#>  6 6         1          A       0.769  -0.253  0.697   0.557  -0.689  -0.707
+#>  7 7         1          B       1.43   -0.112  0.881   0.398  -0.612   0.341
+#>  8 8         1          B      -0.0392  1.98  -0.367  -1.04    0.570  -0.135
+#>  9 9         1          A       0.153   0.690  0.0280 -0.743   0.189  -1.80 
+#> 10 10        1          C       0.291   2.17   0.476  -0.710   0.611  -0.934
+#> # ℹ 190 more rows
+#> # ℹ 4 more variables: z_C <dbl>, choice_A <int>, choice_B <int>, choice_C <int>
 
 sim_likelihood <- choice_likelihood(
   choice_data = sim_data,
@@ -214,16 +230,14 @@ estimated_parameters <- switch_parameter_space(
   choice_effects = sim_effects
 )
 
-data.frame(dgp = true_vector, estimated = fit$par)
-#>               dgp   estimated
-#> beta_1 -1.9810209 -2.04179163
-#> beta_2  0.5807312  0.04789289
-#> beta_3 -2.6424897 -3.05406623
-#> beta_4  5.0447208  4.82873952
-#> beta_5  1.0419951  0.99061141
-#> beta_6 -2.5945488 -2.75745549
-#> beta_7  1.5413860  1.21554512
-#> beta_8  2.3347877  1.96729481
+data.frame(dgp = true_vector, estimated = fit$par) |> round(2)
+#>          dgp estimated
+#> beta_1 -1.98     -2.36
+#> beta_2  0.58      0.53
+#> beta_3 -2.64     -2.83
+#> beta_4  5.04      5.64
+#> beta_5  1.04      1.18
+#> beta_6 -2.59     -3.03
 ```
 
 ## Related work
@@ -279,10 +293,24 @@ Functions that help to work with choice data.
 
 Choice data sets contained in the package.
 
+- [`electricity_choice`](https://loelschlaeger.de/choicedata/reference/electricity_choice.md)
+  : Stated Preferences for Electricity Suppliers
+- [`fishing_choice`](https://loelschlaeger.de/choicedata/reference/fishing_choice.md)
+  : Recreational Fishing Mode Choice
+- [`gaming_rankings`](https://loelschlaeger.de/choicedata/reference/gaming_rankings.md)
+  : Rankings of Gaming Platforms
+- [`mode_canada_choice`](https://loelschlaeger.de/choicedata/reference/mode_canada_choice.md)
+  : Travel Mode Choice in Canada
+- [`student_smoking_choice`](https://loelschlaeger.de/choicedata/reference/student_smoking_choice.md)
+  : Ordered Smoking Responses of Students
 - [`train_choice`](https://loelschlaeger.de/choicedata/reference/train_choice.md)
   : Stated Preferences for Train Traveling
 - [`travel_mode_choice`](https://loelschlaeger.de/choicedata/reference/travel_mode_choice.md)
   : Revealed Preferences for Travel Mode Choice
+- [`water_conservation_choice`](https://loelschlaeger.de/choicedata/reference/water_conservation_choice.md)
+  : Dairy-Farm Water Conservation Choices
+- [`wind_power_choice`](https://loelschlaeger.de/choicedata/reference/wind_power_choice.md)
+  : Choices for a Proposed Wind-Power Project
 
 ### Model specification
 

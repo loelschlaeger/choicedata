@@ -88,52 +88,53 @@
 <div class="section level3">
 <h3 id="empirical-data">Empirical data<a class="anchor" aria-label="anchor" href="#empirical-data"></a>
 </h3>
-<p>The <code>travel_mode_choice</code> data set contains the revealed preferences of 210 travelers choosing between plane, train, bus, and car. We can transform the data from long to wide format or construct model design matrices:</p>
+<p>The <code>travel_mode_choice</code> data set contains the revealed preferences of 210 travelers choosing between plane, train, bus, and car:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/loelschlaeger/choicedata" class="external-link">"choicedata"</a></span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">travel_mode_choice</span></span>
 <span><span class="co">#&gt; # A tibble: 840 × 8</span></span>
 <span><span class="co">#&gt;    individual mode  choice  wait  cost travel income  size</span></span>
-<span><span class="co">#&gt;         &lt;int&gt; &lt;chr&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1          1 plane      0    69    59    100     35     1</span></span>
-<span><span class="co">#&gt;  2          1 train      0    34    31    372     35     1</span></span>
-<span><span class="co">#&gt;  3          1 bus        0    35    25    417     35     1</span></span>
-<span><span class="co">#&gt;  4          1 car        1     0    10    180     35     1</span></span>
-<span><span class="co">#&gt;  5          2 plane      0    64    58     68     30     2</span></span>
-<span><span class="co">#&gt;  6          2 train      0    44    31    354     30     2</span></span>
-<span><span class="co">#&gt;  7          2 bus        0    53    25    399     30     2</span></span>
-<span><span class="co">#&gt;  8          2 car        1     0    11    255     30     2</span></span>
-<span><span class="co">#&gt;  9          3 plane      0    69   115    125     40     1</span></span>
-<span><span class="co">#&gt; 10          3 train      0    34    98    892     40     1</span></span>
-<span><span class="co">#&gt; # ℹ 830 more rows</span></span>
-<span></span>
-<span><span class="fu"><a href="reference/choice_data.html">long_to_wide</a></span><span class="op">(</span></span>
+<span><span class="co">#&gt;         &lt;int&gt; &lt;chr&gt;  &lt;int&gt; &lt;int&gt; &lt;dbl&gt;  &lt;int&gt;  &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1          1 plane      0    69 36.4     100   21.6     1</span></span>
+<span><span class="co">#&gt;  2          1 train      0    34 19.1     372   21.6     1</span></span>
+<span><span class="co">#&gt;  3          1 bus        0    35 15.4     417   21.6     1</span></span>
+<span><span class="co">#&gt;  4          1 car        1     0  6.17    180   21.6     1</span></span>
+<span><span class="co">#&gt;  5          2 plane      0    64 35.8      68   18.5     2</span></span>
+<span><span class="co">#&gt;  6          2 train      0    44 19.1     354   18.5     2</span></span>
+<span><span class="co">#&gt;  7          2 bus        0    53 15.4     399   18.5     2</span></span>
+<span><span class="co">#&gt;  8          2 car        1     0  6.79    255   18.5     2</span></span>
+<span><span class="co">#&gt;  9          3 plane      0    69 71.0     125   24.7     1</span></span>
+<span><span class="co">#&gt; 10          3 train      0    34 60.5     892   24.7     1</span></span>
+<span><span class="co">#&gt; # ℹ 830 more rows</span></span></code></pre></div>
+<p>We can transform the data from long (one row per choice alternative) to wide format (one row per choice occasion):</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/choice_data.html">long_to_wide</a></span><span class="op">(</span></span>
 <span>  data_frame <span class="op">=</span> <span class="va">travel_mode_choice</span>,</span>
 <span>  column_alternative <span class="op">=</span> <span class="st">"mode"</span>,</span>
 <span>  column_decider <span class="op">=</span> <span class="st">"individual"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 210 × 16</span></span>
 <span><span class="co">#&gt;    individual income  size wait_plane wait_train wait_bus wait_car cost_plane</span></span>
-<span><span class="co">#&gt;         &lt;int&gt;  &lt;int&gt; &lt;int&gt;      &lt;int&gt;      &lt;int&gt;    &lt;int&gt;    &lt;int&gt;      &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1          1     35     1         69         34       35        0         59</span></span>
-<span><span class="co">#&gt;  2          2     30     2         64         44       53        0         58</span></span>
-<span><span class="co">#&gt;  3          3     40     1         69         34       35        0        115</span></span>
-<span><span class="co">#&gt;  4          4     70     3         64         44       53        0         49</span></span>
-<span><span class="co">#&gt;  5          5     45     2         64         44       53        0         60</span></span>
-<span><span class="co">#&gt;  6          6     20     1         69         40       35        0         59</span></span>
-<span><span class="co">#&gt;  7          7     45     1         45         34       35        0        148</span></span>
-<span><span class="co">#&gt;  8          8     12     1         69         34       35        0        121</span></span>
-<span><span class="co">#&gt;  9          9     40     1         69         34       35        0         59</span></span>
-<span><span class="co">#&gt; 10         10     70     2         69         34       35        0         58</span></span>
+<span><span class="co">#&gt;         &lt;int&gt;  &lt;dbl&gt; &lt;int&gt;      &lt;int&gt;      &lt;int&gt;    &lt;int&gt;    &lt;int&gt;      &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1          1  21.6      1         69         34       35        0       36.4</span></span>
+<span><span class="co">#&gt;  2          2  18.5      2         64         44       53        0       35.8</span></span>
+<span><span class="co">#&gt;  3          3  24.7      1         69         34       35        0       71.0</span></span>
+<span><span class="co">#&gt;  4          4  43.2      3         64         44       53        0       30.3</span></span>
+<span><span class="co">#&gt;  5          5  27.8      2         64         44       53        0       37.0</span></span>
+<span><span class="co">#&gt;  6          6  12.3      1         69         40       35        0       36.4</span></span>
+<span><span class="co">#&gt;  7          7  27.8      1         45         34       35        0       91.4</span></span>
+<span><span class="co">#&gt;  8          8   7.41     1         69         34       35        0       74.7</span></span>
+<span><span class="co">#&gt;  9          9  24.7      1         69         34       35        0       36.4</span></span>
+<span><span class="co">#&gt; 10         10  43.2      2         69         34       35        0       35.8</span></span>
 <span><span class="co">#&gt; # ℹ 200 more rows</span></span>
-<span><span class="co">#&gt; # ℹ 8 more variables: cost_train &lt;int&gt;, cost_bus &lt;int&gt;, cost_car &lt;int&gt;,</span></span>
+<span><span class="co">#&gt; # ℹ 8 more variables: cost_train &lt;dbl&gt;, cost_bus &lt;dbl&gt;, cost_car &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   travel_plane &lt;int&gt;, travel_train &lt;int&gt;, travel_bus &lt;int&gt;, travel_car &lt;int&gt;,</span></span>
-<span><span class="co">#&gt; #   choice &lt;chr&gt;</span></span>
-<span></span>
-<span><span class="va">mode_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_effects.html">choice_effects</a></span><span class="op">(</span></span>
+<span><span class="co">#&gt; #   choice &lt;chr&gt;</span></span></code></pre></div>
+<p>We can construct model design matrices:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mode_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_effects.html">choice_effects</a></span><span class="op">(</span></span>
 <span>  choice_formula <span class="op">=</span> <span class="fu"><a href="reference/choice_formula.html">choice_formula</a></span><span class="op">(</span></span>
-<span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">cost</span> <span class="op">|</span> <span class="va">income</span> <span class="op">+</span> <span class="va">size</span> <span class="op">|</span> <span class="va">travel</span> <span class="op">+</span> <span class="va">wait</span>,</span>
+<span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">cost</span> <span class="op">|</span> <span class="va">income</span> <span class="op">|</span> <span class="va">wait</span>,</span>
 <span>    error_term <span class="op">=</span> <span class="st">"probit"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  choice_alternatives <span class="op">=</span> <span class="fu"><a href="reference/choice_alternatives.html">choice_alternatives</a></span><span class="op">(</span></span>
@@ -153,35 +154,30 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">mode_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_covariates.html">design_matrices</a></span><span class="op">(</span><span class="va">mode_data</span>, <span class="va">mode_effects</span><span class="op">)</span></span>
-<span><span class="va">mode_design</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt;       cost income_car income_plane income_train size_car size_plane size_train</span></span>
-<span><span class="co">#&gt; bus     25          0            0            0        0          0          0</span></span>
-<span><span class="co">#&gt; car     10         35            0            0        1          0          0</span></span>
-<span><span class="co">#&gt; plane   59          0           35            0        0          1          0</span></span>
-<span><span class="co">#&gt; train   31          0            0           35        0          0          1</span></span>
-<span><span class="co">#&gt;       ASC_car ASC_plane ASC_train travel_bus travel_car travel_plane</span></span>
-<span><span class="co">#&gt; bus         0         0         0        417          0            0</span></span>
-<span><span class="co">#&gt; car         1         0         0          0        180            0</span></span>
-<span><span class="co">#&gt; plane       0         1         0          0          0          100</span></span>
-<span><span class="co">#&gt; train       0         0         1          0          0            0</span></span>
-<span><span class="co">#&gt;       travel_train wait_bus wait_car wait_plane wait_train</span></span>
-<span><span class="co">#&gt; bus              0       35        0          0          0</span></span>
-<span><span class="co">#&gt; car              0        0        0          0          0</span></span>
-<span><span class="co">#&gt; plane            0        0        0         69          0</span></span>
-<span><span class="co">#&gt; train          372        0        0          0         34</span></span></code></pre></div>
+<span><span class="va">mode_design</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       cost income_car income_plane income_train ASC_car ASC_plane ASC_train</span></span>
+<span><span class="co">#&gt; bus     15          0            0            0       0         0         0</span></span>
+<span><span class="co">#&gt; car      6         22            0            0       1         0         0</span></span>
+<span><span class="co">#&gt; plane   36          0           22            0       0         1         0</span></span>
+<span><span class="co">#&gt; train   19          0            0           22       0         0         1</span></span>
+<span><span class="co">#&gt;       wait_bus wait_car wait_plane wait_train</span></span>
+<span><span class="co">#&gt; bus         35        0          0          0</span></span>
+<span><span class="co">#&gt; car          0        0          0          0</span></span>
+<span><span class="co">#&gt; plane        0        0         69          0</span></span>
+<span><span class="co">#&gt; train        0        0          0         34</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="simulated-choice">Simulated choice<a class="anchor" aria-label="anchor" href="#simulated-choice"></a>
 </h3>
 <p><code><a href="reference/choice_data.html">generate_choice_data()</a></code> makes it straightforward to simulate choice data. The example below simulates 200 ranking tasks with three alternatives and recovers the data-generating parameters by optimizing the likelihood:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/loelschlaeger/choicedata" class="external-link">"choicedata"</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sim_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_effects.html">choice_effects</a></span><span class="op">(</span></span>
 <span>  choice_formula <span class="op">=</span> <span class="fu"><a href="reference/choice_formula.html">choice_formula</a></span><span class="op">(</span></span>
-<span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">A</span> <span class="op">|</span> <span class="va">B</span> <span class="op">|</span> <span class="va">C</span>,</span>
+<span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">x</span> <span class="op">|</span> <span class="va">y</span> <span class="op">+</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">z</span>,</span>
 <span>    error_term <span class="op">=</span> <span class="st">"logit"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  choice_alternatives <span class="op">=</span> <span class="fu"><a href="reference/choice_alternatives.html">choice_alternatives</a></span><span class="op">(</span></span>
@@ -192,14 +188,27 @@
 <span></span>
 <span><span class="va">sim_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_parameters.html">generate_choice_parameters</a></span><span class="op">(</span><span class="va">sim_effects</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sim_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_data.html">generate_choice_data</a></span><span class="op">(</span></span>
+<span><span class="op">(</span><span class="va">sim_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_data.html">generate_choice_data</a></span><span class="op">(</span></span>
 <span>  choice_effects <span class="op">=</span> <span class="va">sim_effects</span>,</span>
 <span>  choice_identifiers <span class="op">=</span> <span class="fu"><a href="reference/choice_identifiers.html">generate_choice_identifiers</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">200</span><span class="op">)</span>,</span>
 <span>  choice_parameters <span class="op">=</span> <span class="va">sim_parameters</span>,</span>
 <span>  choice_type <span class="op">=</span> <span class="st">"ranked"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">sim_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 200  13</span></span>
+<span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 200 × 13</span></span>
+<span><span class="co">#&gt;    deciderID occasionID choice       y    x_A     x_B     x_C     z_A    z_B</span></span>
+<span><span class="co">#&gt;  * &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1 1         1          B      -0.621   0.487  0.738   0.576  -0.305   1.51 </span></span>
+<span><span class="co">#&gt;  2 2         1          A       0.594  -2.21   1.12   -0.0449 -0.0162  0.944</span></span>
+<span><span class="co">#&gt;  3 3         1          C      -0.156   0.919  0.782   0.0746 -1.99    0.620</span></span>
+<span><span class="co">#&gt;  4 4         1          A      -0.0538 -1.47  -0.478   0.418   1.36   -0.103</span></span>
+<span><span class="co">#&gt;  5 5         1          B      -0.165  -1.38  -0.415  -0.394  -0.0593  1.10 </span></span>
+<span><span class="co">#&gt;  6 6         1          A       0.769  -0.253  0.697   0.557  -0.689  -0.707</span></span>
+<span><span class="co">#&gt;  7 7         1          B       1.43   -0.112  0.881   0.398  -0.612   0.341</span></span>
+<span><span class="co">#&gt;  8 8         1          B      -0.0392  1.98  -0.367  -1.04    0.570  -0.135</span></span>
+<span><span class="co">#&gt;  9 9         1          A       0.153   0.690  0.0280 -0.743   0.189  -1.80 </span></span>
+<span><span class="co">#&gt; 10 10        1          C       0.291   2.17   0.476  -0.710   0.611  -0.934</span></span>
+<span><span class="co">#&gt; # ℹ 190 more rows</span></span>
+<span><span class="co">#&gt; # ℹ 4 more variables: z_C &lt;dbl&gt;, choice_A &lt;int&gt;, choice_B &lt;int&gt;, choice_C &lt;int&gt;</span></span>
 <span></span>
 <span><span class="va">sim_likelihood</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_likelihood.html">choice_likelihood</a></span><span class="op">(</span></span>
 <span>  choice_data <span class="op">=</span> <span class="va">sim_data</span>,</span>
@@ -228,16 +237,14 @@
 <span>  choice_effects <span class="op">=</span> <span class="va">sim_effects</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>dgp <span class="op">=</span> <span class="va">true_vector</span>, estimated <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">par</span><span class="op">)</span></span>
-<span><span class="co">#&gt;               dgp   estimated</span></span>
-<span><span class="co">#&gt; beta_1 -1.9810209 -2.04179163</span></span>
-<span><span class="co">#&gt; beta_2  0.5807312  0.04789289</span></span>
-<span><span class="co">#&gt; beta_3 -2.6424897 -3.05406623</span></span>
-<span><span class="co">#&gt; beta_4  5.0447208  4.82873952</span></span>
-<span><span class="co">#&gt; beta_5  1.0419951  0.99061141</span></span>
-<span><span class="co">#&gt; beta_6 -2.5945488 -2.75745549</span></span>
-<span><span class="co">#&gt; beta_7  1.5413860  1.21554512</span></span>
-<span><span class="co">#&gt; beta_8  2.3347877  1.96729481</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>dgp <span class="op">=</span> <span class="va">true_vector</span>, estimated <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">par</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          dgp estimated</span></span>
+<span><span class="co">#&gt; beta_1 -1.98     -2.36</span></span>
+<span><span class="co">#&gt; beta_2  0.58      0.53</span></span>
+<span><span class="co">#&gt; beta_3 -2.64     -2.83</span></span>
+<span><span class="co">#&gt; beta_4  5.04      5.64</span></span>
+<span><span class="co">#&gt; beta_5  1.04      1.18</span></span>
+<span><span class="co">#&gt; beta_6 -2.59     -3.03</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

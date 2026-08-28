@@ -26,10 +26,24 @@ Functions that help to work with choice data.
 
 Choice data sets contained in the package.
 
+- [`electricity_choice`](https://loelschlaeger.de/choicedata/reference/electricity_choice.md)
+  : Stated Preferences for Electricity Suppliers
+- [`fishing_choice`](https://loelschlaeger.de/choicedata/reference/fishing_choice.md)
+  : Recreational Fishing Mode Choice
+- [`gaming_rankings`](https://loelschlaeger.de/choicedata/reference/gaming_rankings.md)
+  : Rankings of Gaming Platforms
+- [`mode_canada_choice`](https://loelschlaeger.de/choicedata/reference/mode_canada_choice.md)
+  : Travel Mode Choice in Canada
+- [`student_smoking_choice`](https://loelschlaeger.de/choicedata/reference/student_smoking_choice.md)
+  : Ordered Smoking Responses of Students
 - [`train_choice`](https://loelschlaeger.de/choicedata/reference/train_choice.md)
   : Stated Preferences for Train Traveling
 - [`travel_mode_choice`](https://loelschlaeger.de/choicedata/reference/travel_mode_choice.md)
   : Revealed Preferences for Travel Mode Choice
+- [`water_conservation_choice`](https://loelschlaeger.de/choicedata/reference/water_conservation_choice.md)
+  : Dairy-Farm Water Conservation Choices
+- [`wind_power_choice`](https://loelschlaeger.de/choicedata/reference/wind_power_choice.md)
+  : Choices for a Proposed Wind-Power Project
 
 ### Model specification
 

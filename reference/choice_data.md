@@ -46,6 +46,7 @@ long_to_wide(
 
 wide_to_long(
   data_frame,
+  column_ac_covariates = NULL,
   column_choice = "choice",
   column_alternative = "alternative",
   alternatives = NULL,
@@ -209,19 +210,19 @@ long_to_wide(
 )
 #> # A tibble: 210 × 16
 #>    individual income  size wait_plane wait_train wait_bus wait_car cost_plane
-#>         <int>  <int> <int>      <int>      <int>    <int>    <int>      <int>
-#>  1          1     35     1         69         34       35        0         59
-#>  2          2     30     2         64         44       53        0         58
-#>  3          3     40     1         69         34       35        0        115
-#>  4          4     70     3         64         44       53        0         49
-#>  5          5     45     2         64         44       53        0         60
-#>  6          6     20     1         69         40       35        0         59
-#>  7          7     45     1         45         34       35        0        148
-#>  8          8     12     1         69         34       35        0        121
-#>  9          9     40     1         69         34       35        0         59
-#> 10         10     70     2         69         34       35        0         58
+#>         <int>  <dbl> <int>      <int>      <int>    <int>    <int>      <dbl>
+#>  1          1  21.6      1         69         34       35        0       36.4
+#>  2          2  18.5      2         64         44       53        0       35.8
+#>  3          3  24.7      1         69         34       35        0       71.0
+#>  4          4  43.2      3         64         44       53        0       30.3
+#>  5          5  27.8      2         64         44       53        0       37.0
+#>  6          6  12.3      1         69         40       35        0       36.4
+#>  7          7  27.8      1         45         34       35        0       91.4
+#>  8          8   7.41     1         69         34       35        0       74.7
+#>  9          9  24.7      1         69         34       35        0       36.4
+#> 10         10  43.2      2         69         34       35        0       35.8
 #> # ℹ 200 more rows
-#> # ℹ 8 more variables: cost_train <int>, cost_bus <int>, cost_car <int>,
+#> # ℹ 8 more variables: cost_train <dbl>, cost_bus <dbl>, cost_car <dbl>,
 #> #   travel_plane <int>, travel_train <int>, travel_bus <int>, travel_car <int>,
 #> #   choice <chr>
 wide_to_long(
@@ -230,16 +231,16 @@ wide_to_long(
 #> # A tibble: 5,858 × 8
 #>    deciderID occasionID choice alternative price  time change comfort
 #>        <int>      <int>  <int> <chr>       <dbl> <dbl>  <int> <fct>  
-#>  1         1          1      1 A            52.9  2.5       0 1      
-#>  2         1          1      0 B            88.1  2.5       0 1      
-#>  3         1          2      1 A            52.9  2.5       0 1      
-#>  4         1          2      0 B            70.5  2.17      0 1      
-#>  5         1          3      1 A            52.9  1.92      0 1      
-#>  6         1          3      0 B            88.1  1.92      0 0      
-#>  7         1          4      0 A            88.1  2.17      0 1      
-#>  8         1          4      1 B            70.5  2.5       0 0      
-#>  9         1          5      0 A            52.9  2.5       0 1      
-#> 10         1          5      1 B            70.5  2.5       0 0      
+#>  1         1          1      1 A            10.9  2.5       0 1      
+#>  2         1          1      0 B            18.2  2.5       0 1      
+#>  3         1          2      1 A            10.9  2.5       0 1      
+#>  4         1          2      0 B            14.5  2.17      0 1      
+#>  5         1          3      1 A            10.9  1.92      0 1      
+#>  6         1          3      0 B            18.2  1.92      0 0      
+#>  7         1          4      0 A            18.2  2.17      0 1      
+#>  8         1          4      1 B            14.5  2.5       0 0      
+#>  9         1          5      0 A            10.9  2.5       0 1      
+#> 10         1          5      1 B            14.5  2.5       0 0      
 #> # ℹ 5,848 more rows
 
 ### individual choice sets and a missing response
