@@ -13,6 +13,8 @@
 
 * Probability calculations now use Rcpp.
 
+* Added additional choice data sets for demonstrations.
+
 # choicedata 0.1.0
 
 * Initial CRAN submission.

@@ -8,7 +8,7 @@
 A \code{tibble} with 2929 rows and 11 columns:
 \describe{
 \item{deciderID [\code{integer}]}{The identifier for the decider.}
-\item{occasionID [\code{integer}]}{The identifier for the choice occasion.}
+\item{occasionID [\code{integer}]}{The choice occasion within a decider.}
 \item{choice [\code{character}]}{The chosen alternative, either \code{"A"} or
 \code{"B"}.}
 \item{price_A [\code{numeric}]}{The price for alternative \code{"A"} in Euro.}
@@ -27,6 +27,10 @@ hours.}
 where \code{0} is the best comfort and \code{2} the worst.}
 }
 }
+\source{
+Adapted from \code{Train} in the
+\href{https://CRAN.R-project.org/package=mlogit}{\pkg{mlogit} package}.
+}
 \usage{
 train_choice
 }
@@ -37,8 +41,8 @@ price, the travel time, the number of rail-to-rail transfers (changes), and
 the level of comfort.
 
 The data were obtained in 1987 by Hague Consulting Group for the National
-Dutch Railways. Prices were recorded in Dutch guilder and in this data set
-transformed to Euro at an exchange rate of 2.20371 guilders = 1 Euro.
+Dutch Railways. Prices were recorded in cents of Dutch guilders and were
+converted to Euro at an exchange rate of 2.20371 guilders = 1 Euro.
 }
 \references{
 \insertRef{BenAkiva1993}{choicedata}

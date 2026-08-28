@@ -10,12 +10,18 @@ A \code{tibble} with 840 rows and 8 columns:
 \item{individual [\code{integer}]}{The identifier for the decider.}
 \item{mode [\code{character}]}{The travel mode.}
 \item{choice [\code{integer}]}{Whether the mode was chosen.}
-\item{wait [\code{integer}]}{The terminal waiting time, 0 for car.}
-\item{cost [\code{integer}]}{The travel cost in dollars.}
+\item{wait [\code{integer}]}{The terminal waiting time in minutes, 0 for
+car.}
+\item{cost [\code{numeric}]}{The in-vehicle cost for all trip stages, in
+euros.}
 \item{travel [\code{integer}]}{The travel time in minutes.}
-\item{income [\code{integer}]}{The household income in thousand dollars.}
+\item{income [\code{numeric}]}{The household income in thousands of euros.}
 \item{size [\code{integer}]}{The traveling group size.}
 }
+}
+\source{
+Adapted from \code{TravelMode} in the
+\href{https://CRAN.R-project.org/package=AER}{\pkg{AER} package}.
 }
 \usage{
 travel_mode_choice
@@ -24,8 +30,14 @@ travel_mode_choice
 Data set of revealed choices by 210 travelers between Sydney and Melbourne
 who report their choice between the four travel modes plane, train, bus, or
 car. The data were collected as part of a 1987 intercity mode choice study.
+Monetary values were converted to Euro at an exchange rate of 1.6196
+Australian dollars = 1 Euro.
+
+This data can be used to model the choice between plane, train, bus, and car
+based on waiting time, travel cost, travel time, household income, and
+traveling group size.
 }
 \references{
-\insertRef{BenAkiva1993}{choicedata}
+\insertRef{Greene2003}{choicedata}
 }
 \keyword{dataset}
