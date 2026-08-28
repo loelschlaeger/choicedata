@@ -72,23 +72,30 @@ The objects are designed to be modular and can be combined in various ways to cr
 ### Empirical data
 
 The `travel_mode_choice` data set contains the revealed preferences of 210
-travelers choosing between plane, train, bus, and car. We can transform the
-data from long to wide format or construct model design matrices:
+travelers choosing between plane, train, bus, and car: 
 
 ```{r travel-example}
 library("choicedata")
-
 travel_mode_choice
+```
 
+We can transform the data from long (one row per choice alternative) to wide
+format (one row per choice occasion):
+
+```{r travel-example-to-wide}
 long_to_wide(
   data_frame = travel_mode_choice,
   column_alternative = "mode",
   column_decider = "individual"
 )
+``` 
 
+We can construct model design matrices:
+
+```{r travel-example-to-design}
 mode_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ cost | income + size | travel + wait,
+    formula = choice ~ cost | income | wait,
     error_term = "probit"
   ),
   choice_alternatives = choice_alternatives(
@@ -108,7 +115,7 @@ mode_data <- choice_data(
 )
 
 mode_design <- design_matrices(mode_data, mode_effects)
-mode_design[[1]]
+mode_design[[1]] |> round()
 ```
 
 ### Simulated choice
@@ -124,7 +131,7 @@ set.seed(1)
 
 sim_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ A | B | C,
+    formula = choice ~ x | y + 0 | z,
     error_term = "logit"
   ),
   choice_alternatives = choice_alternatives(
@@ -135,13 +142,12 @@ sim_effects <- choice_effects(
 
 sim_parameters <- generate_choice_parameters(sim_effects)
 
-sim_data <- generate_choice_data(
+(sim_data <- generate_choice_data(
   choice_effects = sim_effects,
   choice_identifiers = generate_choice_identifiers(N = 200),
   choice_parameters = sim_parameters,
   choice_type = "ranked"
-)
-dim(sim_data)
+))
 
 sim_likelihood <- choice_likelihood(
   choice_data = sim_data,
@@ -170,7 +176,7 @@ estimated_parameters <- switch_parameter_space(
   choice_effects = sim_effects
 )
 
-data.frame(dgp = true_vector, estimated = fit$par)
+data.frame(dgp = true_vector, estimated = fit$par) |> round(2)
 ```
 
 ## Related work
