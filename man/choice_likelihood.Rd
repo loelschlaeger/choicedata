@@ -18,6 +18,7 @@ compute_choice_likelihood(
   choice_likelihood,
   logarithm = TRUE,
   negative = FALSE,
+  aggregate = c("total", "decider", "occasion"),
   ...
 )
 }
@@ -37,10 +38,13 @@ Check inputs?}
 
 \item{...}{Additional arguments.}
 
-\item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
+\item{choice_parameters}{[\code{choice_parameters} | \code{numeric()} | \code{list()}]\cr
 A \code{\link{choice_parameters}} object.
+
 A numeric vector in optimization space is also accepted and converted with
-\code{switch_parameter_space()}.}
+\code{switch_parameter_space()}.
+
+A list of either representation is evaluated as a batch of parameter draws.}
 
 \item{choice_likelihood}{[\code{choice_likelihood}]\cr
 A \code{\link{choice_likelihood}} object.}
@@ -50,13 +54,21 @@ Return the log-likelihood? If \code{FALSE}, the likelihood is returned.}
 
 \item{negative}{[\code{logical(1)}]\cr
 Return the negative (log-)likelihood? Useful for minimization routines.}
+
+\item{aggregate}{[\code{character(1)}]\cr
+Unit of the returned likelihood:
+\itemize{
+\item \code{"occasion"} returns one contribution per observed choice occasion,
+\item \code{"decider"} returns one joint contribution per decider,
+\item \code{"total"} sums the decider contributions.
+}}
 }
 \value{
 \code{choice_likelihood()} returns an object of class \code{choice_likelihood}, which
 is a \code{list} containing the design matrices, choice indices, and identifiers.
 
-\code{compute_choice_likelihood()} returns a single numeric value with the
-(negative) (log-)likelihood.
+\code{compute_choice_likelihood()} returns a numeric scalar for
+\code{aggregate = "total"} and a named numeric vector otherwise.
 }
 \description{
 These functions prepare and evaluate the likelihood contribution of observed

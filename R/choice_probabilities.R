@@ -20,6 +20,9 @@
 #' If `choice_only = TRUE`, it is the name of a single column that contains the
 #' probabilities for the chosen alternatives.
 #'
+#' @param logarithm \[`logical(1)`\]\cr
+#' Are the supplied or requested values log-probabilities?
+#'
 #' @return
 #' A `choice_probabilities` tibble.
 #'
@@ -295,6 +298,7 @@
 #'   choice_parameters = parameters,
 #'   choice_data = simulated_data,
 #'   choice_effects = effects,
+#'   aggregate = "sequence",
 #'   cml = "ap"
 #' )
 #'
@@ -353,7 +357,9 @@ choice_probabilities <- function(
   column_decider = "deciderID",
   column_occasion = NULL,
   cross_section = is.null(column_occasion),
-  column_probabilities = if (choice_only) "choice_probability"
+  column_probabilities = NULL,
+  logarithm = FALSE,
+  aggregate = c("occasion", "sequence")
 ) {
 
   check_not_missing(data_frame)
@@ -361,6 +367,18 @@ choice_probabilities <- function(
   check_column_decider(column_decider, null.ok = FALSE)
   check_column_occasion(column_occasion, column_decider, null.ok = TRUE)
   check_cross_section(cross_section)
+  oeli::input_check_response(
+    check = checkmate::check_flag(logarithm),
+    var_name = "logarithm"
+  )
+  aggregate <- match.arg(aggregate)
+  if (is.null(column_probabilities) && isTRUE(choice_only)) {
+    column_probabilities <- if (logarithm) {
+      "log_choice_probability"
+    } else {
+      "choice_probability"
+    }
+  }
   check_column_probabilities(
     column_probabilities, len = if (choice_only) 1L, null.ok = FALSE
   )
@@ -376,13 +394,18 @@ choice_probabilities <- function(
     }
   )
   for (column in column_probabilities) {
-    oeli::input_check_response(
-      check = checkmate::check_numeric(
+    check <- if (logarithm) {
+      checkmate::check_numeric(
+        data_frame[[column]], upper = sqrt(.Machine$double.eps), finite = FALSE,
+        any.missing = choice_only
+      )
+    } else {
+      checkmate::check_numeric(
         data_frame[[column]], lower = 0, upper = 1,
         finite = TRUE, any.missing = choice_only
-      ),
-      var_name = column
-    )
+      )
+    }
+    oeli::input_check_response(check = check, var_name = column)
     if (any(is.nan(data_frame[[column]]))) {
       cli::cli_abort(
         "Column {.val {column}} must not contain NaN values.",
@@ -391,10 +414,26 @@ choice_probabilities <- function(
     }
   }
   if (!choice_only) {
-    sums <- rowSums(data_frame[column_probabilities])
-    if (any(abs(sums - 1) > sqrt(.Machine$double.eps))) {
+    values <- as.matrix(data_frame[column_probabilities])
+    sums <- if (logarithm) {
+      apply(values, 1L, function(x) {
+        maximum <- max(x)
+        if (identical(maximum, -Inf)) return(-Inf)
+        maximum + log(sum(exp(x - maximum)))
+      })
+    } else {
+      rowSums(values)
+    }
+    target <- if (logarithm) 0 else 1
+    if (any(!is.finite(sums)) ||
+        any(abs(sums - target) > sqrt(.Machine$double.eps))) {
+      message <- if (logarithm) {
+        "Log-probabilities must sum to one on the probability scale in every row."
+      } else {
+        "Alternative probabilities must sum to one in every row."
+      }
       cli::cli_abort(
-        "Alternative probabilities must sum to one in every row.",
+        message,
         call = NULL
       )
     }
@@ -417,7 +456,9 @@ choice_probabilities <- function(
     column_occasion = attr(choice_identifiers, "column_occasion"),
     cross_section = attr(choice_identifiers, "cross_section"),
     column_probabilities = column_probabilities,
-    choice_only = choice_only
+    choice_only = choice_only,
+    logarithm = logarithm,
+    aggregate = aggregate
   )
 
 }
@@ -439,6 +480,10 @@ choice_probabilities <- function(
 #' Should additional internal input checks be performed before computing the
 #' probabilities?
 #'
+#' @param aggregate \[`character(1)`\]\cr
+#' Probability unit. `"occasion"` returns one result per choice occasion.
+#' `"sequence"` returns the joint result for each decider's observed sequence.
+#'
 #' @param ...
 #' Additional arguments.
 #'
@@ -450,6 +495,8 @@ compute_choice_probabilities <- function(
   choice_effects,
   choice_only = TRUE,
   input_checks = TRUE,
+  aggregate = c("occasion", "sequence"),
+  logarithm = FALSE,
   ...
 ) {
 
@@ -467,6 +514,12 @@ compute_choice_probabilities <- function(
     check = checkmate::check_flag(input_checks),
     var_name = "input_checks"
   )
+  aggregate <- match.arg(aggregate)
+  oeli::input_check_response(
+    check = checkmate::check_flag(logarithm),
+    var_name = "logarithm"
+  )
+  probability_args <- list(...)
   choice_parameters <- validate_choice_parameters(
     choice_parameters,
     choice_effects,
@@ -487,72 +540,140 @@ compute_choice_probabilities <- function(
 
   ranked <- identical(attr(choice_data, "choice_type"), "ranked")
   joint_outcomes <- !isTRUE(choice_only) &&
-    (ranked || any(attr(design_list, "Tp") > 1L))
+    identical(aggregate, "sequence")
   if (joint_outcomes) {
-    return(evaluate_choice_outcomes(
-      design_list = design_list,
-      choice_identifiers = choice_identifiers,
-      choice_effects = choice_effects,
-      choice_parameters = choice_parameters,
-      choice_indices = choice_indices,
-      ...
+    return(do.call(
+      evaluate_choice_outcomes,
+      c(
+        list(
+          design_list = design_list,
+          choice_identifiers = choice_identifiers,
+          choice_effects = choice_effects,
+          choice_parameters = choice_parameters,
+          choice_indices = choice_indices,
+          logarithm = logarithm
+        ),
+        probability_args
+      )
     ))
   }
 
   observed <- lengths(choice_indices) > 0L
   all_identifiers <- NULL
+  all_sequence_identifiers <- NULL
   if (isTRUE(choice_only) && any(!observed)) {
-    all_identifiers <- choice_identifiers
-    if (any(observed)) {
-      design_class <- class(design_list)
-      alternatives <- attr(design_list, "alternatives")
-      availability <- attr(design_list, "availability")
-      choice_type <- attr(design_list, "choice_type")
-      design_list <- design_list[observed]
-      choice_indices <- choice_indices[observed]
-      choice_identifiers <- choice_identifiers[observed, , drop = FALSE]
-      Tp <- read_Tp(choice_identifiers)
-      design_list <- structure(
-        design_list,
-        class = design_class,
-        Tp = Tp,
-        alternatives = alternatives,
-        availability = availability[observed],
-        choice_type = choice_type
+    if (identical(aggregate, "occasion")) {
+      all_identifiers <- choice_identifiers
+    } else {
+      column_decider <- attr(choice_identifiers, "column_decider")
+      sequence_data <- data.frame(
+        unique(choice_identifiers[[column_decider]]),
+        stringsAsFactors = FALSE
       )
-      attr(choice_indices, "Tp") <- Tp
+      names(sequence_data) <- column_decider
+      all_sequence_identifiers <- choice_identifiers(
+        data_frame = sequence_data,
+        column_decider = column_decider,
+        column_occasion = NULL,
+        cross_section = TRUE
+      )
     }
+    design_class <- class(design_list)
+    alternatives <- attr(design_list, "alternatives")
+    availability <- attr(design_list, "availability")
+    choice_type <- attr(design_list, "choice_type")
+    design_list <- design_list[observed]
+    choice_indices <- choice_indices[observed]
+    choice_identifiers <- choice_identifiers[observed, , drop = FALSE]
+    if (any(observed)) {
+      Tp <- read_Tp(choice_identifiers)
+    } else {
+      Tp <- integer()
+    }
+    design_list <- structure(
+      design_list,
+      class = design_class,
+      Tp = Tp,
+      alternatives = alternatives,
+      availability = availability[observed],
+      choice_type = choice_type
+    )
+    attr(choice_indices, "Tp") <- Tp
   }
 
-  probabilities <- if (is.null(all_identifiers) || any(observed)) {
-    evaluate_choice_probabilities(
-      design_list = design_list,
-      choice_identifiers = choice_identifiers,
-      choice_effects = choice_effects,
-      choice_parameters = choice_parameters,
-      choice_only = choice_only,
-      choice_indices = choice_indices,
-      ranked = ranked,
-      input_checks = input_checks,
-      ...
+  probabilities <- if (length(design_list)) {
+    do.call(
+      evaluate_choice_probabilities,
+      c(
+        list(
+          design_list = design_list,
+          choice_identifiers = choice_identifiers,
+          choice_effects = choice_effects,
+          choice_parameters = choice_parameters,
+          choice_only = choice_only,
+          choice_indices = choice_indices,
+          ranked = ranked && isTRUE(choice_only),
+          input_checks = input_checks,
+          aggregate = aggregate,
+          logarithm = logarithm
+        ),
+        probability_args
+      )
     )
+  }
+  if (!is.null(all_sequence_identifiers)) {
+    probability_column <- if (logarithm) {
+      "log_choice_probability"
+    } else {
+      "choice_probability"
+    }
+    probability <- rep(NA_real_, nrow(all_sequence_identifiers))
+    if (length(design_list)) {
+      result_column <- attr(probabilities, "column_probabilities")
+      column_decider <- attr(all_sequence_identifiers, "column_decider")
+      result_position <- match(
+        probabilities[[column_decider]],
+        all_sequence_identifiers[[column_decider]]
+      )
+      probability[result_position] <- probabilities[[result_column]]
+    }
+    probability_data <- all_sequence_identifiers
+    probability_data[[probability_column]] <- probability
+    return(choice_probabilities(
+      data_frame = probability_data,
+      choice_only = TRUE,
+      column_decider = attr(all_sequence_identifiers, "column_decider"),
+      column_occasion = NULL,
+      cross_section = TRUE,
+      column_probabilities = probability_column,
+      logarithm = logarithm,
+      aggregate = "sequence"
+    ))
   }
   if (is.null(all_identifiers)) {
     return(probabilities)
   }
   probability <- rep(NA_real_, nrow(all_identifiers))
   if (any(observed)) {
-    probability[observed] <- probabilities$choice_probability
+    probability_column <- attr(probabilities, "column_probabilities")
+    probability[observed] <- probabilities[[probability_column]]
   }
+  probability_column <- if (logarithm) {
+    "log_choice_probability"
+  } else {
+    "choice_probability"
+  }
+  probability_data <- all_identifiers
+  probability_data[[probability_column]] <- probability
   choice_probabilities(
-    data_frame = cbind(
-      all_identifiers,
-      choice_probability = probability
-    ),
+    data_frame = probability_data,
     choice_only = TRUE,
     column_decider = attr(all_identifiers, "column_decider"),
     column_occasion = attr(all_identifiers, "column_occasion"),
-    cross_section = attr(all_identifiers, "cross_section")
+    cross_section = attr(all_identifiers, "cross_section"),
+    column_probabilities = probability_column,
+    logarithm = logarithm,
+    aggregate = aggregate
   )
 }
 
@@ -560,8 +681,13 @@ compute_choice_probabilities <- function(
 
 evaluate_choice_outcomes <- function(
   design_list, choice_identifiers, choice_effects, choice_parameters,
-  choice_indices, ...
+  choice_indices, logarithm = FALSE, ...
 ) {
+
+  oeli::input_check_response(
+    check = checkmate::check_flag(logarithm),
+    var_name = "logarithm"
+  )
 
   if (is.null(choice_parameters$beta)) {
     choice_parameters$beta <- numeric()
@@ -791,7 +917,12 @@ evaluate_choice_outcomes <- function(
   out <- data.frame(decider_all)
   names(out) <- column_decider
   out$outcome <- I(outcome_all)
-  out$choice_probability <- prob_all
+  probability_column <- if (logarithm) {
+    "log_choice_probability"
+  } else {
+    "choice_probability"
+  }
+  out[[probability_column]] <- if (logarithm) log(prob_all) else prob_all
   out <- tibble::as_tibble(out)
   structure(
     out,
@@ -799,10 +930,12 @@ evaluate_choice_outcomes <- function(
     column_decider = column_decider,
     column_occasion = NULL,
     cross_section = attr(choice_identifiers, "cross_section"),
-    column_probabilities = "choice_probability",
+    column_probabilities = probability_column,
     column_outcome = "outcome",
     choice_only = FALSE,
-    joint = TRUE
+    joint = TRUE,
+    aggregate = "sequence",
+    logarithm = logarithm
   )
 }
 
@@ -833,9 +966,12 @@ evaluate_choice_probabilities <- function(
     input_checks = TRUE,
     numeric_only = FALSE,
     logarithm = FALSE,
+    aggregate = c("occasion", "sequence"),
     ranked = identical(attr(design_list, "choice_type"), "ranked"),
     ...
   ) {
+
+  aggregate <- match.arg(aggregate)
 
   if (isTRUE(choice_only) && is.null(choice_indices)) {
     cli::cli_abort(
@@ -869,7 +1005,8 @@ evaluate_choice_probabilities <- function(
   column_decider <- attr(choice_identifiers, "column_decider")
   decider_ids <- choice_identifiers[[column_decider]]
   has_panel <- !is.null(Tp) && length(Tp) && any(Tp > 1)
-  joint_panel <- isTRUE(choice_only) && has_panel
+  joint_panel <- isTRUE(choice_only) && has_panel &&
+    identical(aggregate, "sequence")
   eval_order <- seq_along(design_list)
   if (joint_panel) {
     decider_index <- match(decider_ids, unique(decider_ids))
@@ -890,7 +1027,7 @@ evaluate_choice_probabilities <- function(
       ranked = ranked,
       re_mixing = as.character(stats::na.omit(choice_effects$mixing)),
       input_checks = input_checks,
-      logarithm = logarithm
+      logarithm = logarithm && isTRUE(choice_only)
     ),
     list(...)
   )
@@ -932,9 +1069,20 @@ evaluate_choice_probabilities <- function(
       call = NULL
     )
   )
-  if (!is.numeric(probability) || any(!is.finite(probability))) {
+  if (logarithm && !isTRUE(choice_only)) {
+    probability <- log(probability)
+  }
+  invalid_probability <- !is.numeric(probability) || anyNA(probability) ||
+    any(is.nan(probability)) || any(probability == Inf) ||
+    if (logarithm) {
+      any(probability > sqrt(.Machine$double.eps))
+    } else {
+      any(!is.finite(probability))
+    }
+  if (invalid_probability) {
     cli::cli_abort(
-      "Choice probabilities could not be evaluated to finite values.",
+      "Choice {if (logarithm) 'log-' else ''}probabilities could not be
+      evaluated to valid values.",
       call = NULL
     )
   }
@@ -945,7 +1093,22 @@ evaluate_choice_probabilities <- function(
 
   cross_section <- isTRUE(attr(choice_identifiers, "cross_section"))
   column_occasion <- attr(choice_identifiers, "column_occasion")
-  expected_rows <- nrow(choice_identifiers)
+  output_identifiers <- choice_identifiers
+  sequence_output <- joint_panel
+  if (sequence_output) {
+    decider_order <- unique(decider_ids[eval_order])
+    identifier_data <- data.frame(decider_order, stringsAsFactors = FALSE)
+    names(identifier_data) <- column_decider
+    output_identifiers <- choice_identifiers(
+      data_frame = identifier_data,
+      column_decider = column_decider,
+      column_occasion = NULL,
+      cross_section = TRUE
+    )
+    cross_section <- TRUE
+    column_occasion <- NULL
+  }
+  expected_rows <- nrow(output_identifiers)
   panel_observations <- (!cross_section) && !is.null(column_occasion)
   Tp_sum <- if (!is.null(Tp)) sum(Tp) else NA_integer_
   if (panel_observations && !is.null(Tp) && length(Tp) > 0 &&
@@ -961,7 +1124,15 @@ evaluate_choice_probabilities <- function(
   }
 
   choice_probabilities_df <- if (isTRUE(choice_only)) {
-    data.frame(choice_probability = as.numeric(probability))
+    probability_column <- if (logarithm) {
+      "log_choice_probability"
+    } else {
+      "choice_probability"
+    }
+    stats::setNames(
+      data.frame(as.numeric(probability)),
+      probability_column
+    )
   } else {
     as.data.frame(probability)
   }
@@ -978,7 +1149,7 @@ evaluate_choice_probabilities <- function(
   }
   choice_alternatives <- attr(choice_effects, "choice_alternatives")
   column_probabilities <- if (isTRUE(choice_only)) {
-    "choice_probability"
+    if (logarithm) "log_choice_probability" else "choice_probability"
   } else if (!is.null(choice_alternatives) && length(choice_alternatives)) {
     as.character(choice_alternatives)
   } else {
@@ -989,12 +1160,14 @@ evaluate_choice_probabilities <- function(
   }
 
   choice_probabilities(
-    data_frame = cbind(choice_identifiers, choice_probabilities_df),
+    data_frame = cbind(output_identifiers, choice_probabilities_df),
     choice_only = choice_only,
-    column_decider = attr(choice_identifiers, "column_decider"),
-    column_occasion = attr(choice_identifiers, "column_occasion"),
-    cross_section = attr(choice_identifiers, "cross_section"),
-    column_probabilities = column_probabilities
+    column_decider = attr(output_identifiers, "column_decider"),
+    column_occasion = attr(output_identifiers, "column_occasion"),
+    cross_section = attr(output_identifiers, "cross_section"),
+    column_probabilities = column_probabilities,
+    logarithm = logarithm,
+    aggregate = aggregate
   )
 }
 

@@ -11,7 +11,9 @@ choice_probabilities(
   column_decider = "deciderID",
   column_occasion = NULL,
   cross_section = is.null(column_occasion),
-  column_probabilities = if (choice_only) "choice_probability"
+  column_probabilities = NULL,
+  logarithm = FALSE,
+  aggregate = c("occasion", "sequence")
 )
 
 compute_choice_probabilities(
@@ -20,6 +22,8 @@ compute_choice_probabilities(
   choice_effects,
   choice_only = TRUE,
   input_checks = TRUE,
+  aggregate = c("occasion", "sequence"),
+  logarithm = FALSE,
   ...
 )
 }
@@ -46,6 +50,13 @@ choice alternatives.
 
 If \code{choice_only = TRUE}, it is the name of a single column that contains the
 probabilities for the chosen alternatives.}
+
+\item{logarithm}{[\code{logical(1)}]\cr
+Are the supplied or requested values log-probabilities?}
+
+\item{aggregate}{[\code{character(1)}]\cr
+Probability unit. \code{"occasion"} returns one result per choice occasion.
+\code{"sequence"} returns the joint result for each decider's observed sequence.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
 A \code{\link{choice_parameters}} object.
@@ -342,6 +353,7 @@ compute_choice_probabilities(
   choice_parameters = parameters,
   choice_data = simulated_data,
   choice_effects = effects,
+  aggregate = "sequence",
   cml = "ap"
 )
 

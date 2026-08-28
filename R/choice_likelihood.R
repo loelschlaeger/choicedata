@@ -21,10 +21,13 @@
 #' A \code{\link{choice_identifiers}} object.
 #' The default is extracted from `choice_data`.
 #'
-#' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
+#' @param choice_parameters \[`choice_parameters` | `numeric()` | `list()`\]\cr
 #' A \code{\link{choice_parameters}} object.
+#'
 #' A numeric vector in optimization space is also accepted and converted with
 #' `switch_parameter_space()`.
+#'
+#' A list of either representation is evaluated as a batch of parameter draws.
 #'
 #' @param choice_likelihood \[`choice_likelihood`\]\cr
 #' A \code{\link{choice_likelihood}} object.
@@ -38,6 +41,13 @@
 #' @param input_checks \[`logical(1)`\]\cr
 #' Check inputs?
 #'
+#' @param aggregate \[`character(1)`\]\cr
+#' Unit of the returned likelihood:
+#'
+#' - `"occasion"` returns one contribution per observed choice occasion,
+#' - `"decider"` returns one joint contribution per decider,
+#' - `"total"` sums the decider contributions.
+#'
 #' @param ...
 #' Additional arguments.
 #'
@@ -45,8 +55,8 @@
 #' `choice_likelihood()` returns an object of class `choice_likelihood`, which
 #' is a `list` containing the design matrices, choice indices, and identifiers.
 #'
-#' `compute_choice_likelihood()` returns a single numeric value with the
-#' (negative) (log-)likelihood.
+#' `compute_choice_likelihood()` returns a numeric scalar for
+#' `aggregate = "total"` and a named numeric vector otherwise.
 #'
 #' @export
 #'
@@ -167,6 +177,7 @@ choice_likelihood <- function(
       choice_parameters,
       logarithm = TRUE,
       negative = FALSE,
+      aggregate = c("total", "decider", "occasion"),
       ...
     ) {
 
@@ -178,6 +189,7 @@ choice_likelihood <- function(
       check = checkmate::check_flag(negative),
       var_name = "negative"
     )
+    aggregate <- match.arg(aggregate)
     params <- choice_parameters
     if (!is.list(params)) {
       params <- switch_parameter_space(
@@ -199,6 +211,11 @@ choice_likelihood <- function(
     }
     prob_args_eval$numeric_only <- TRUE
     prob_args_eval$logarithm <- TRUE
+    prob_args_eval$aggregate <- if (identical(aggregate, "occasion")) {
+      "occasion"
+    } else {
+      "sequence"
+    }
 
     log_prob <- if (length(choice_indices)) {
       do.call(
@@ -225,7 +242,21 @@ choice_likelihood <- function(
         call = NULL
       )
     }
-    log_value <- sum(log_prob)
+    if (identical(aggregate, "occasion")) {
+      identifier_data <- as.data.frame(choice_identifiers)
+      contribution_names <- if (ncol(identifier_data) > 1L) {
+        do.call(paste, c(identifier_data, sep = ":"))
+      } else {
+        as.character(identifier_data[[1L]])
+      }
+      names(log_prob) <- contribution_names
+    } else if (identical(aggregate, "decider")) {
+      column_decider <- attr(choice_identifiers, "column_decider")
+      names(log_prob) <- unique(as.character(
+        choice_identifiers[[column_decider]]
+      ))
+    }
+    log_value <- if (identical(aggregate, "total")) sum(log_prob) else log_prob
     value <- if (isTRUE(logarithm)) log_value else exp(log_value)
     if (isTRUE(negative)) -value else value
   }
@@ -266,16 +297,47 @@ compute_choice_likelihood <- function(
     choice_likelihood,
     logarithm = TRUE,
     negative = FALSE,
+    aggregate = c("total", "decider", "occasion"),
     ...
   ) {
 
   is.choice_likelihood(choice_likelihood, error = TRUE)
+  aggregate <- match.arg(aggregate)
+
+  parameter_batch <- is.list(choice_parameters) &&
+    !inherits(choice_parameters, "choice_parameters") &&
+    length(choice_parameters) > 0L &&
+    all(vapply(choice_parameters, function(x) {
+      inherits(x, "choice_parameters") || is.numeric(x)
+    }, logical(1)))
+
+  if (parameter_batch) {
+    values <- lapply(choice_parameters, function(parameters) {
+      choice_likelihood$objective(
+        choice_parameters = parameters,
+        logarithm = logarithm,
+        negative = negative,
+        aggregate = aggregate,
+        ...
+      )
+    })
+    draw_names <- names(choice_parameters)
+    if (identical(aggregate, "total")) {
+      result <- unlist(values, use.names = FALSE)
+      if (!is.null(draw_names)) names(result) <- draw_names
+      return(result)
+    }
+    result <- do.call(cbind, values)
+    if (!is.null(draw_names)) colnames(result) <- draw_names
+    return(result)
+  }
 
   ### evaluate (log-)likelihood
   choice_likelihood$objective(
     choice_parameters = choice_parameters,
     logarithm = logarithm,
     negative = negative,
+    aggregate = aggregate,
     ...
   )
 }
