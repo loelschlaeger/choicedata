@@ -14,7 +14,9 @@ choice_probabilities(
   column_decider = "deciderID",
   column_occasion = NULL,
   cross_section = is.null(column_occasion),
-  column_probabilities = if (choice_only) "choice_probability"
+  column_probabilities = NULL,
+  logarithm = FALSE,
+  aggregate = c("occasion", "sequence")
 )
 
 compute_choice_probabilities(
@@ -23,6 +25,8 @@ compute_choice_probabilities(
   choice_effects,
   choice_only = TRUE,
   input_checks = TRUE,
+  aggregate = c("occasion", "sequence"),
+  logarithm = FALSE,
   ...
 )
 ```
@@ -63,6 +67,18 @@ compute_choice_probabilities(
 
   If `choice_only = TRUE`, it is the name of a single column that
   contains the probabilities for the chosen alternatives.
+
+- logarithm:
+
+  \[`logical(1)`\]  
+  Are the supplied or requested values log-probabilities?
+
+- aggregate:
+
+  \[`character(1)`\]  
+  Probability unit. `"occasion"` returns one result per choice occasion.
+  `"sequence"` returns the joint result for each decider's observed
+  sequence.
 
 - choice_parameters:
 
@@ -376,8 +392,8 @@ compute_choice_probabilities(
 #> # A tibble: 2 × 3
 #>   deciderID occasionID choice_probability
 #> * <chr>     <chr>                   <dbl>
-#> 1 1         1                       0.284
-#> 2 1         2                       0.284
+#> 1 1         1                       0.509
+#> 2 1         2                       0.565
 
 ### panel probit
 set.seed(1)
@@ -409,13 +425,13 @@ compute_choice_probabilities(
   choice_parameters = parameters,
   choice_data = simulated_data,
   choice_effects = effects,
+  aggregate = "sequence",
   cml = "ap"
 )
-#> # A tibble: 2 × 3
-#>   deciderID occasionID choice_probability
-#> * <chr>     <chr>                   <dbl>
-#> 1 1         1                       0.292
-#> 2 1         2                       0.292
+#> # A tibble: 1 × 2
+#>   deciderID choice_probability
+#> * <chr>                  <dbl>
+#> 1 1                      0.292
 
 ### latent class logit
 set.seed(1)

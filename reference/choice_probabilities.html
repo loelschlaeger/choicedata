@@ -53,7 +53,9 @@ on the choice parameters and the choice data.</p></li>
 <span>  column_decider <span class="op">=</span> <span class="st">"deciderID"</span>,</span>
 <span>  column_occasion <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cross_section <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">column_occasion</span><span class="op">)</span>,</span>
-<span>  column_probabilities <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">choice_only</span><span class="op">)</span> <span class="st">"choice_probability"</span></span>
+<span>  column_probabilities <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  logarithm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  aggregate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"occasion"</span>, <span class="st">"sequence"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">compute_choice_probabilities</span><span class="op">(</span></span>
@@ -62,6 +64,8 @@ on the choice parameters and the choice data.</p></li>
 <span>  <span class="va">choice_effects</span>,</span>
 <span>  choice_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  input_checks <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  aggregate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"occasion"</span>, <span class="st">"sequence"</span><span class="op">)</span>,</span>
+<span>  logarithm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -102,6 +106,17 @@ The column name of the <code>data_frame</code> with the choice probabilities for
 choice alternatives.</p>
 <p>If <code>choice_only = TRUE</code>, it is the name of a single column that contains the
 probabilities for the chosen alternatives.</p></dd>
+
+
+<dt id="arg-logarithm">logarithm<a class="anchor" aria-label="anchor" href="#arg-logarithm"></a></dt>
+<dd><p>[<code>logical(1)</code>]<br>
+Are the supplied or requested values log-probabilities?</p></dd>
+
+
+<dt id="arg-aggregate">aggregate<a class="anchor" aria-label="anchor" href="#arg-aggregate"></a></dt>
+<dd><p>[<code>character(1)</code>]<br>
+Probability unit. <code>"occasion"</code> returns one result per choice occasion.
+<code>"sequence"</code> returns the joint result for each decider's observed sequence.</p></dd>
 
 
 <dt id="arg-choice-parameters">choice_parameters<a class="anchor" aria-label="anchor" href="#arg-choice-parameters"></a></dt>
@@ -409,8 +424,8 @@ probabilities?</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   deciderID occasionID choice_probability</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1         1                       0.284</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 1         2                       0.284</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1         1                       0.509</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 1         2                       0.565</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### panel probit</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
@@ -442,13 +457,13 @@ probabilities?</p></dd>
 <span class="r-in"><span>  choice_parameters <span class="op">=</span> <span class="va">parameters</span>,</span></span>
 <span class="r-in"><span>  choice_data <span class="op">=</span> <span class="va">simulated_data</span>,</span></span>
 <span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">effects</span>,</span></span>
+<span class="r-in"><span>  aggregate <span class="op">=</span> <span class="st">"sequence"</span>,</span></span>
 <span class="r-in"><span>  cml <span class="op">=</span> <span class="st">"ap"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   deciderID occasionID choice_probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1         1                       0.292</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 1         2                       0.292</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   deciderID choice_probability</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1                      0.292</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### latent class logit</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>

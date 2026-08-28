@@ -27,6 +27,7 @@ compute_choice_likelihood(
   choice_likelihood,
   logarithm = TRUE,
   negative = FALSE,
+  aggregate = c("total", "decider", "occasion"),
   ...
 )
 ```
@@ -66,12 +67,18 @@ compute_choice_likelihood(
 - choice_parameters:
 
   \[`choice_parameters` \|
-  [`numeric()`](https://rdrr.io/r/base/numeric.html)\]  
+  [`numeric()`](https://rdrr.io/r/base/numeric.html) \|
+  [`list()`](https://rdrr.io/r/base/list.html)\]  
   A
   [`choice_parameters`](https://loelschlaeger.de/choicedata/reference/choice_parameters.md)
-  object. A numeric vector in optimization space is also accepted and
-  converted with
+  object.
+
+  A numeric vector in optimization space is also accepted and converted
+  with
   [`switch_parameter_space()`](https://loelschlaeger.de/choicedata/reference/choice_parameters.md).
+
+  A list of either representation is evaluated as a batch of parameter
+  draws.
 
 - choice_likelihood:
 
@@ -89,14 +96,25 @@ compute_choice_likelihood(
   Return the negative (log-)likelihood? Useful for minimization
   routines.
 
+- aggregate:
+
+  \[`character(1)`\]  
+  Unit of the returned likelihood:
+
+  - `"occasion"` returns one contribution per observed choice occasion,
+
+  - `"decider"` returns one joint contribution per decider,
+
+  - `"total"` sums the decider contributions.
+
 ## Value
 
 `choice_likelihood()` returns an object of class `choice_likelihood`,
 which is a `list` containing the design matrices, choice indices, and
 identifiers.
 
-`compute_choice_likelihood()` returns a single numeric value with the
-(negative) (log-)likelihood.
+`compute_choice_likelihood()` returns a numeric scalar for
+`aggregate = "total"` and a named numeric vector otherwise.
 
 ## Examples
 

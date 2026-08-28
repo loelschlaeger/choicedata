@@ -75,6 +75,7 @@ likelihood estimation avoid redundant work.</p></li>
 <span>  <span class="va">choice_likelihood</span>,</span>
 <span>  logarithm <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  negative <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  aggregate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"total"</span>, <span class="st">"decider"</span>, <span class="st">"occasion"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -109,10 +110,11 @@ Check inputs?</p></dd>
 
 
 <dt id="arg-choice-parameters">choice_parameters<a class="anchor" aria-label="anchor" href="#arg-choice-parameters"></a></dt>
-<dd><p>[<code>choice_parameters</code> | <code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric()</a></code>]<br>
-A <code><a href="choice_parameters.html">choice_parameters</a></code> object.
-A numeric vector in optimization space is also accepted and converted with
-<code><a href="choice_parameters.html">switch_parameter_space()</a></code>.</p></dd>
+<dd><p>[<code>choice_parameters</code> | <code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric()</a></code> | <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code>]<br>
+A <code><a href="choice_parameters.html">choice_parameters</a></code> object.</p>
+<p>A numeric vector in optimization space is also accepted and converted with
+<code><a href="choice_parameters.html">switch_parameter_space()</a></code>.</p>
+<p>A list of either representation is evaluated as a batch of parameter draws.</p></dd>
 
 
 <dt id="arg-choice-likelihood">choice_likelihood<a class="anchor" aria-label="anchor" href="#arg-choice-likelihood"></a></dt>
@@ -129,13 +131,21 @@ Return the log-likelihood? If <code>FALSE</code>, the likelihood is returned.</p
 <dd><p>[<code>logical(1)</code>]<br>
 Return the negative (log-)likelihood? Useful for minimization routines.</p></dd>
 
+
+<dt id="arg-aggregate">aggregate<a class="anchor" aria-label="anchor" href="#arg-aggregate"></a></dt>
+<dd><p>[<code>character(1)</code>]<br>
+Unit of the returned likelihood:</p><ul><li><p><code>"occasion"</code> returns one contribution per observed choice occasion,</p></li>
+<li><p><code>"decider"</code> returns one joint contribution per decider,</p></li>
+<li><p><code>"total"</code> sums the decider contributions.</p></li>
+</ul></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>choice_likelihood()</code> returns an object of class <code>choice_likelihood</code>, which
 is a <code>list</code> containing the design matrices, choice indices, and identifiers.</p>
-<p><code>compute_choice_likelihood()</code> returns a single numeric value with the
-(negative) (log-)likelihood.</p>
+<p><code>compute_choice_likelihood()</code> returns a numeric scalar for
+<code>aggregate = "total"</code> and a named numeric vector otherwise.</p>
     </div>
 
     <div class="section level2">
