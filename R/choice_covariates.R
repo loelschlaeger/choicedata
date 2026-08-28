@@ -228,13 +228,17 @@ generate_choice_covariates <- function(
   is.choice_identifiers(choice_identifiers, error = TRUE)
   if (!is.null(choice_effects)) is.choice_effects(choice_effects)
 
-  covariates <- oeli::correlated_regressors(
-    labels = labels,
-    n = n,
-    marginals = marginals,
-    correlation = correlation,
-    verbose = verbose
-  )
+  covariates <- if (length(labels) == 0L) {
+    data.frame(row.names = seq_len(n))
+  } else {
+    oeli::correlated_regressors(
+      labels = labels,
+      n = n,
+      marginals = marginals,
+      correlation = correlation,
+      verbose = verbose
+    )
+  }
   choice_covariates(
     data_frame = cbind(choice_identifiers, covariates),
     format = "wide",
@@ -281,7 +285,11 @@ drop_intercept <- function(form, df, r) {
   mm <- oeli::try_silent(
     stats::model.matrix(form, data = df, rhs = r, lhs = 0)
   )
-  if (inherits(mm, "fail") || is.null(mm) || NCOL(mm) == 0L) {
+  oeli::input_check_response(
+    check = if (inherits(mm, "fail")) as.character(mm) else TRUE,
+    var_name = "formula"
+  )
+  if (is.null(mm) || NCOL(mm) == 0L) {
     return(NULL)
   }
   keep <- colnames(mm) != "(Intercept)"
@@ -317,7 +325,11 @@ design_matrices <- function(
 
   prep <- prepare_choice_long_data(x, choice_effects, choice_identifiers)
   stored_formula <- attr(choice_effects, "choice_formula")
-  choice_formula <- resolve_choice_formula(stored_formula, x)
+  choice_formula <- resolve_choice_formula(
+    stored_formula,
+    x,
+    choice_alternatives = attr(choice_effects, "choice_alternatives")
+  )
   oeli::input_check_response(
     check = if (identical(
       stored_formula$covariate_types,
@@ -332,16 +344,22 @@ design_matrices <- function(
 
   design_list <- vector("list", length = nrow(prep$ids_df))
   availability <- vector("list", length = nrow(prep$ids_df))
+  model_matrices <- lapply(seq_len(3L), function(r) {
+    drop_intercept(form, prep$x_long, r)
+  })
 
   for (k in seq_len(nrow(prep$ids_df))) {
     df_nt <- subset_choice_occasion(prep, k)
     available <- attr(df_nt, "availability")
     ordered_type <- identical(prep$choice_type, "ordered")
-    df_for_mm <- if (ordered_type) df_nt[1, , drop = FALSE] else df_nt
-
-    mm1 <- drop_intercept(form, df_for_mm, 1L)
-    mm2 <- drop_intercept(form, df_for_mm, 2L)
-    mm3 <- drop_intercept(form, df_for_mm, 3L)
+    row_index <- attr(df_nt, "row_index")
+    if (ordered_type) row_index <- row_index[1L]
+    subset_matrix <- function(mm) {
+      if (is.null(mm)) NULL else mm[row_index, , drop = FALSE]
+    }
+    mm1 <- subset_matrix(model_matrices[[1L]])
+    mm2 <- subset_matrix(model_matrices[[2L]])
+    mm3 <- subset_matrix(model_matrices[[3L]])
 
     X_nt <- matrix(0, nrow = if (ordered_type) 1L else prep$J, ncol = P)
     if (!ordered_type) {

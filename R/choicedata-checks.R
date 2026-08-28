@@ -154,6 +154,26 @@ check_column_occasion <- function(
   invisible(column_occasion)
 }
 
+check_column_roles <- function(...) {
+  columns <- list(...)
+  values <- unlist(columns, use.names = TRUE)
+  if (!length(values)) return(invisible(values))
+  duplicated_values <- unique(values[
+    duplicated(values) | duplicated(values, fromLast = TRUE)
+  ])
+  if (length(duplicated_values)) {
+    assignments <- vapply(duplicated_values, function(value) {
+      paste(names(values)[values == value], collapse = ", ")
+    }, character(1))
+    cli::cli_abort(
+      "Column role(s) must use distinct columns: {paste0(duplicated_values,
+      ' (', assignments, ')', collapse = ', ')}.",
+      call = NULL
+    )
+  }
+  invisible(values)
+}
+
 check_column_probabilities <- function(
     column_probabilities, len = NULL, null.ok = TRUE
   ) {

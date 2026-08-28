@@ -47,6 +47,7 @@ long_to_wide(
 
 wide_to_long(
   data_frame,
+  column_ac_covariates = NULL,
   column_choice = "choice",
   column_alternative = "alternative",
   alternatives = NULL,

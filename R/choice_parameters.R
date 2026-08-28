@@ -788,10 +788,16 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
   }
 
   if (C > 1L) {
-    beta_values <- unlist(choice_parameters$beta, use.names = FALSE)
-    names(beta_values) <- unlist(lapply(seq_len(C), function(c) {
-      paste0("beta_", c, "_", seq_len(P))
-    }))
+    beta_values <- if (P > 0L) {
+      unlist(choice_parameters$beta, use.names = FALSE)
+    } else {
+      numeric()
+    }
+    if (length(beta_values)) {
+      names(beta_values) <- unlist(lapply(seq_len(C), function(c) {
+        paste0("beta_", c, "_", seq_len(P))
+      }))
+    }
     omega_values <- if (omega_length) {
       unlist(lapply(seq_len(C), function(c) {
         values <- oeli::cov_to_chol(
@@ -845,6 +851,7 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
     )$
     i2o(
       "beta" = function(x) {
+        if (is.null(x)) return(numeric())
         structure(
           x,
           names = paste0("beta_", seq_along(x), recycle0 = TRUE)

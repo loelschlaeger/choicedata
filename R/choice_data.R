@@ -128,6 +128,12 @@ choice_data <- function(
   check_column_occasion(column_occasion, column_decider, null.ok = TRUE)
   check_column_alternative(column_alternative, null.ok = format == "wide")
   if (format == "wide") column_alternative <- NULL
+  check_column_roles(
+    choice = column_choice,
+    decider = column_decider,
+    occasion = column_occasion,
+    alternative = column_alternative
+  )
   check_column_covariates(
     column_ac_covariates, null.ok = TRUE, var_name = "column_ac_covariates"
   )
@@ -343,6 +349,7 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
       data_frame = x,
       column_choice = tmp_choice,
       column_alternative = "alternative",
+      column_ac_covariates = attr(x, "column_ac_covariates"),
       alternatives = alts,
       delimiter = delimiter,
       choice_type = choice_type
@@ -408,16 +415,15 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
 subset_choice_occasion <- function(prep, index) {
   dec_val <- prep$ids_df[[prep$cd_id]][index]
   occ_val <- prep$co_vals[index]
-  if (is.null(prep$column_occasion)) {
-    id_prep <- prep$x_long[[prep$column_decider]] == dec_val
-    df_nt <- prep$x_long[id_prep, , drop = FALSE]
+  row_index <- if (is.null(prep$column_occasion)) {
+    which(prep$x_long[[prep$column_decider]] == dec_val)
   } else {
-    df_nt <- prep$x_long[
+    which(
       prep$x_long[[prep$column_decider]] == dec_val &
-        prep$x_long[[prep$column_occasion]] == occ_val,
-      , drop = FALSE
-    ]
+        prep$x_long[[prep$column_occasion]] == occ_val
+    )
   }
+  df_nt <- prep$x_long[row_index, , drop = FALSE]
   observed_alts <- as.character(df_nt[["alternative"]])
   unknown_alts <- setdiff(observed_alts, prep$alts)
   if (length(unknown_alts)) {
@@ -440,8 +446,10 @@ subset_choice_occasion <- function(prep, index) {
       call = NULL
     )
   }
-  df_nt <- df_nt[ord[available], , drop = FALSE]
+  selected <- ord[available]
+  df_nt <- df_nt[selected, , drop = FALSE]
   attr(df_nt, "availability") <- as.integer(available)
+  attr(df_nt, "row_index") <- row_index[selected]
   df_nt
 }
 
@@ -702,6 +710,12 @@ long_to_wide <- function(
   )
   check_column_decider(column_decider, null.ok = FALSE)
   check_column_occasion(column_occasion, column_decider, null.ok = TRUE)
+  check_column_roles(
+    choice = column_choice,
+    alternative = column_alternative,
+    decider = column_decider,
+    occasion = column_occasion
+  )
   required_columns <- c(
     column_alternative, column_ac_covariates, column_as_covariates,
     column_choice, column_decider, column_occasion
@@ -906,31 +920,77 @@ guess_alternatives_wide <- function(
   esc <- function(x) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", x)
   alts_from_choice <- character()
   if (!is.null(column_choice)) {
-    alts_from_choice <- data_frame[[column_choice]] |>
-      as.character() |>
-      stats::na.omit() |>
-      unique()
+    choice_values <- data_frame[[column_choice]]
+    alts_from_choice <- if (is.factor(choice_values)) {
+      levels(choice_values)
+    } else {
+      choice_values |>
+        as.character() |>
+        stats::na.omit() |>
+        unique()
+    }
   }
-  alts_from_names <- vapply(
+  name_parts <- lapply(
     names(data_frame),
     function(col) {
       matches <- gregexpr(delimiter, col, fixed = TRUE)[[1]]
       if (length(matches) == 1L && matches[1] == -1L) {
-        return(NA_character_)
+        return(NULL)
       }
       last <- matches[length(matches)]
       start <- last + nchar(delimiter)
       if (start > nchar(col)) {
-        return(NA_character_)
+        return(NULL)
       }
-      substring(col, start)
-    },
-    character(1)
+      list(
+        base = if (last > 1L) substr(col, 1L, last - 1L) else "",
+        alternative = substring(col, start)
+      )
+    }
   )
-  alts_from_names <- stats::na.omit(alts_from_names)
-  if (length(alts_from_names)) {
-    alts_from_names <- as.character(alts_from_names)
-    alts_from_names <- alts_from_names[nzchar(alts_from_names)]
+  name_parts <- Filter(Negate(is.null), name_parts)
+  alternatives_by_base <- if (length(name_parts)) {
+    split(
+      vapply(name_parts, `[[`, character(1), "alternative"),
+      vapply(name_parts, `[[`, character(1), "base")
+    ) |>
+      lapply(unique)
+  } else {
+    list()
+  }
+  alternatives_by_base <- alternatives_by_base[
+    nzchar(names(alternatives_by_base))
+  ]
+
+  if (length(alts_from_choice)) {
+    compatible <- vapply(
+      alternatives_by_base,
+      function(x) any(x %in% alts_from_choice),
+      logical(1)
+    )
+    alts_from_names <- unique(unlist(
+      alternatives_by_base[compatible], use.names = FALSE
+    ))
+  } else {
+    repeated <- alternatives_by_base[
+      lengths(alternatives_by_base) >= 2L
+    ]
+    if (!length(repeated)) {
+      alts_from_names <- character()
+    } else {
+      signatures <- vapply(
+        repeated,
+        function(x) paste(sort(x), collapse = "\r"),
+        character(1)
+      )
+      signature_counts <- table(signatures)
+      winning_signature <- names(signature_counts)[
+        which.max(signature_counts)
+      ]
+      alts_from_names <- repeated[[which(
+        signatures == winning_signature
+      )[1L]]]
+    }
   }
   sort(unique(c(alts_from_choice, alts_from_names)))
 }
@@ -940,6 +1000,7 @@ guess_alternatives_wide <- function(
 
 wide_to_long <- function(
   data_frame,
+  column_ac_covariates = NULL,
   column_choice = "choice",
   column_alternative = "alternative",
   alternatives = NULL,
@@ -950,6 +1011,23 @@ wide_to_long <- function(
   ### input checks
   check_column_choice(column_choice, null.ok = TRUE)
   check_column_alternative(column_alternative, null.ok = FALSE)
+  check_column_covariates(
+    column_ac_covariates, null.ok = TRUE, var_name = "column_ac_covariates"
+  )
+  check_column_roles(
+    choice = column_choice,
+    alternative = column_alternative
+  )
+  role_conflicts <- intersect(
+    column_ac_covariates, c(column_choice, column_alternative)
+  )
+  if (length(role_conflicts)) {
+    cli::cli_abort(
+      "Alternative-constant covariates cannot also define data roles:
+      {.val {role_conflicts}}.",
+      call = NULL
+    )
+  }
   choice_type <- match.arg(choice_type)
   rank_cols <- character()
   if (!is.null(column_choice) && identical(choice_type, "ranked")) {
@@ -965,13 +1043,14 @@ wide_to_long <- function(
   }
   check_data_frame(
     data_frame,
-    required_columns = required_choice_cols,
+    required_columns = c(required_choice_cols, column_ac_covariates),
     forbidden_columns = column_alternative,
     allow_missing_columns = c(column_choice, rank_cols)
   )
   if (is.null(alternatives)) {
+    inference_columns <- setdiff(names(data_frame), column_ac_covariates)
     alternatives <- guess_alternatives_wide(
-      data_frame,
+      data_frame[, inference_columns, drop = FALSE],
       column_choice = column_choice,
       delimiter = delimiter,
       allow_missing_columns = c(column_choice, rank_cols)
@@ -1042,7 +1121,10 @@ wide_to_long <- function(
 
   ### transform to long
   pat <- paste0("^(.+?)", esc(delimiter), "(", alt_rx, ")$")
-  cols_to_pivot <- grep(pat, names(data_frame), value = TRUE)
+  cols_to_pivot <- setdiff(
+    grep(pat, names(data_frame), value = TRUE),
+    column_ac_covariates
+  )
   matches <- regmatches(
     cols_to_pivot,
     regexec(pat, cols_to_pivot)
@@ -1132,12 +1214,41 @@ check_as_covariates <- function(
   check_column_occasion(column_occasion, column_decider, null.ok = TRUE)
   check_column_alternative(column_alternative, null.ok = format == "wide")
   if (format == "wide") column_alternative <- NULL
+  check_column_roles(
+    choice = column_choice,
+    decider = column_decider,
+    occasion = column_occasion,
+    alternative = column_alternative
+  )
   check_column_covariates(
     column_ac_covariates, null.ok = TRUE, var_name = "column_ac_covariates"
   )
   check_column_covariates(
     column_as_covariates, null.ok = TRUE, var_name = "column_as_covariates"
   )
+  role_columns <- c(
+    column_choice, column_decider, column_occasion, column_alternative
+  )
+  role_conflicts <- intersect(
+    c(column_ac_covariates, if (format == "long") column_as_covariates),
+    role_columns
+  )
+  if (length(role_conflicts)) {
+    cli::cli_abort(
+      "Covariate columns cannot also define data roles: {.val {role_conflicts}}.",
+      call = NULL
+    )
+  }
+  covariate_conflicts <- intersect(
+    column_ac_covariates, column_as_covariates
+  )
+  if (length(covariate_conflicts)) {
+    cli::cli_abort(
+      "Covariates cannot be both alternative-constant and
+      alternative-specific: {.val {covariate_conflicts}}.",
+      call = NULL
+    )
+  }
   check_delimiter(delimiter)
   check_data_frame(
     data_frame,
@@ -1219,12 +1330,20 @@ check_as_covariates <- function(
       )
     }
   } else {
-    alternatives <- guess_alternatives_wide(
-      data_frame,
-      column_choice = column_choice,
-      delimiter = delimiter,
-      allow_missing_columns = allow_missing_columns
+    inference_columns <- setdiff(
+      names(data_frame),
+      c(column_decider, column_occasion, column_ac_covariates)
     )
+    alternatives <- if (length(inference_columns)) {
+      guess_alternatives_wide(
+        data_frame[, inference_columns, drop = FALSE],
+        column_choice = column_choice,
+        delimiter = delimiter,
+        allow_missing_columns = allow_missing_columns
+      )
+    } else {
+      character()
+    }
     pattern <- paste0(
       "^(.+?)", esc(delimiter), "(",
       paste0(esc(alternatives), collapse = "|"), ")$"
@@ -1233,32 +1352,45 @@ check_as_covariates <- function(
       regexec(text = names(data_frame)) |>
       regmatches(x = names(data_frame))
     is_as <- vapply(matches, function(z) length(z) == 3L, logical(1))
+    excluded_wide_columns <- c(column_ac_covariates, role_columns)
+    is_as[names(data_frame) %in% excluded_wide_columns] <- FALSE
     column_as_wide_detected <- names(data_frame)[is_as]
     base_vars_detected <- vapply(matches[is_as], function(z) z[2], character(1))
-    column_as <- sort(unique(base_vars_detected))
-    column_as_wide <- column_as_wide_detected
+    detected_bases <- sort(unique(base_vars_detected))
+    complete_bases <- vapply(detected_bases, function(base) {
+      expected <- paste(base, alternatives, sep = delimiter)
+      all(expected %in% column_as_wide_detected)
+    }, logical(1))
+    column_as <- detected_bases[complete_bases]
+    column_as_wide <- column_as_wide_detected[
+      base_vars_detected %in% column_as
+    ]
     id_cols <- c(column_decider, column_occasion)
     id_cols <- id_cols[!vapply(id_cols, is.null, TRUE)]
     column_ac <- setdiff(
       names(data_frame),
-      c(id_cols, column_choice, column_as_wide_detected)
+      c(id_cols, column_choice, column_as_wide)
     ) |> sort()
     if (!is.null(column_as_covariates)) {
-      alt_rx <- paste0("(", paste0(esc(alternatives), collapse = "|"), ")$")
-      ok_as <- vapply(
+      expected_as <- as.vector(outer(
         column_as_covariates,
-        function(b) {
-          grepl(
-            paste0("^", esc(b), esc(delimiter), alt_rx),
-            names(data_frame)
-          ) |> any()
-        },
-        logical(1)
+        alternatives,
+        function(base, alternative) paste(base, alternative, sep = delimiter)
+      ))
+      physical_conflicts <- intersect(
+        expected_as, c(column_ac_covariates, role_columns)
       )
-      if (any(!ok_as)) {
-        mb <- column_as_covariates[!ok_as]
+      if (length(physical_conflicts)) {
         cli::cli_abort(
-          "Alternative-specific columns for covariate(s) missing: {.val {mb}}",
+          "Wide alternative-specific columns conflict with another column
+          role: {.val {physical_conflicts}}.",
+          call = NULL
+        )
+      }
+      missing_as <- setdiff(expected_as, names(data_frame))
+      if (length(missing_as)) {
+        cli::cli_abort(
+          "Alternative-specific columns are missing: {.val {missing_as}}",
           call = NULL
         )
       }

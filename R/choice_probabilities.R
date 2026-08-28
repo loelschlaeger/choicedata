@@ -383,6 +383,12 @@ choice_probabilities <- function(
       ),
       var_name = column
     )
+    if (any(is.nan(data_frame[[column]]))) {
+      cli::cli_abort(
+        "Column {.val {column}} must not contain NaN values.",
+        call = NULL
+      )
+    }
   }
   if (!choice_only) {
     sums <- rowSums(data_frame[column_probabilities])
@@ -557,6 +563,13 @@ evaluate_choice_outcomes <- function(
   choice_indices, ...
 ) {
 
+  if (is.null(choice_parameters$beta)) {
+    choice_parameters$beta <- numeric()
+    if (!is.null(choice_parameters$weights)) {
+      ### Empty latent classes are observationally equivalent.
+      choice_parameters$weights <- NULL
+    }
+  }
   dots <- list(...)
   if (!is.null(dots$cml) && !identical(dots$cml, "no")) {
     cli::cli_warn(
@@ -841,6 +854,11 @@ evaluate_choice_probabilities <- function(
   if (is.null(beta_vec)) {
     beta_vec <- numeric()
   }
+  weights <- choice_parameters$weights
+  if (!length(beta_vec) && !is.null(weights)) {
+    ### Empty latent classes are observationally equivalent.
+    weights <- NULL
+  }
   choice_formula <- attr(choice_effects, "choice_formula")
   error_term <- choice_formula$error_term
   Tp <- attr(design_list, "Tp")
@@ -867,7 +885,7 @@ evaluate_choice_probabilities <- function(
       Omega = choice_parameters$Omega,
       Sigma = choice_parameters$Sigma,
       gamma = choice_parameters$gamma,
-      weights = choice_parameters$weights,
+      weights = weights,
       availability = availability[eval_order],
       ranked = ranked,
       re_mixing = as.character(stats::na.omit(choice_effects$mixing)),
@@ -890,7 +908,7 @@ evaluate_choice_probabilities <- function(
     error_term,
     "probit" = {
       fixed <- is.null(choice_parameters$Omega) &&
-        is.null(choice_parameters$weights)
+        is.null(weights)
       if (joint_panel && fixed) {
         cml <- if (is.null(prob_args$cml)) "no" else prob_args$cml
         cml <- match.arg(cml, c("no", "fp", "ap"))
@@ -914,6 +932,12 @@ evaluate_choice_probabilities <- function(
       call = NULL
     )
   )
+  if (!is.numeric(probability) || any(!is.finite(probability))) {
+    cli::cli_abort(
+      "Choice probabilities could not be evaluated to finite values.",
+      call = NULL
+    )
+  }
 
   if (isTRUE(numeric_only)) {
     return(as.numeric(probability))

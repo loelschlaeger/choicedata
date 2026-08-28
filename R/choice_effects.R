@@ -85,7 +85,9 @@ choice_effects <- function(
   ### resolve choice formula if data is available
   if (!is.null(choice_data)) {
     choice_formula <- resolve_choice_formula(
-      choice_formula = choice_formula, x = choice_data
+      choice_formula = choice_formula,
+      x = choice_data,
+      choice_alternatives = choice_alternatives
     )
   }
 

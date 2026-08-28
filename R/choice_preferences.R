@@ -144,29 +144,31 @@ generate_choice_preferences <- function(
   preferences <- matrix(NA_real_, nrow = N, ncol = P)
   re_position <- which(!is.na(choice_effects$mixing))
   mixing <- as.character(choice_effects$mixing[re_position])
-  for (c in seq_len(C)) {
-    index <- which(class == c)
-    if (!length(index)) next
-    preferences[index, ] <- matrix(
-      beta[[c]], nrow = length(index), ncol = P, byrow = TRUE
-    )
-    if (length(re_position)) {
-      latent <- oeli::rmvnorm(
-        n = length(index),
-        mean = beta[[c]][re_position],
-        Sigma = Omega[[c]]
+  if (P > 0L) {
+    for (c in seq_len(C)) {
+      index <- which(class == c)
+      if (!length(index)) next
+      preferences[index, ] <- matrix(
+        beta[[c]], nrow = length(index), ncol = P, byrow = TRUE
       )
-      latent <- matrix(
-        latent, nrow = length(index), ncol = length(re_position)
-      )
-      distribution <- random_effect_distribution(mixing)
-      latent[, distribution == "ln"] <- exp(
-        latent[, distribution == "ln", drop = FALSE]
-      )
-      latent[, distribution == "ln-"] <- -exp(
-        latent[, distribution == "ln-", drop = FALSE]
-      )
-      preferences[index, re_position] <- latent
+      if (length(re_position)) {
+        latent <- oeli::rmvnorm(
+          n = length(index),
+          mean = beta[[c]][re_position],
+          Sigma = Omega[[c]]
+        )
+        latent <- matrix(
+          latent, nrow = length(index), ncol = length(re_position)
+        )
+        distribution <- random_effect_distribution(mixing)
+        latent[, distribution == "ln"] <- exp(
+          latent[, distribution == "ln", drop = FALSE]
+        )
+        latent[, distribution == "ln-"] <- -exp(
+          latent[, distribution == "ln-", drop = FALSE]
+        )
+        preferences[index, re_position] <- latent
+      }
     }
   }
   preferences <- as.data.frame(preferences)

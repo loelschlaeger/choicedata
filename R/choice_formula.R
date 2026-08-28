@@ -123,26 +123,32 @@ choice_formula <- function(
   }
   choice <- as.character(formula_lhs[[1]])
 
-  ### check RHS
-  rhs_char <- switch(
+  ### normalize and check RHS
+  formula_rhs <- switch(
     length(formula_rhs),
-    `1` = paste(as.character(formula_rhs[1]), "| 1 | 0"),
-    `2` = paste(
-      as.character(formula_rhs[1]), "|",  as.character(formula_rhs[2]), "| 0"
-    ),
-    `3` = as.character(formula)[3],
+    `1` = c(formula_rhs, list(1, 0)),
+    `2` = c(formula_rhs, list(0)),
+    `3` = formula_rhs,
     cli::cli_abort(
       "Input {.var formula} must not have more than two '|' separators",
       call = NULL
     )
   )
-  rhs_char <- strsplit(rhs_char, split = "|", fixed = TRUE)[[1]]
-  ### remove whitespace
-  rhs_char <- gsub("\\s+", "",  rhs_char)
-  ### keep expressions enclosed in I(...) intact
-  split <- "\\+(?![^()]*\\))"
-  covariate_types <- strsplit(rhs_char, split, perl = TRUE) |> lapply(trimws)
-  ASC <- ifelse(0 %in% covariate_types[[2]], FALSE, TRUE)
+  formula_rhs_char <- paste(
+    vapply(formula_rhs, deparse1, character(1)), collapse = " | "
+  )
+  formula <- Formula::as.Formula(sprintf("%s ~ %s", choice, formula_rhs_char))
+  environment(formula) <- formula_env
+  rhs_terms <- lapply(seq_len(3L), function(r) {
+    rhs_formula <- stats::as.formula(
+      call("~", formula_rhs[[r]]), env = formula_env
+    )
+    stats::terms(rhs_formula, allowDotAsName = TRUE)
+  })
+  covariate_types <- lapply(rhs_terms, function(x) {
+    gsub("\\s+", "", attr(x, "term.labels"))
+  })
+  ASC <- identical(attr(rhs_terms[[2L]], "intercept"), 1L)
   if ("ASC" %in% unlist(covariate_types)) {
     cli::cli_abort(
       "Covariate name {.val ASC} in {.var formula} is not allowed",
@@ -150,18 +156,12 @@ choice_formula <- function(
     )
   }
 
-  ### rebuild formula based on covariate_types
-  formula_rhs_char <- paste(
-    sapply(covariate_types, paste, collapse = "+"), collapse = "|"
-  )
-  formula <- Formula::as.Formula(sprintf("%s ~ %s", choice, formula_rhs_char))
-  environment(formula) <- formula_env
-  covariate_types <- lapply(covariate_types, function(x) x[!x %in% 0:1])
-
   ### check random_effects
-  ### remove whitespace from random-effect names
-  names(random_effects) <- gsub("\\s+", "", names(random_effects))
-  for (random_effect in names(random_effects)) {
+  available_effects <- unlist(covariate_types, use.names = FALSE)
+  available_keys <- canonical_formula_term(available_effects)
+  random_effect_names <- gsub("\\s+", "", names(random_effects))
+  for (i in seq_along(random_effect_names)) {
+    random_effect <- random_effect_names[i]
     if (identical(random_effect, ".")) {
       cli::cli_abort(
         "Input {.var random_effects} cannot use '.'; specify the covariates
@@ -169,7 +169,11 @@ choice_formula <- function(
         call = NULL
       )
     }
-    if (!random_effect %in% c(unlist(covariate_types), if(ASC) "ASC")) {
+    if (!identical(random_effect, "ASC")) {
+      matched <- match(canonical_formula_term(random_effect), available_keys)
+      if (!is.na(matched)) random_effect_names[i] <- available_effects[matched]
+    }
+    if (!random_effect_names[i] %in% c(available_effects, if (ASC) "ASC")) {
       cli::cli_abort(
         "Input {.var random_effects} contains {.val {random_effect}}, but it is
         not on the right-hand side of {.var formula}",
@@ -177,6 +181,13 @@ choice_formula <- function(
       )
     }
   }
+  if (anyDuplicated(random_effect_names)) {
+    cli::cli_abort(
+      "Input {.var random_effects} contains duplicate formula terms.",
+      call = NULL
+    )
+  }
+  names(random_effects) <- random_effect_names
 
   ### build object
   structure(
@@ -190,6 +201,31 @@ choice_formula <- function(
     ),
     class = c("choice_formula", "list")
   )
+}
+
+#' @noRd
+
+canonical_formula_term <- function(term) {
+  vapply(term, function(x) {
+    term_info <- tryCatch(
+      stats::terms(
+        stats::as.formula(paste("~", x)),
+        allowDotAsName = TRUE
+      ),
+      error = function(error) NULL
+    )
+    if (is.null(term_info)) return(gsub("\\s+", "", x))
+    labels <- attr(term_info, "term.labels")
+    orders <- attr(term_info, "order")
+    if (length(labels) == 1L && length(orders) == 1L && orders > 1L) {
+      factors <- attr(term_info, "factors")
+      components <- rownames(factors)[factors[, 1L] > 0L]
+      return(paste(sort(gsub("\\s+", "", components)), collapse = ":"))
+    }
+    if (length(labels) == 1L) gsub("\\s+", "", labels) else {
+      gsub("\\s+", "", x)
+    }
+  }, character(1), USE.NAMES = FALSE)
 }
 
 #' @noRd
@@ -235,7 +271,9 @@ print.choice_formula <- function(x, ...) {
 
 #' @noRd
 
-resolve_choice_formula <- function(choice_formula, x) {
+resolve_choice_formula <- function(
+    choice_formula, x, choice_alternatives = NULL
+  ) {
 
   ### input checks
   is.choice_formula(choice_formula, error = TRUE)
@@ -244,6 +282,11 @@ resolve_choice_formula <- function(choice_formula, x) {
     c("choice_data", "choice_covariates"),
     var_name = "x"
   )
+  if (!is.null(choice_alternatives)) {
+    is.choice_alternatives(
+      choice_alternatives, error = TRUE, var_name = "choice_alternatives"
+    )
+  }
   form <- oeli::quiet(choice_formula$formula)
   format <- attr(x, "format")
   check_format(format)
@@ -254,103 +297,63 @@ resolve_choice_formula <- function(choice_formula, x) {
     )
   }
 
-  extract_model_matrix_covariates <- function(mm) {
-    if (is.null(mm) || ncol(mm) == 0L) {
-      return(list(columns = character(), assignments = integer()))
-    }
-    assignments <- attr(mm, "assign")
-    if (is.null(assignments) || length(assignments) != ncol(mm)) {
-      keep <- colnames(mm) != "(Intercept)"
-      assignments <- seq_len(ncol(mm))
-    } else {
-      keep <- assignments != 0L
-    }
-    list(
-      columns = colnames(mm)[keep],
-      assignments = assignments[keep]
-    )
-  }
+  ### ensure long representation and an 'alternative' column when needed
+  alternative_specific_terms <- c(
+    choice_formula$covariate_types[[1]],
+    choice_formula$covariate_types[[3]]
+  )
+  needs_long_data <- length(alternative_specific_terms) > 0L
+  if (identical(format, "wide") && needs_long_data) {
 
-  ### ensure long representation and an 'alternative' column
-    if (identical(format, "wide")) {
-
-      ### infer alternatives from column names if needed
-      delimiter <- attr(x, "delimiter")
-      if (is.null(delimiter)) delimiter <- "_"
-      choice_type <- attr(x, "choice_type")
-      if (is.null(choice_type)) choice_type <- "unordered"
-      esc <- function(s) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", s)
-      alts <- character()
-      base_names <- character()
-      if (identical(choice_type, "ordered")) {
-        column_choice <- attr(x, "column_choice")
-        if (!is.null(column_choice) && column_choice %in% names(x)) {
-          vals <- x[[column_choice]]
-          if (is.factor(vals)) {
-            alts <- levels(vals)
-          } else {
-            alts <- unique(stats::na.omit(as.character(vals)))
-          }
-        }
-      }
-      if (length(alts) == 0L) {
-        splits <- lapply(
-          names(x),
-          function(col) {
-            matches <- gregexpr(delimiter, col, fixed = TRUE)[[1]]
-            if (length(matches) == 1L && matches[1] == -1L) {
-              return(NULL)
-            }
-            last <- matches[length(matches)]
-            start <- last + nchar(delimiter)
-            if (start > nchar(col)) {
-              return(NULL)
-            }
-            list(
-              base = if (last > 1) substr(col, 1, last - 1L) else "",
-              alternative = substring(col, start)
-            )
-          }
-        )
-        splits <- Filter(Negate(is.null), splits)
-        if (length(splits)) {
-          base_names <- unique(vapply(splits, `[[`, character(1), "base"))
-          base_names <- base_names[nzchar(base_names)]
-          alts <- unique(vapply(splits, `[[`, character(1), "alternative"))
-          alts <- alts[nzchar(alts)]
-        }
-      }
-      if (length(alts) == 0L) {
-        cli::cli_abort(
-          "Could not infer alternatives from column names.", call = NULL
-        )
-      }
-
-      ### temporary choice column if missing
-      tmp_choice <- attr(x, "column_choice")
-      if (is.null(tmp_choice)) {
-        if (identical(choice_type, "ranked") && length(base_names)) {
-          tmp_choice <- base_names[1L]
-        } else {
-          tmp_choice <- ".choicedata_dummy_choice"
-          x[[tmp_choice]] <- alts[1L]
-        }
-      } else if (
-        !(tmp_choice %in% names(x)) && !identical(choice_type, "ranked")
-      ) {
-        tmp_choice <- ".choicedata_dummy_choice"
-        x[[tmp_choice]] <- alts[1L]
-      }
-
-      x <- wide_to_long(
-        data_frame = x,
-        column_choice = tmp_choice,
-        column_alternative = "alternative",
-        alternatives = alts,
-        delimiter = delimiter,
-        choice_type = choice_type
+    ### use declared alternatives, or infer them from relevant columns
+    delimiter <- attr(x, "delimiter")
+    if (is.null(delimiter)) delimiter <- "_"
+    choice_type <- attr(x, "choice_type")
+    if (is.null(choice_type)) choice_type <- "unordered"
+    alts <- if (is.null(choice_alternatives)) {
+      excluded_columns <- c(
+        attr(x, "column_decider"),
+        attr(x, "column_occasion"),
+        attr(x, "column_ac_covariates")
       )
-  } else {
+      inference_columns <- setdiff(names(x), excluded_columns)
+      guess_alternatives_wide(
+        data_frame = x[, inference_columns, drop = FALSE],
+        column_choice = attr(x, "column_choice"),
+        delimiter = delimiter,
+        allow_missing_columns = attr(x, "column_choice")
+      )
+    } else {
+      as.character(choice_alternatives)
+    }
+    if (length(alts) == 0L) {
+      cli::cli_abort(
+        "Could not infer alternatives from column names.", call = NULL
+      )
+    }
+
+    ### temporary choice column if missing
+    tmp_choice <- attr(x, "column_choice")
+    if (is.null(tmp_choice)) {
+      tmp_choice <- ".choicedata_dummy_choice"
+      x[[tmp_choice]] <- alts[1L]
+    } else if (
+      !(tmp_choice %in% names(x)) && !identical(choice_type, "ranked")
+    ) {
+      tmp_choice <- ".choicedata_dummy_choice"
+      x[[tmp_choice]] <- alts[1L]
+    }
+
+    x <- wide_to_long(
+      data_frame = x,
+      column_choice = tmp_choice,
+      column_alternative = "alternative",
+      column_ac_covariates = attr(x, "column_ac_covariates"),
+      alternatives = alts,
+      delimiter = delimiter,
+      choice_type = choice_type
+    )
+  } else if (identical(format, "long")) {
     alt_col <- attr(x, "column_alternative")
     if (is.null(alt_col)) alt_col <- "alternative"
     if (!identical(alt_col, "alternative")) {
@@ -370,7 +373,15 @@ resolve_choice_formula <- function(choice_formula, x) {
     if (inherits(mm, "fail")) {
       character()
     } else {
-      extract_model_matrix_covariates(mm)$columns
+      if (is.null(mm) || ncol(mm) == 0L) return(character())
+      assignments <- attr(mm, "assign")
+      keep <- if (is.null(assignments) ||
+          length(assignments) != ncol(mm)) {
+        colnames(mm) != "(Intercept)"
+      } else {
+        assignments != 0L
+      }
+      colnames(mm)[keep]
     }
   })
   choice_formula$covariate_types <- covariate_types
@@ -378,7 +389,6 @@ resolve_choice_formula <- function(choice_formula, x) {
   ### resolve random effects to actual column names (if any)
   re <- choice_formula$random_effects
   if (length(re) > 0) {
-    squash <- function(s) gsub("\\s+", "", s)
     term_map <- list()
     all_cols <- character(0)
     for (r in seq_len(3L)) {
@@ -386,15 +396,22 @@ resolve_choice_formula <- function(choice_formula, x) {
         stats::model.matrix(form, data = x, lhs = 0, rhs = r)
       )
       if (inherits(mm, "fail")) next
-      mm_covariates <- extract_model_matrix_covariates(mm)
-      cols <- mm_covariates$columns
-      asg <- mm_covariates$assignments
+      if (is.null(mm) || ncol(mm) == 0L) next
+      asg <- attr(mm, "assign")
+      if (is.null(asg) || length(asg) != ncol(mm)) {
+        keep <- colnames(mm) != "(Intercept)"
+        asg <- seq_len(ncol(mm))[keep]
+      } else {
+        keep <- asg != 0L
+        asg <- asg[keep]
+      }
+      cols <- colnames(mm)[keep]
       if (length(cols) == 0L) next
       labs <- stats::terms(form, rhs = r, data = x) |> attr("term.labels")
       all_cols <- c(all_cols, cols)
       if (length(labs)) {
         for (i in seq_along(labs)) {
-          key <- squash(labs[i])
+          key <- canonical_formula_term(labs[i])
           term_map[[key]] <- unique(c(term_map[[key]], cols[asg == i]))
         }
       }
@@ -409,7 +426,7 @@ resolve_choice_formula <- function(choice_formula, x) {
       } else if (identical(k, ".")) {
         all_cols
       } else {
-        kk <- squash(k)
+        kk <- canonical_formula_term(k)
         cols_k <- term_map[[kk]]
         if (is.null(cols_k)) intersect(k, all_cols) else cols_k
       }
