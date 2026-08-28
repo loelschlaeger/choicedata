@@ -8,3 +8,4 @@
 ^TODO\.md$
 ^_pkgdown\.yml$
 ^codecov\.yml$
+^create_sticker\.R$
