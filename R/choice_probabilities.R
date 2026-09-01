@@ -465,7 +465,7 @@ choice_probabilities <- function(
 
 #' @rdname choice_probabilities
 #'
-#' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
+#' @param choice_parameters \[`choice_parameters` | `numeric()` | `list()`\]\cr
 #' A \code{\link{choice_parameters}} object.
 #' A numeric vector in optimization space, as created by
 #' \code{\link{switch_parameter_space}}, is also accepted.
@@ -500,13 +500,6 @@ compute_choice_probabilities <- function(
   ...
 ) {
 
-  if (!is.list(choice_parameters)) {
-    choice_parameters <- switch_parameter_space(
-      choice_parameters = choice_parameters,
-      choice_effects = choice_effects
-    )
-  }
-  is.choice_parameters(choice_parameters, error = TRUE)
   is.choice_data(choice_data, error = TRUE)
   is.choice_effects(choice_effects, error = TRUE)
   check_choice_only(choice_only)
@@ -520,11 +513,33 @@ compute_choice_probabilities <- function(
     var_name = "logarithm"
   )
   probability_args <- list(...)
-  choice_parameters <- validate_choice_parameters(
-    choice_parameters,
-    choice_effects,
-    allow_missing = FALSE
-  )
+  parameter_batch <- is.list(choice_parameters) &&
+    !inherits(choice_parameters, "choice_parameters") &&
+    length(choice_parameters) > 0L &&
+    all(vapply(choice_parameters, function(x) {
+      inherits(x, "choice_parameters") || is.numeric(x)
+    }, logical(1)))
+  parameter_names <- if (parameter_batch) names(choice_parameters) else NULL
+  parameters <- if (parameter_batch) choice_parameters else list(choice_parameters)
+  parameters <- lapply(parameters, function(x) {
+    if (!is.list(x)) {
+      x <- switch_parameter_space(
+        choice_parameters = x,
+        choice_effects = choice_effects
+      )
+    }
+    is.choice_parameters(x, error = TRUE)
+    validate_choice_parameters(
+      x,
+      choice_effects,
+      allow_missing = FALSE
+    )
+  })
+  return_result <- function(result) {
+    if (!parameter_batch) return(result[[1L]])
+    if (!is.null(parameter_names)) names(result) <- parameter_names
+    result
+  }
 
   choice_identifiers <- extract_choice_identifiers(choice_data)
   design_list <- design_matrices(
@@ -542,20 +557,22 @@ compute_choice_probabilities <- function(
   joint_outcomes <- !isTRUE(choice_only) &&
     identical(aggregate, "sequence")
   if (joint_outcomes) {
-    return(do.call(
-      evaluate_choice_outcomes,
-      c(
-        list(
-          design_list = design_list,
-          choice_identifiers = choice_identifiers,
-          choice_effects = choice_effects,
-          choice_parameters = choice_parameters,
-          choice_indices = choice_indices,
-          logarithm = logarithm
-        ),
-        probability_args
+    return(return_result(lapply(parameters, function(x) {
+      do.call(
+        evaluate_choice_outcomes,
+        c(
+          list(
+            design_list = design_list,
+            choice_identifiers = choice_identifiers,
+            choice_effects = choice_effects,
+            choice_parameters = x,
+            choice_indices = choice_indices,
+            logarithm = logarithm
+          ),
+          probability_args
+        )
       )
-    ))
+    })))
   }
 
   observed <- lengths(choice_indices) > 0L
@@ -601,7 +618,8 @@ compute_choice_probabilities <- function(
     attr(choice_indices, "Tp") <- Tp
   }
 
-  probabilities <- if (length(design_list)) {
+  probabilities <- lapply(parameters, function(x) {
+    if (!length(design_list)) return(NULL)
     do.call(
       evaluate_choice_probabilities,
       c(
@@ -609,7 +627,7 @@ compute_choice_probabilities <- function(
           design_list = design_list,
           choice_identifiers = choice_identifiers,
           choice_effects = choice_effects,
-          choice_parameters = choice_parameters,
+          choice_parameters = x,
           choice_only = choice_only,
           choice_indices = choice_indices,
           ranked = ranked && isTRUE(choice_only),
@@ -620,61 +638,62 @@ compute_choice_probabilities <- function(
         probability_args
       )
     )
-  }
-  if (!is.null(all_sequence_identifiers)) {
+  })
+  probabilities <- lapply(probabilities, function(value) {
+    if (!is.null(all_sequence_identifiers)) {
+      probability_column <- if (logarithm) {
+        "log_choice_probability"
+      } else {
+        "choice_probability"
+      }
+      probability <- rep(NA_real_, nrow(all_sequence_identifiers))
+      if (length(design_list)) {
+        result_column <- attr(value, "column_probabilities")
+        column_decider <- attr(all_sequence_identifiers, "column_decider")
+        result_position <- match(
+          value[[column_decider]],
+          all_sequence_identifiers[[column_decider]]
+        )
+        probability[result_position] <- value[[result_column]]
+      }
+      probability_data <- all_sequence_identifiers
+      probability_data[[probability_column]] <- probability
+      return(choice_probabilities(
+        data_frame = probability_data,
+        choice_only = TRUE,
+        column_decider = attr(all_sequence_identifiers, "column_decider"),
+        column_occasion = NULL,
+        cross_section = TRUE,
+        column_probabilities = probability_column,
+        logarithm = logarithm,
+        aggregate = "sequence"
+      ))
+    }
+    if (is.null(all_identifiers)) return(value)
+    probability <- rep(NA_real_, nrow(all_identifiers))
+    if (any(observed)) {
+      probability_column <- attr(value, "column_probabilities")
+      probability[observed] <- value[[probability_column]]
+    }
     probability_column <- if (logarithm) {
       "log_choice_probability"
     } else {
       "choice_probability"
     }
-    probability <- rep(NA_real_, nrow(all_sequence_identifiers))
-    if (length(design_list)) {
-      result_column <- attr(probabilities, "column_probabilities")
-      column_decider <- attr(all_sequence_identifiers, "column_decider")
-      result_position <- match(
-        probabilities[[column_decider]],
-        all_sequence_identifiers[[column_decider]]
-      )
-      probability[result_position] <- probabilities[[result_column]]
-    }
-    probability_data <- all_sequence_identifiers
+    probability_data <- all_identifiers
     probability_data[[probability_column]] <- probability
-    return(choice_probabilities(
+    choice_probabilities(
       data_frame = probability_data,
       choice_only = TRUE,
-      column_decider = attr(all_sequence_identifiers, "column_decider"),
-      column_occasion = NULL,
-      cross_section = TRUE,
+      column_decider = attr(all_identifiers, "column_decider"),
+      column_occasion = attr(all_identifiers, "column_occasion"),
+      cross_section = attr(all_identifiers, "cross_section"),
       column_probabilities = probability_column,
       logarithm = logarithm,
-      aggregate = "sequence"
-    ))
-  }
-  if (is.null(all_identifiers)) {
-    return(probabilities)
-  }
-  probability <- rep(NA_real_, nrow(all_identifiers))
-  if (any(observed)) {
-    probability_column <- attr(probabilities, "column_probabilities")
-    probability[observed] <- probabilities[[probability_column]]
-  }
-  probability_column <- if (logarithm) {
-    "log_choice_probability"
-  } else {
-    "choice_probability"
-  }
-  probability_data <- all_identifiers
-  probability_data[[probability_column]] <- probability
-  choice_probabilities(
-    data_frame = probability_data,
-    choice_only = TRUE,
-    column_decider = attr(all_identifiers, "column_decider"),
-    column_occasion = attr(all_identifiers, "column_occasion"),
-    cross_section = attr(all_identifiers, "cross_section"),
-    column_probabilities = probability_column,
-    logarithm = logarithm,
-    aggregate = aggregate
-  )
+      aggregate = aggregate
+    )
+  })
+  return_result(probabilities)
 }
 
 #' @noRd

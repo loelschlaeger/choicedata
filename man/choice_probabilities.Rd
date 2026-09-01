@@ -58,7 +58,7 @@ Are the supplied or requested values log-probabilities?}
 Probability unit. \code{"occasion"} returns one result per choice occasion.
 \code{"sequence"} returns the joint result for each decider's observed sequence.}
 
-\item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
+\item{choice_parameters}{[\code{choice_parameters} | \code{numeric()} | \code{list()}]\cr
 A \code{\link{choice_parameters}} object.
 A numeric vector in optimization space, as created by
 \code{\link{switch_parameter_space}}, is also accepted.}
