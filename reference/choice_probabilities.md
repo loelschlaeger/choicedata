@@ -83,7 +83,8 @@ compute_choice_probabilities(
 - choice_parameters:
 
   \[`choice_parameters` \|
-  [`numeric()`](https://rdrr.io/r/base/numeric.html)\]  
+  [`numeric()`](https://rdrr.io/r/base/numeric.html) \|
+  [`list()`](https://rdrr.io/r/base/list.html)\]  
   A
   [`choice_parameters`](https://loelschlaeger.de/choicedata/reference/choice_parameters.md)
   object. A numeric vector in optimization space, as created by

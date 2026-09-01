@@ -32,6 +32,8 @@ Choice data sets contained in the package.
   : Recreational Fishing Mode Choice
 - [`gaming_rankings`](https://loelschlaeger.de/choicedata/reference/gaming_rankings.md)
   : Rankings of Gaming Platforms
+- [`lichess_berserk_choice`](https://loelschlaeger.de/choicedata/reference/lichess_berserk_choice.md)
+  : Berserk Choices in a Lichess Arena Tournament
 - [`mode_canada_choice`](https://loelschlaeger.de/choicedata/reference/mode_canada_choice.md)
   : Travel Mode Choice in Canada
 - [`student_smoking_choice`](https://loelschlaeger.de/choicedata/reference/student_smoking_choice.md)
