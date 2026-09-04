@@ -28,7 +28,8 @@
 #' 3. `"covariate"`, the (transformed) covariate name connected to the effect,
 #' 4. `"alternative"`, the alternative name connected to the effect (only
 #'    if the effect is alternative-specific),
-#' 5. `"as_covariate"`, indicator whether the covariate is alternative-specific,
+#' 5. `"as_covariate"`, indicator whether the covariate is
+#'    alternative-specific,
 #' 6. `"as_effect"`, indicator whether the effect is alternative-specific,
 #' 7. `"mixing"`, a factor with levels in the order
 #'
@@ -41,8 +42,8 @@
 #'
 #'    indicating the type of random effect.
 #'
-#' For identification, the choice effects are ordered according to the following
-#' rules:
+#' For identification, the choice effects are ordered according to the
+#' following rules:
 #'
 #' 1. Non-random effects come before random effects.
 #' 2. Otherwise, the order is determined by occurrence in `formula`.

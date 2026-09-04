@@ -64,8 +64,8 @@ constants, ASCs) are added to the model. They can be removed by adding
 \code{+ 0} in the second part, e.g., \code{choice ~ A | B + 0 | C}. To not include
 any covariates of the second type but to estimate ASCs, add \code{1} in the
 second part, e.g., \code{choice ~ A | 1 | C}. The expression
-\code{choice ~ A | 0 | C} is interpreted as no covariates of the second type and
-no ASCs.
+\code{choice ~ A | 0 | C} is interpreted as no covariates of the second type
+and no ASCs.
 \item To not include covariates of any type, add \code{0} in the respective
 part, e.g., \code{choice ~ 0 | B | C}.
 \item Some parts of the formula can be omitted when there is no ambiguity.

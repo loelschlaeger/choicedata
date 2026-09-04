@@ -24,7 +24,7 @@ Imports:
     cli,
     dplyr,
     Formula,
-    optimizeR,
+    optimizeR (>= 1.2.1),
     oeli (>= 0.7.7),
     Rdpack,
     Rcpp,

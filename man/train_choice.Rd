@@ -11,20 +11,22 @@ A \code{tibble} with 2929 rows and 11 columns:
 \item{occasionID [\code{integer}]}{The choice occasion within a decider.}
 \item{choice [\code{character}]}{The chosen alternative, either \code{"A"} or
 \code{"B"}.}
-\item{price_A [\code{numeric}]}{The price for alternative \code{"A"} in Euro.}
+\item{price_A [\code{numeric}]}{The price for alternative \code{"A"} in
+Euro.}
 \item{time_A [\code{numeric}]}{The travel time for alternative \code{"A"} in
 hours.}
 \item{change_A [\code{integer}]}{The number of changes for alternative
 \code{"A"}.}
-\item{comfort_A [\code{factor}]}{The comfort level for alternative \code{"A"},
-where \code{0} is the best comfort and \code{2} the worst.}
-\item{price_B [\code{numeric}]}{The price for alternative \code{"B"} in Euro.}
+\item{comfort_A [\code{factor}]}{The comfort level for alternative
+\code{"A"}, where \code{0} is the best comfort and \code{2} the worst.}
+\item{price_B [\code{numeric}]}{The price for alternative \code{"B"} in
+Euro.}
 \item{time_B [\code{numeric}]}{The travel time for alternative \code{"B"} in
 hours.}
 \item{change_B [\code{integer}]}{The number of changes for alternative
 \code{"B"}.}
-\item{comfort_B [\code{factor}]}{The comfort level for alternative \code{"B"},
-where \code{0} is the best comfort and \code{2} the worst.}
+\item{comfort_B [\code{factor}]}{The comfort level for alternative
+\code{"B"}, where \code{0} is the best comfort and \code{2} the worst.}
 }
 }
 \source{
