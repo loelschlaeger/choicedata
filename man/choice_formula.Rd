@@ -77,6 +77,10 @@ right-hand side are possible via the function \code{I()}, e.g.,
 \code{choice ~ I(A1^2 + A2 * 2)}. In this case, a random effect can be defined
 for the transformed covariate, e.g.,
 \code{random_effects = c("I(A1^2 + A2 * 2)" = "cn")}.
+\item Ordered choice models (see \code{ordered} in
+\code{\link{choice_alternatives}}) have a single utility per choice
+occasion. Their covariates must be placed in the first part and ASCs must
+be removed, e.g., \code{choice ~ age + income | 0}.
 }
 }
 

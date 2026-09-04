@@ -102,7 +102,11 @@ choice_effects <- function(
     if (choice_formula$ASC || length(covariate_types[[2]]) > 0 ||
         length(covariate_types[[3]]) > 0) {
       cli::cli_abort(
-        "Ordered choice models only support alternative-constant covariates.",
+        c(
+          "Ordered choice models only support covariates in the first part of
+          {.var formula} without alternative-specific constants.",
+          "i" = "Use, e.g., {.code choice ~ age + income | 0}."
+        ),
         call = NULL
       )
     }

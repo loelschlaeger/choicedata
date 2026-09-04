@@ -60,6 +60,10 @@
 #'   `choice ~ I(A1^2 + A2 * 2)`. In this case, a random effect can be defined
 #'   for the transformed covariate, e.g.,
 #'   `random_effects = c("I(A1^2 + A2 * 2)" = "cn")`.
+#'   \item Ordered choice models (see `ordered` in
+#'   \code{\link{choice_alternatives}}) have a single utility per choice
+#'   occasion. Their covariates must be placed in the first part and ASCs must
+#'   be removed, e.g., `choice ~ age + income | 0`.
 #' }
 #'
 #' @section Specifying random effects:
@@ -124,15 +128,17 @@ choice_formula <- function(
   choice <- as.character(formula_lhs[[1]])
 
   ### normalize and check RHS
-  formula_rhs <- switch(
-    length(formula_rhs),
-    `1` = c(formula_rhs, list(1, 0)),
-    `2` = c(formula_rhs, list(0)),
-    `3` = formula_rhs,
+  if (length(formula_rhs) > 3L) {
     cli::cli_abort(
       "Input {.var formula} must not have more than two '|' separators",
       call = NULL
     )
+  }
+  formula_rhs <- switch(
+    length(formula_rhs),
+    `1` = c(formula_rhs, list(1, 0)),
+    `2` = c(formula_rhs, list(0)),
+    `3` = formula_rhs
   )
   formula_rhs_char <- paste(
     vapply(formula_rhs, deparse1, character(1)), collapse = " | "
@@ -287,7 +293,7 @@ resolve_choice_formula <- function(
       choice_alternatives, error = TRUE, var_name = "choice_alternatives"
     )
   }
-  form <- oeli::quiet(choice_formula$formula)
+  form <- choice_formula$formula
   format <- attr(x, "format")
   check_format(format)
   if (!Formula::is.Formula(form)) {
@@ -381,7 +387,7 @@ resolve_choice_formula <- function(
       } else {
         assignments != 0L
       }
-      colnames(mm)[keep]
+      gsub("\\s+", "", colnames(mm)[keep])
     }
   })
   choice_formula$covariate_types <- covariate_types
@@ -405,7 +411,7 @@ resolve_choice_formula <- function(
         keep <- asg != 0L
         asg <- asg[keep]
       }
-      cols <- colnames(mm)[keep]
+      cols <- gsub("\\s+", "", colnames(mm)[keep])
       if (length(cols) == 0L) next
       labs <- stats::terms(form, rhs = r, data = x) |> attr("term.labels")
       all_cols <- c(all_cols, cols)

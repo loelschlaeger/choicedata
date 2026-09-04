@@ -34,9 +34,24 @@ A \code{\link{choice_identifiers}} object.
 The default is extracted from \code{choice_data}.}
 
 \item{input_checks}{[\code{logical(1)}]\cr
-Check inputs?}
+Check the pre-computed design matrices and choice indices against the
+parameters on the first likelihood evaluation? Later evaluations skip these
+checks because the pre-computed quantities do not change.}
 
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments for the probability computation:
+\itemize{
+\item \code{n_draws} [\code{integer(1)}]: The number of draws for simulated
+probabilities, which are required for mixed logit models and for mixed
+probit models with non-normal random effects. The default is \code{200}.
+\item \code{draws} [\code{matrix}]: A matrix of standard normal draws with one column
+per random effect that replaces the generated draws.
+\item \code{cml} [\code{character(1)}]: Composite marginal likelihood for panel probit
+models. Either \code{"no"} (default, the full likelihood), \code{"fp"} (all pairs of
+choice occasions), or \code{"ap"} (adjacent pairs of choice occasions).
+\item \code{gcdf} [\code{function}]: The Gaussian CDF used for probit probabilities,
+with arguments \code{upper} and \code{corr}. The default uses
+\code{\link[mvtnorm]{pmvnorm}}.
+}}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{numeric()} | \code{list()}]\cr
 A \code{\link{choice_parameters}} object.

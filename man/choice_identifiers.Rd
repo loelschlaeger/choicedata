@@ -67,6 +67,9 @@ An object of class \code{choice_identifiers}, which is a \code{tibble} with colu
 \item \code{column_occasion} contains the choice occasion identifiers (only if
 \code{column_occasion} is not \code{NULL} and \code{cross_section = FALSE}).
 }
+
+The column names are stored in the attributes \code{column_decider} and
+\code{column_occasion}, the attribute \code{cross_section} records the data type.
 }
 \description{
 The \code{choice_identifiers} object defines identifiers for the deciders and

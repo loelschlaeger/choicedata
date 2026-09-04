@@ -245,7 +245,8 @@
 #' @description
 #' Ordered, cross-sectional smoking responses from 237 Statistics I students
 #' at the University of Adelaide. The response levels are never, occasional,
-#' regular, and heavy.
+#' regular, and heavy. One student did not report a smoking level, which is
+#' stored as a missing response.
 #'
 #' This data can be used to model the choice of smoking based on age and
 #' exercise frequency.

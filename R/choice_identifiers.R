@@ -33,6 +33,9 @@
 #' 2. `column_occasion` contains the choice occasion identifiers (only if
 #'    `column_occasion` is not `NULL` and `cross_section = FALSE`).
 #'
+#' The column names are stored in the attributes `column_decider` and
+#' `column_occasion`, the attribute `cross_section` records the data type.
+#'
 #' @export
 #'
 #' @keywords data
@@ -106,16 +109,17 @@ choice_identifiers <- function(
       ),
       var_name = column_occasion
     )
-    for (decider_identifier in unique(decider_identifiers)) {
-      ids <- which(decider_identifiers == decider_identifier)
-      if (anyDuplicated(occasion_identifiers[ids])) {
-        cli::cli_abort(
-          "Column {.val {column_occasion}} of {.var data_frame} must have unique
-          values for any decider, but decider {.val {decider_identifier}} has
-          duplicates",
-          call = NULL
-        )
-      }
+    duplicated_pairs <- duplicated(
+      paste(decider_identifiers, occasion_identifiers, sep = "\r")
+    )
+    if (any(duplicated_pairs)) {
+      decider_identifier <- decider_identifiers[which(duplicated_pairs)[1L]]
+      cli::cli_abort(
+        "Column {.val {column_occasion}} of {.var data_frame} must have unique
+        values for any decider, but decider {.val {decider_identifier}} has
+        duplicates",
+        call = NULL
+      )
     }
   }
 

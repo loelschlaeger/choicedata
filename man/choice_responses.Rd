@@ -61,7 +61,11 @@ The response type to simulate. Use \code{"unordered"} (default), \code{"ordered"
 or \code{"ranked"}.}
 }
 \value{
-A \code{choice_responses} tibble.
+A \code{choice_responses} tibble with the identifier columns followed by the
+response column(s). The attributes \code{column_choice}, \code{column_decider},
+\code{column_occasion}, \code{cross_section}, and \code{column_response_columns} (all
+non-identifier columns, e.g., the ranking columns for ranked responses)
+store the column roles.
 }
 \description{
 The \code{choice_responses} object defines the observed choice responses.

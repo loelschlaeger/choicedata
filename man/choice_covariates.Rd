@@ -22,7 +22,12 @@ choice_covariates(
 generate_choice_covariates(
   choice_effects = NULL,
   choice_identifiers = generate_choice_identifiers(N = 100),
-  labels = covariate_names(choice_effects),
+  labels = if (is.null(choice_effects)) {
+     character()
+ } else {
+    
+    covariate_names(choice_effects)
+ },
   n = nrow(choice_identifiers),
   marginals = list(),
   correlation = diag(length(labels)),
@@ -115,9 +120,19 @@ Print information about the simulated regressors?}
 }
 \value{
 \code{choice_covariates()} and \code{generate_choice_covariates()} return a
-\code{choice_covariates} tibble. \code{covariate_names()} returns a character vector.
-\code{design_matrices()} returns one numeric design matrix per choice occasion in
-a list; its \code{Tp} attribute records the panel lengths.
+\code{choice_covariates} tibble with the identifier and covariate columns. The
+column roles are stored in the attributes \code{format}, \code{column_decider},
+\code{column_occasion}, \code{column_alternative}, \code{column_ac_covariates},
+\code{column_as_covariates}, \code{delimiter}, and \code{cross_section}, analogous to
+\code{\link{choice_data}}.
+
+\code{covariate_names()} returns a \code{character} vector.
+
+\code{design_matrices()} returns a \code{list} of class \code{choice_design_matrices} with
+one numeric design matrix per choice occasion, see the section below. The
+attributes \code{Tp} (the number of choice occasions per decider), \code{alternatives},
+\code{availability} (the indices of the available alternatives per occasion), and
+\code{choice_type} describe the structure.
 }
 \description{
 The \code{choice_covariates} object defines the choice model covariates.

@@ -339,6 +339,33 @@ check_ordered <- function(ordered) {
   invisible(ordered)
 }
 
+check_rankings <- function(ranks, J, var_name = "ranking columns") {
+  check_not_missing(ranks)
+  oeli::input_check_response(
+    check = checkmate::check_integerish(
+      unlist(ranks, use.names = FALSE), lower = 1, upper = J,
+      any.missing = TRUE
+    ),
+    var_name = var_name
+  )
+  rows <- if (is.matrix(ranks)) asplit(ranks, 1L) else ranks
+  valid_ranking <- vapply(
+    rows,
+    function(x) {
+      x <- x[!is.na(x)]
+      !length(x) || identical(sort(as.integer(x)), seq_along(x))
+    },
+    logical(1)
+  )
+  oeli::input_check_response(
+    check = if (all(valid_ranking)) TRUE else paste(
+      "Observed ranks must be consecutive and start at one"
+    ),
+    var_name = var_name
+  )
+  invisible(ranks)
+}
+
 check_random_effects <- function(random_effects, choices) {
   check_not_missing(random_effects)
   oeli::input_check_response(
@@ -369,6 +396,12 @@ check_Tp <- function(Tp, N) {
     var_name = "Tp"
   )
   invisible(Tp)
+}
+
+#' @noRd
+
+escape_regex <- function(x) {
+  gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", x)
 }
 
 #' @noRd

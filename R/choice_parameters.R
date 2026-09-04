@@ -353,8 +353,9 @@ generate_choice_parameters <- function(
 #'
 #' @param choice_parameters \[`choice_parameters` | `numeric()`\]\cr
 #' A \code{\link{choice_parameters}} object.
-#' For `switch_parameter_space()`, a numeric vector in optimization space is
-#' also accepted and converted back to a `choice_parameters` object.
+#' For `switch_parameter_space()` and `validate_choice_parameters()`, a numeric
+#' vector in optimization space is also accepted and converted back to a
+#' `choice_parameters` object.
 #'
 #' @param choice_effects \[`choice_effects`\]\cr
 #' A \code{\link{choice_effects}} object.
@@ -373,8 +374,14 @@ validate_choice_parameters <- function(
   ### input checks
   check_not_missing(choice_parameters)
   check_not_missing(choice_effects)
-  is.choice_parameters(choice_parameters, error = TRUE)
   is.choice_effects(choice_effects, error = TRUE)
+  if (!is.list(choice_parameters) && is.numeric(choice_parameters)) {
+    choice_parameters <- switch_parameter_space(
+      choice_parameters = choice_parameters,
+      choice_effects = choice_effects
+    )
+  }
+  is.choice_parameters(choice_parameters, error = TRUE)
   x <- choice_parameters
   choice_formula <- attr(choice_effects, "choice_formula")
   error_term <- choice_formula$error_term
@@ -819,10 +826,7 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
       gamma_i2o(choice_parameters$gamma),
       weight_values
     )
-    return(structure(
-      transformed,
-      class = unique(c("choice_parameters", class(transformed)))
-    ))
+    return(transformed)
   }
 
   ### build ParameterSpaces object
@@ -871,11 +875,10 @@ switch_parameter_space <- function(choice_parameters, choice_effects) {
 
   ### transform and return
   choice_parameters_transformed <- par$switch(choice_parameters)
-  choice_parameters_transformed <- structure(
-    choice_parameters_transformed,
-    class = unique(c("choice_parameters", class(choice_parameters_transformed)))
-  )
   if (numeric_input) {
+    choice_parameters_transformed <- structure(
+      choice_parameters_transformed, class = c("choice_parameters", "list")
+    )
     return(validate_choice_parameters(
       choice_parameters = choice_parameters_transformed,
       choice_effects = choice_effects,

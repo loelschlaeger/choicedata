@@ -6,7 +6,7 @@
 \title{Define choice alternatives}
 \usage{
 choice_alternatives(
-  J = 2,
+  J = length(alternatives),
   alternatives = LETTERS[1:J],
   base = NULL,
   ordered = FALSE

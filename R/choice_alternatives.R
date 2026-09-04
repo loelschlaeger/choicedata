@@ -62,13 +62,14 @@
 #' )
 
 choice_alternatives <- function(
-  J = 2,
+  J = length(alternatives),
   alternatives = LETTERS[1:J],
   base = NULL,
   ordered = FALSE
 ) {
 
   ### input checks
+  if (missing(J) && missing(alternatives)) J <- 2L
   ordered <- check_ordered(ordered)
   alternatives <- check_alternatives(alternatives = alternatives, J = J)
   if (!isTRUE(ordered)) alternatives <- sort(alternatives)

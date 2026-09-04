@@ -24,7 +24,17 @@
 #' Are the supplied or requested values log-probabilities?
 #'
 #' @return
-#' A `choice_probabilities` tibble.
+#' A `choice_probabilities` tibble with the identifier columns followed by the
+#' probability column(s). If `choice_only = TRUE`, there is a single column
+#' `choice_probability` (or `log_choice_probability` if `logarithm = TRUE`).
+#' Otherwise, there is one column per choice alternative. The attributes
+#' `column_decider`, `column_occasion`, `cross_section`,
+#' `column_probabilities`, `choice_only`, `logarithm`, and `aggregate` store
+#' the column roles and the probability type.
+#'
+#' If `choice_only = FALSE` and `aggregate = "decider"`, the tibble instead has
+#' one row per possible outcome sequence and decider, with the sequence in the
+#' list column `outcome`.
 #'
 #' @export
 #'
@@ -298,7 +308,7 @@
 #'   choice_parameters = parameters,
 #'   choice_data = simulated_data,
 #'   choice_effects = effects,
-#'   aggregate = "sequence",
+#'   aggregate = "decider",
 #'   cml = "ap"
 #' )
 #'
@@ -359,7 +369,7 @@ choice_probabilities <- function(
   cross_section = is.null(column_occasion),
   column_probabilities = NULL,
   logarithm = FALSE,
-  aggregate = c("occasion", "sequence")
+  aggregate = c("occasion", "decider")
 ) {
 
   check_not_missing(data_frame)
@@ -482,10 +492,23 @@ choice_probabilities <- function(
 #'
 #' @param aggregate \[`character(1)`\]\cr
 #' Probability unit. `"occasion"` returns one result per choice occasion.
-#' `"sequence"` returns the joint result for each decider's observed sequence.
+#' `"decider"` returns the joint result for each decider's observed sequence of
+#' choices.
 #'
 #' @param ...
-#' Additional arguments.
+#' Additional arguments for the probability computation:
+#'
+#' - `n_draws` \[`integer(1)`\]: The number of draws for simulated
+#'   probabilities, which are required for mixed logit models and for mixed
+#'   probit models with non-normal random effects. The default is `200`.
+#' - `draws` \[`matrix`\]: A matrix of standard normal draws with one column
+#'   per random effect that replaces the generated draws.
+#' - `cml` \[`character(1)`\]: Composite marginal likelihood for panel probit
+#'   models. Either `"no"` (default, the full likelihood), `"fp"` (all pairs of
+#'   choice occasions), or `"ap"` (adjacent pairs of choice occasions).
+#' - `gcdf` \[`function`\]: The Gaussian CDF used for probit probabilities,
+#'   with arguments `upper` and `corr`. The default uses
+#'   \code{\link[mvtnorm]{pmvnorm}}.
 #'
 #' @export
 
@@ -495,7 +518,7 @@ compute_choice_probabilities <- function(
   choice_effects,
   choice_only = TRUE,
   input_checks = TRUE,
-  aggregate = c("occasion", "sequence"),
+  aggregate = c("occasion", "decider"),
   logarithm = FALSE,
   ...
 ) {
@@ -542,20 +565,15 @@ compute_choice_probabilities <- function(
   }
 
   choice_identifiers <- extract_choice_identifiers(choice_data)
-  design_list <- design_matrices(
-    x = choice_data,
-    choice_effects = choice_effects,
-    choice_identifiers = choice_identifiers
+  inputs <- prepare_choice_inputs(
+    choice_data, choice_effects, choice_identifiers
   )
-  choice_indices <- extract_choice_indices(
-    choice_data = choice_data,
-    choice_effects = choice_effects,
-    choice_identifiers = choice_identifiers
-  )
+  design_list <- inputs$design_matrices
+  choice_indices <- inputs$choice_indices
 
   ranked <- identical(attr(choice_data, "choice_type"), "ranked")
   joint_outcomes <- !isTRUE(choice_only) &&
-    identical(aggregate, "sequence")
+    identical(aggregate, "decider")
   if (joint_outcomes) {
     return(return_result(lapply(parameters, function(x) {
       do.call(
@@ -666,7 +684,7 @@ compute_choice_probabilities <- function(
         cross_section = TRUE,
         column_probabilities = probability_column,
         logarithm = logarithm,
-        aggregate = "sequence"
+        aggregate = "decider"
       ))
     }
     if (is.null(all_identifiers)) return(value)
@@ -953,7 +971,7 @@ evaluate_choice_outcomes <- function(
     column_outcome = "outcome",
     choice_only = FALSE,
     joint = TRUE,
-    aggregate = "sequence",
+    aggregate = "decider",
     logarithm = logarithm
   )
 }
@@ -985,7 +1003,7 @@ evaluate_choice_probabilities <- function(
     input_checks = TRUE,
     numeric_only = FALSE,
     logarithm = FALSE,
-    aggregate = c("occasion", "sequence"),
+    aggregate = c("occasion", "decider"),
     ranked = identical(attr(design_list, "choice_type"), "ranked"),
     ...
   ) {
@@ -1025,7 +1043,7 @@ evaluate_choice_probabilities <- function(
   decider_ids <- choice_identifiers[[column_decider]]
   has_panel <- !is.null(Tp) && length(Tp) && any(Tp > 1)
   joint_panel <- isTRUE(choice_only) && has_panel &&
-    identical(aggregate, "sequence")
+    identical(aggregate, "decider")
   eval_order <- seq_along(design_list)
   if (joint_panel) {
     decider_index <- match(decider_ids, unique(decider_ids))
@@ -1294,6 +1312,25 @@ compute_chunk_product <- function(
 
 #' @noRd
 
+block_diagonal <- function(matrices) {
+  rows <- vapply(matrices, nrow, integer(1))
+  columns <- vapply(matrices, ncol, integer(1))
+  out <- matrix(0, sum(rows), sum(columns))
+  row_end <- cumsum(rows)
+  column_end <- cumsum(columns)
+  for (i in seq_along(matrices)) {
+    if (rows[i] && columns[i]) {
+      out[
+        seq.int(row_end[i] - rows[i] + 1L, row_end[i]),
+        seq.int(column_end[i] - columns[i] + 1L, column_end[i])
+      ] <- matrices[[i]]
+    }
+  }
+  out
+}
+
+#' @noRd
+
 compute_panel_probability <- function(
   X_n, y_n, beta, Omega_completed, Sigma, Tp_n, J,
   gcdf, ranked, cml_type, logarithm, availability_n,
@@ -1308,7 +1345,7 @@ compute_panel_probability <- function(
       as.integer(availability_n[[t]])
     )
   }
-  D_n <- as.matrix(Matrix::bdiag(lapply(delta_n, `[[`, "D")))
+  D_n <- block_diagonal(lapply(delta_n, `[[`, "D"))
   cov_n <- cpp_probit_cov(
     X_n, Omega_completed, Sigma, D_n, as.integer(Tp_n)
   )
@@ -1730,8 +1767,9 @@ choiceprob_mnp <- function(
         X[[n]], omega, Sigma, delta_n$D, 1L
       )
       upper <- delta_n$upper / as.numeric(cov_n$scale)
-      if (logarithm && length(upper) == 1L) {
-        probabilities[n] <- stats::pnorm(upper, log.p = TRUE)
+      if (length(upper) == 1L &&
+          (logarithm || identical(gcdf, pmvnorm_cdf_default))) {
+        probabilities[n] <- stats::pnorm(upper, log.p = logarithm)
       } else {
         prob_n <- do.call(
           gcdf, list("upper" = upper, "corr" = cov_n$corr)
@@ -1807,8 +1845,9 @@ choiceprob_mmnp <- function(
         X[[n]], Omega_completed, Sigma, delta_n$D, 1L
       )
       upper <- delta_n$upper / as.numeric(cov_n$scale)
-      if (logarithm && length(upper) == 1L) {
-        probabilities[n] <- stats::pnorm(upper, log.p = TRUE)
+      if (length(upper) == 1L &&
+          (logarithm || identical(gcdf, pmvnorm_cdf_default))) {
+        probabilities[n] <- stats::pnorm(upper, log.p = logarithm)
       } else {
         prob_n <- do.call(
           gcdf, list("upper" = upper, "corr" = cov_n$corr)

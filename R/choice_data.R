@@ -63,7 +63,22 @@
 #' @inheritParams choice_responses
 #'
 #' @return
-#' A `choice_data` tibble.
+#' A `choice_data` tibble in the supplied `format`. It contains the identifier
+#' columns, the response column(s), and the covariate columns of `data_frame`.
+#' The column roles are stored as attributes, which the functions consuming
+#' the object rely on:
+#' \describe{
+#'   \item{`format`}{Either `"wide"` or `"long"`.}
+#'   \item{`column_choice`}{The name of the response column.}
+#'   \item{`column_decider`, `column_occasion`}{The identifier columns.}
+#'   \item{`column_alternative`}{The alternative column (`format = "long"`).}
+#'   \item{`column_ac_covariates`, `column_as_covariates`}{The names of the
+#'     alternative-constant and alternative-specific covariates.}
+#'   \item{`column_as_covariates_wide`}{The alternative-specific covariate
+#'     columns in wide layout.}
+#'   \item{`delimiter`, `cross_section`, `choice_type`}{The corresponding
+#'     input arguments.}
+#' }
 #'
 #' @export
 #'
@@ -183,27 +198,8 @@ choice_data <- function(
       column_as_covariates_wide,
       rank_cols
     )
-    ranks <- as.matrix(data_frame[rank_cols])
-    J <- length(alternatives_ranked)
-    oeli::input_check_response(
-      check = checkmate::check_integerish(
-        ranks, lower = 1, upper = J, any.missing = TRUE
-      ),
-      var_name = "ranking columns"
-    )
-    valid_ranking <- apply(
-      ranks,
-      1,
-      function(x) {
-        x <- x[!is.na(x)]
-        !length(x) || identical(sort(as.integer(x)), seq_along(x))
-      }
-    )
-    oeli::input_check_response(
-      check = if (all(valid_ranking)) TRUE else paste(
-        "Observed ranks must be consecutive and start at one"
-      ),
-      var_name = "ranking columns"
+    check_rankings(
+      as.matrix(data_frame[rank_cols]), J = length(alternatives_ranked)
     )
   }
   required_columns <- c(
@@ -394,6 +390,18 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
   co_id <- attr(choice_identifiers, "column_occasion")
   co_vals <- if (!is.null(co_id)) ids_df[[co_id]] else rep(1L, nrow(ids_df))
 
+  ### locate the rows of every choice occasion once
+  occasion_key <- paste(ids_df[[cd_id]], co_vals, sep = "\r")
+  row_key <- paste(
+    x_long[[column_decider]],
+    if (is.null(column_occasion)) 1L else x_long[[column_occasion]],
+    sep = "\r"
+  )
+  row_groups <- split(
+    seq_len(nrow(x_long)), factor(row_key, levels = unique(occasion_key))
+  )
+  row_groups <- unname(row_groups[match(occasion_key, unique(occasion_key))])
+
   list(
     x_long = x_long,
     column_choice = column_choice_long,
@@ -405,6 +413,8 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
     ids_df = ids_df,
     cd_id = cd_id,
     co_vals = co_vals,
+    row_groups = row_groups,
+    alternatives_long = as.character(x_long[["alternative"]]),
     choice_type = choice_type,
     has_choice = has_choice
   )
@@ -412,19 +422,23 @@ prepare_choice_long_data <- function(x, choice_effects, choice_identifiers) {
 
 #' @noRd
 
+prepare_choice_inputs <- function(
+    choice_data, choice_effects, choice_identifiers
+  ) {
+  prep <- prepare_choice_long_data(
+    choice_data, choice_effects, choice_identifiers
+  )
+  list(
+    design_matrices = build_design_matrices(prep, choice_data, choice_effects),
+    choice_indices = build_choice_indices(prep)
+  )
+}
+
+#' @noRd
+
 subset_choice_occasion <- function(prep, index) {
-  dec_val <- prep$ids_df[[prep$cd_id]][index]
-  occ_val <- prep$co_vals[index]
-  row_index <- if (is.null(prep$column_occasion)) {
-    which(prep$x_long[[prep$column_decider]] == dec_val)
-  } else {
-    which(
-      prep$x_long[[prep$column_decider]] == dec_val &
-        prep$x_long[[prep$column_occasion]] == occ_val
-    )
-  }
-  df_nt <- prep$x_long[row_index, , drop = FALSE]
-  observed_alts <- as.character(df_nt[["alternative"]])
+  row_index <- prep$row_groups[[index]]
+  observed_alts <- prep$alternatives_long[row_index]
   unknown_alts <- setdiff(observed_alts, prep$alts)
   if (length(unknown_alts)) {
     cli::cli_abort(
@@ -447,10 +461,11 @@ subset_choice_occasion <- function(prep, index) {
     )
   }
   selected <- ord[available]
-  df_nt <- df_nt[selected, , drop = FALSE]
-  attr(df_nt, "availability") <- as.integer(available)
-  attr(df_nt, "row_index") <- row_index[selected]
-  df_nt
+  list(
+    availability = as.integer(available),
+    row_index = row_index[selected],
+    alternatives = observed_alts[selected]
+  )
 }
 
 #' @rdname choice_data
@@ -694,7 +709,7 @@ long_to_wide <- function(
   column_alternative = "alternative",
   column_decider = "deciderID",
   column_occasion = NULL,
-  alternatives = unique(data_frame[[column_alternative]]),
+  alternatives = as.character(unique(data_frame[[column_alternative]])),
   delimiter = "_",
   choice_type = c("unordered", "ordered", "ranked")
 ) {
@@ -788,26 +803,8 @@ long_to_wide <- function(
         var_name = column_choice
       )
     } else {
-      oeli::input_check_response(
-        check = checkmate::check_integerish(
-          response, lower = 1, upper = length(alternatives),
-          any.missing = TRUE
-        ),
-        var_name = column_choice
-      )
-      valid_ranking <- vapply(
-        response_by_obs,
-        function(x) {
-          x <- x[!is.na(x)]
-          !length(x) || identical(sort(as.integer(x)), seq_along(x))
-        },
-        logical(1)
-      )
-      oeli::input_check_response(
-        check = if (all(valid_ranking)) TRUE else paste(
-          "Observed ranks must be consecutive and start at one"
-        ),
-        var_name = column_choice
+      check_rankings(
+        response_by_obs, J = length(alternatives), var_name = column_choice
       )
     }
   }
@@ -917,7 +914,6 @@ guess_alternatives_wide <- function(
       call = NULL
     )
   }
-  esc <- function(x) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", x)
   alts_from_choice <- character()
   if (!is.null(column_choice)) {
     choice_values <- data_frame[[column_choice]]
@@ -1077,15 +1073,14 @@ wide_to_long <- function(
       var_name = column_choice
     )
   }
-  esc <- function(x) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", x)
-  alt_rx <- paste(esc(alternatives), collapse = "|")
+  alt_rx <- paste(escape_regex(alternatives), collapse = "|")
   if (!is.null(column_choice) && column_choice %in% names(data_frame) &&
       identical(choice_type, "ranked")) {
     data_frame[[column_choice]] <- NULL
   }
   if (!is.null(column_choice) && identical(choice_type, "ranked")) {
     rank_pattern <- paste0(
-      "^", esc(column_choice), esc(delimiter), "(", alt_rx, ")$"
+      "^", escape_regex(column_choice), escape_regex(delimiter), "(", alt_rx, ")$"
     )
     rank_cols <- grep(rank_pattern, names(data_frame), value = TRUE)
     if (length(rank_cols) != length(alternatives)) {
@@ -1095,32 +1090,11 @@ wide_to_long <- function(
         call = NULL
       )
     }
-    ranks <- as.matrix(data_frame[rank_cols])
-    J <- length(alternatives)
-    oeli::input_check_response(
-      check = checkmate::check_integerish(
-        ranks, lower = 1, upper = J, any.missing = TRUE
-      ),
-      var_name = "ranking columns"
-    )
-    valid_ranking <- apply(
-      ranks,
-      1,
-      function(x) {
-        x <- x[!is.na(x)]
-        !length(x) || identical(sort(as.integer(x)), seq_along(x))
-      }
-    )
-    oeli::input_check_response(
-      check = if (all(valid_ranking)) TRUE else paste(
-        "Observed ranks must be consecutive and start at one"
-      ),
-      var_name = "ranking columns"
-    )
+    check_rankings(as.matrix(data_frame[rank_cols]), J = length(alternatives))
   }
 
   ### transform to long
-  pat <- paste0("^(.+?)", esc(delimiter), "(", alt_rx, ")$")
+  pat <- paste0("^(.+?)", escape_regex(delimiter), "(", alt_rx, ")$")
   cols_to_pivot <- setdiff(
     grep(pat, names(data_frame), value = TRUE),
     column_ac_covariates
@@ -1259,7 +1233,6 @@ check_as_covariates <- function(
     allow_missing_columns = allow_missing_columns
   )
 
-  esc <- function(x) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", x)
   column_ac <- character()
   column_as <- character()
   column_as_wide <- character()
@@ -1345,8 +1318,8 @@ check_as_covariates <- function(
       character()
     }
     pattern <- paste0(
-      "^(.+?)", esc(delimiter), "(",
-      paste0(esc(alternatives), collapse = "|"), ")$"
+      "^(.+?)", escape_regex(delimiter), "(",
+      paste0(escape_regex(alternatives), collapse = "|"), ")$"
     )
     matches <- pattern |>
       regexec(text = names(data_frame)) |>
@@ -1396,8 +1369,8 @@ check_as_covariates <- function(
       }
       column_as <- sort(unique(column_as_covariates))
       keep_pat <- paste0(
-        "^(", paste0(esc(column_as), collapse = "|"), ")", esc(delimiter),
-        "(", paste0(esc(alternatives), collapse = "|"), ")$"
+        "^(", paste0(escape_regex(column_as), collapse = "|"), ")", escape_regex(delimiter),
+        "(", paste0(escape_regex(alternatives), collapse = "|"), ")$"
       )
       column_as_wide <- grep(keep_pat, names(data_frame), value = TRUE)
     }

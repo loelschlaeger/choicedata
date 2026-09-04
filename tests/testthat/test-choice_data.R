@@ -545,3 +545,15 @@ test_that("alternative-specific covariates can be detected", {
     "Unknown"
   )
 })
+
+test_that("long_to_wide accepts a factor column of alternatives", {
+  data_frame <- travel_mode_choice
+  data_frame$mode <- factor(data_frame$mode)
+  wide <- long_to_wide(
+    data_frame = data_frame,
+    column_alternative = "mode",
+    column_decider = "individual"
+  )
+  expect_equal(nrow(wide), 210L)
+  expect_true(all(c("wait_plane", "cost_car") %in% names(wide)))
+})

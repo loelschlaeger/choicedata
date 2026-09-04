@@ -15,6 +15,13 @@
 
 * Added additional choice data sets for demonstrations.
 
+* `long_to_wide()` now accepts a `factor` column of alternatives.
+
+* `J` in `choice_alternatives()` defaults to the number of supplied choice
+  alternatives.
+
+* Removed unused package dependencies.
+
 # choicedata 0.1.0
 
 * Initial CRAN submission.

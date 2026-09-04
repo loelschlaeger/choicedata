@@ -72,3 +72,11 @@ test_that("choice_alternatives can be printed", {
   expect_match(text, "Choice alternatives", fixed = TRUE)
   expect_match(text, "la*", fixed = TRUE)
 })
+
+test_that("J is inferred from alternatives", {
+  x <- choice_alternatives(alternatives = c("gas", "oil", "wood"))
+  expect_equal(attr(x, "J"), 3L)
+  expect_equal(as.character(x), c("gas", "oil", "wood"))
+  expect_equal(attr(choice_alternatives(), "J"), 2L)
+  expect_equal(attr(choice_alternatives(J = 4), "J"), 4L)
+})

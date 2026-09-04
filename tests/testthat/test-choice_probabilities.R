@@ -1902,7 +1902,7 @@ test_that("default Gaussian CDF helper relies on covariance matrices", {
   expect_equal(
     as.numeric(pmvnorm_cdf_default(
       upper = 0.7,
-      corr = Matrix::Matrix(1)
+      corr = matrix(1)
     )),
     stats::pnorm(0.7)
   )

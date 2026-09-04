@@ -33,7 +33,8 @@ A \code{\link{choice_identifiers}} object.}
 \value{
 An object of class \code{choice_preferences}, which is a \code{tibble} with the
 deciders' preferences. The column names are the names of the effects in the
-choice model. The first column contains the decider identifiers.
+choice model. The first column contains the decider identifiers, its name is
+stored in the attribute \code{column_decider}.
 }
 \description{
 The \code{choice_preferences} object defines the deciders' preferences in the

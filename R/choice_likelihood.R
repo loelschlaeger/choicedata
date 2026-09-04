@@ -39,7 +39,9 @@
 #' Return the negative (log-)likelihood? Useful for minimization routines.
 #'
 #' @param input_checks \[`logical(1)`\]\cr
-#' Check inputs?
+#' Check the pre-computed design matrices and choice indices against the
+#' parameters on the first likelihood evaluation? Later evaluations skip these
+#' checks because the pre-computed quantities do not change.
 #'
 #' @param aggregate \[`character(1)`\]\cr
 #' Unit of the returned likelihood:
@@ -49,7 +51,19 @@
 #' - `"total"` sums the decider contributions.
 #'
 #' @param ...
-#' Additional arguments.
+#' Additional arguments for the probability computation:
+#'
+#' - `n_draws` \[`integer(1)`\]: The number of draws for simulated
+#'   probabilities, which are required for mixed logit models and for mixed
+#'   probit models with non-normal random effects. The default is `200`.
+#' - `draws` \[`matrix`\]: A matrix of standard normal draws with one column
+#'   per random effect that replaces the generated draws.
+#' - `cml` \[`character(1)`\]: Composite marginal likelihood for panel probit
+#'   models. Either `"no"` (default, the full likelihood), `"fp"` (all pairs of
+#'   choice occasions), or `"ap"` (adjacent pairs of choice occasions).
+#' - `gcdf` \[`function`\]: The Gaussian CDF used for probit probabilities,
+#'   with arguments `upper` and `corr`. The default uses
+#'   \code{\link[mvtnorm]{pmvnorm}}.
 #'
 #' @return
 #' `choice_likelihood()` returns an object of class `choice_likelihood`, which
@@ -117,16 +131,11 @@ choice_likelihood <- function(
     var_name = "input_checks"
   )
   ### prepare repeated-use quantities
-  design_list <- design_matrices(
-    x = choice_data,
-    choice_effects = choice_effects,
-    choice_identifiers = choice_identifiers
+  inputs <- prepare_choice_inputs(
+    choice_data, choice_effects, choice_identifiers
   )
-  choice_indices <- extract_choice_indices(
-    choice_data = choice_data,
-    choice_effects = choice_effects,
-    choice_identifiers = choice_identifiers
-  )
+  design_list <- inputs$design_matrices
+  choice_indices <- inputs$choice_indices
 
   ### remove observations without a response
   observed <- lengths(choice_indices) > 0L
@@ -172,7 +181,8 @@ choice_likelihood <- function(
     prob_args$n_draws <- NULL
   }
 
-  ### evaluation function
+  ### evaluation function (input checks run on the first evaluation only)
+  checks_pending <- isTRUE(input_checks)
   objective <- function(
       choice_parameters,
       logarithm = TRUE,
@@ -214,7 +224,7 @@ choice_likelihood <- function(
     prob_args_eval$aggregate <- if (identical(aggregate, "occasion")) {
       "occasion"
     } else {
-      "sequence"
+      "decider"
     }
 
     log_prob <- if (length(choice_indices)) {
@@ -228,7 +238,7 @@ choice_likelihood <- function(
             choice_parameters = params,
             choice_only = TRUE,
             choice_indices = choice_indices,
-            input_checks = input_checks
+            input_checks = checks_pending
           ),
           prob_args_eval
         )
@@ -236,6 +246,7 @@ choice_likelihood <- function(
     } else {
       numeric()
     }
+    checks_pending <<- FALSE
     if (!is.numeric(log_prob) || anyNA(log_prob)) {
       cli::cli_abort(
         "Evaluating the likelihood requires numeric log contributions.",

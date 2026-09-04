@@ -147,7 +147,7 @@ test_that("ordered alternatives restrict effect specification", {
       ),
       choice_alternatives = choice_alternatives(J = 3, ordered = TRUE)
     ),
-    "Ordered choice models only support alternative-constant covariates."
+    "Ordered choice models only support covariates in the first part"
   )
   expect_s3_class(
     choice_effects(

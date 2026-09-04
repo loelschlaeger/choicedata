@@ -75,8 +75,9 @@ Number of latent classes.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{numeric()}]\cr
 A \code{\link{choice_parameters}} object.
-For \code{switch_parameter_space()}, a numeric vector in optimization space is
-also accepted and converted back to a \code{choice_parameters} object.}
+For \code{switch_parameter_space()} and \code{validate_choice_parameters()}, a numeric
+vector in optimization space is also accepted and converted back to a
+\code{choice_parameters} object.}
 
 \item{allow_missing}{[\code{logical(1)}]\cr
 Allow required parameter components to be omitted?}

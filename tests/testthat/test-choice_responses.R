@@ -239,3 +239,26 @@ test_that("generate_choice_responses can return ranked columns", {
   inferred_top <- alt_names[apply(ranking_matrix, 1, which.min)]
   expect_equal(ranked_responses$choice, inferred_top)
 })
+
+test_that("ordered factor responses are matched by label", {
+  data_frame <- data.frame(
+    id = 1:6,
+    choice = factor(
+      c("low", "mid", "high", "high", "mid", "low"),
+      levels = c("low", "mid", "high"), ordered = TRUE
+    ),
+    x = c(0.1, -0.2, 0.3, 0.4, -0.5, 0.6)
+  )
+  alternatives <- choice_alternatives(
+    alternatives = c("high", "mid", "low"), ordered = TRUE
+  )
+  choice_effects <- choice_effects(
+    choice_formula(choice ~ x | 0, error_term = "logit"), alternatives
+  )
+  choice_data <- choice_data(
+    data_frame, column_choice = "choice", column_decider = "id",
+    choice_type = "ordered"
+  )
+  indices <- unlist(extract_choice_indices(choice_data, choice_effects))
+  expect_equal(as.character(alternatives)[indices], as.character(data_frame$choice))
+})

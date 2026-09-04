@@ -40,7 +40,7 @@ long_to_wide(
   column_alternative = "alternative",
   column_decider = "deciderID",
   column_occasion = NULL,
-  alternatives = unique(data_frame[[column_alternative]]),
+  alternatives = as.character(unique(data_frame[[column_alternative]])),
   delimiter = "_",
   choice_type = c("unordered", "ordered", "ranked")
 )
@@ -124,7 +124,22 @@ A \code{\link{choice_preferences}} object.}
 Unique labels for the choice alternatives.}
 }
 \value{
-A \code{choice_data} tibble.
+A \code{choice_data} tibble in the supplied \code{format}. It contains the identifier
+columns, the response column(s), and the covariate columns of \code{data_frame}.
+The column roles are stored as attributes, which the functions consuming
+the object rely on:
+\describe{
+\item{\code{format}}{Either \code{"wide"} or \code{"long"}.}
+\item{\code{column_choice}}{The name of the response column.}
+\item{\code{column_decider}, \code{column_occasion}}{The identifier columns.}
+\item{\code{column_alternative}}{The alternative column (\code{format = "long"}).}
+\item{\code{column_ac_covariates}, \code{column_as_covariates}}{The names of the
+alternative-constant and alternative-specific covariates.}
+\item{\code{column_as_covariates_wide}}{The alternative-specific covariate
+columns in wide layout.}
+\item{\code{delimiter}, \code{cross_section}, \code{choice_type}}{The corresponding
+input arguments.}
+}
 }
 \description{
 The \code{choice_data} object defines the choice data, it is a combination of

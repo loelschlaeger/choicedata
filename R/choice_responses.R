@@ -14,7 +14,11 @@
 #' @inheritParams choice_identifiers
 #'
 #' @return
-#' A `choice_responses` tibble.
+#' A `choice_responses` tibble with the identifier columns followed by the
+#' response column(s). The attributes `column_choice`, `column_decider`,
+#' `column_occasion`, `cross_section`, and `column_response_columns` (all
+#' non-identifier columns, e.g., the ranking columns for ranked responses)
+#' store the column roles.
 #'
 #' @export
 #'
@@ -333,9 +337,17 @@ extract_choice_indices <- function(
   prep <- prepare_choice_long_data(
     choice_data, choice_effects, choice_identifiers
   )
+  build_choice_indices(prep)
+}
+
+#' @noRd
+
+build_choice_indices <- function(prep) {
+
   column_choice <- prep$column_choice
+  n_occasions <- nrow(prep$ids_df)
   if (!prep$has_choice) {
-    choice_list <- rep(list(integer()), nrow(prep$ids_df))
+    choice_list <- rep(list(integer()), n_occasions)
     return(structure(choice_list, Tp = prep$Tp))
   }
   if (is.null(column_choice) || !column_choice %in% names(prep$x_long)) {
@@ -345,18 +357,15 @@ extract_choice_indices <- function(
       call = NULL
     )
   }
+  choice_values <- prep$x_long[[column_choice]]
+  choice_is_factor <- is.factor(choice_values)
+  choice_is_ordered <- is.ordered(choice_values)
 
-  choice_list <- vector("list", length = nrow(prep$ids_df))
-  for (k in seq_len(nrow(prep$ids_df))) {
-    df_nt <- subset_choice_occasion(prep, k)
-    values_raw <- df_nt[[column_choice]]
-    if (is.factor(values_raw) && is.ordered(values_raw)) {
-      values <- as.numeric(values_raw)
-    } else if (is.factor(values_raw)) {
-      values <- suppressWarnings(as.numeric(as.character(values_raw)))
-    } else {
-      values <- suppressWarnings(as.numeric(values_raw))
-    }
+  choice_list <- vector("list", length = n_occasions)
+  for (k in seq_len(n_occasions)) {
+    occasion <- subset_choice_occasion(prep, k)
+    values_raw <- choice_values[occasion$row_index]
+    occasion_alts <- occasion$alternatives
     if (identical(prep$choice_type, "ranked")) {
       rank_values <- suppressWarnings(as.numeric(values_raw))
       rank_values <- rank_values[!is.na(rank_values)]
@@ -374,8 +383,7 @@ extract_choice_indices <- function(
         )
       }
       order_idx <- which(!is.na(values_raw))[order(rank_integers)]
-      ranking_alts <- df_nt[["alternative"]][order_idx]
-      choice_list[[k]] <- match(ranking_alts, prep$alts)
+      choice_list[[k]] <- match(occasion_alts[order_idx], prep$alts)
     } else if (identical(prep$choice_type, "ordered")) {
       non_missing <- !is.na(values_raw)
       if (!any(non_missing)) {
@@ -390,8 +398,10 @@ extract_choice_indices <- function(
       }
       selected <- values_raw[which(non_missing)][1]
       idx <- NA_integer_
-      if (is.factor(values_raw)) {
-        idx <- as.integer(selected)
+      if (choice_is_factor) {
+        ### match labels to the declared alternatives, fall back to level index
+        idx <- match(as.character(selected), prep$alts)
+        if (is.na(idx)) idx <- as.integer(selected)
       } else if (is.numeric(selected)) {
         idx <- as.integer(selected)
       } else {
@@ -405,6 +415,13 @@ extract_choice_indices <- function(
       }
       choice_list[[k]] <- idx
     } else {
+      values <- if (choice_is_ordered) {
+        as.numeric(values_raw)
+      } else if (choice_is_factor) {
+        suppressWarnings(as.numeric(as.character(values_raw)))
+      } else {
+        suppressWarnings(as.numeric(values_raw))
+      }
       chosen_idx <- which(values == 1)
       if (!length(chosen_idx) && all(is.na(values))) {
         choice_list[[k]] <- integer()
@@ -417,8 +434,7 @@ extract_choice_indices <- function(
           call = NULL
         )
       }
-      chosen_alt <- df_nt[["alternative"]][chosen_idx]
-      choice_list[[k]] <- match(chosen_alt, prep$alts)
+      choice_list[[k]] <- match(occasion_alts[chosen_idx], prep$alts)
     }
   }
 

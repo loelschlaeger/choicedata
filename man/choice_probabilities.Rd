@@ -13,7 +13,7 @@ choice_probabilities(
   cross_section = is.null(column_occasion),
   column_probabilities = NULL,
   logarithm = FALSE,
-  aggregate = c("occasion", "sequence")
+  aggregate = c("occasion", "decider")
 )
 
 compute_choice_probabilities(
@@ -22,7 +22,7 @@ compute_choice_probabilities(
   choice_effects,
   choice_only = TRUE,
   input_checks = TRUE,
-  aggregate = c("occasion", "sequence"),
+  aggregate = c("occasion", "decider"),
   logarithm = FALSE,
   ...
 )
@@ -56,7 +56,8 @@ Are the supplied or requested values log-probabilities?}
 
 \item{aggregate}{[\code{character(1)}]\cr
 Probability unit. \code{"occasion"} returns one result per choice occasion.
-\code{"sequence"} returns the joint result for each decider's observed sequence.}
+\code{"decider"} returns the joint result for each decider's observed sequence of
+choices.}
 
 \item{choice_parameters}{[\code{choice_parameters} | \code{numeric()} | \code{list()}]\cr
 A \code{\link{choice_parameters}} object.
@@ -73,10 +74,33 @@ A \code{\link{choice_effects}} object.}
 Should additional internal input checks be performed before computing the
 probabilities?}
 
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments for the probability computation:
+\itemize{
+\item \code{n_draws} [\code{integer(1)}]: The number of draws for simulated
+probabilities, which are required for mixed logit models and for mixed
+probit models with non-normal random effects. The default is \code{200}.
+\item \code{draws} [\code{matrix}]: A matrix of standard normal draws with one column
+per random effect that replaces the generated draws.
+\item \code{cml} [\code{character(1)}]: Composite marginal likelihood for panel probit
+models. Either \code{"no"} (default, the full likelihood), \code{"fp"} (all pairs of
+choice occasions), or \code{"ap"} (adjacent pairs of choice occasions).
+\item \code{gcdf} [\code{function}]: The Gaussian CDF used for probit probabilities,
+with arguments \code{upper} and \code{corr}. The default uses
+\code{\link[mvtnorm]{pmvnorm}}.
+}}
 }
 \value{
-A \code{choice_probabilities} tibble.
+A \code{choice_probabilities} tibble with the identifier columns followed by the
+probability column(s). If \code{choice_only = TRUE}, there is a single column
+\code{choice_probability} (or \code{log_choice_probability} if \code{logarithm = TRUE}).
+Otherwise, there is one column per choice alternative. The attributes
+\code{column_decider}, \code{column_occasion}, \code{cross_section},
+\code{column_probabilities}, \code{choice_only}, \code{logarithm}, and \code{aggregate} store
+the column roles and the probability type.
+
+If \code{choice_only = FALSE} and \code{aggregate = "decider"}, the tibble instead has
+one row per possible outcome sequence and decider, with the sequence in the
+list column \code{outcome}.
 }
 \description{
 The \code{choice_probabilities} object defines the choice probabilities.
@@ -353,7 +377,7 @@ compute_choice_probabilities(
   choice_parameters = parameters,
   choice_data = simulated_data,
   choice_effects = effects,
-  aggregate = "sequence",
+  aggregate = "decider",
   cml = "ap"
 )
 
