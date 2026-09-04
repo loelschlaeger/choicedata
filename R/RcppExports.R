@@ -73,3 +73,11 @@ cpp_probit_cov <- function(x, omega, sigma, d, occasions) {
     .Call(`_choicedata_cpp_probit_cov`, x, omega, sigma, d, occasions)
 }
 
+cpp_probit_probabilities <- function(x, y, beta, sigma, omega = NULL, position = NULL, ranked = FALSE, log = FALSE, availability = NULL, ghk_draws = 500L) {
+    .Call(`_choicedata_cpp_probit_probabilities`, x, y, beta, sigma, omega, position, ranked, log, availability, ghk_draws)
+}
+
+cpp_panel_probabilities <- function(x, y, tp, beta, omega, sigma, availability = NULL, ranked = FALSE, cml_type = 0L, log = FALSE, ghk_draws = 500L, return_chunks = FALSE) {
+    .Call(`_choicedata_cpp_panel_probabilities`, x, y, tp, beta, omega, sigma, availability, ranked, cml_type, log, ghk_draws, return_chunks)
+}
+

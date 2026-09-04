@@ -16,6 +16,7 @@ Language: en-US
 URL: https://github.com/loelschlaeger/choicedata, https://loelschlaeger.de/choicedata/
 BugReports: https://github.com/loelschlaeger/choicedata/issues
 Suggests:
+    mvtnorm,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports:
@@ -23,9 +24,8 @@ Imports:
     cli,
     dplyr,
     Formula,
-    mvtnorm,
     optimizeR,
-    oeli (>= 0.7.5),
+    oeli (>= 0.7.7),
     Rdpack,
     Rcpp,
     rlang,
@@ -33,6 +33,7 @@ Imports:
     tidyr,
     utils
 LinkingTo:
+    oeli (>= 0.7.7),
     Rcpp,
     RcppArmadillo
 RdMacros: Rdpack

@@ -274,6 +274,48 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_probit_probabilities
+NumericVector cpp_probit_probabilities(List x, Nullable<List> y, NumericVector beta, NumericMatrix sigma, Nullable<NumericMatrix> omega, Nullable<IntegerVector> position, bool ranked, bool log, Nullable<List> availability, int ghk_draws);
+RcppExport SEXP _choicedata_cpp_probit_probabilities(SEXP xSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP sigmaSEXP, SEXP omegaSEXP, SEXP positionSEXP, SEXP rankedSEXP, SEXP logSEXP, SEXP availabilitySEXP, SEXP ghk_drawsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Nullable<List> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< Nullable<IntegerVector> >::type position(positionSEXP);
+    Rcpp::traits::input_parameter< bool >::type ranked(rankedSEXP);
+    Rcpp::traits::input_parameter< bool >::type log(logSEXP);
+    Rcpp::traits::input_parameter< Nullable<List> >::type availability(availabilitySEXP);
+    Rcpp::traits::input_parameter< int >::type ghk_draws(ghk_drawsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_probit_probabilities(x, y, beta, sigma, omega, position, ranked, log, availability, ghk_draws));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_panel_probabilities
+SEXP cpp_panel_probabilities(List x, List y, IntegerVector tp, NumericVector beta, NumericMatrix omega, NumericMatrix sigma, Nullable<List> availability, bool ranked, int cml_type, bool log, int ghk_draws, bool return_chunks);
+RcppExport SEXP _choicedata_cpp_panel_probabilities(SEXP xSEXP, SEXP ySEXP, SEXP tpSEXP, SEXP betaSEXP, SEXP omegaSEXP, SEXP sigmaSEXP, SEXP availabilitySEXP, SEXP rankedSEXP, SEXP cml_typeSEXP, SEXP logSEXP, SEXP ghk_drawsSEXP, SEXP return_chunksSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type x(xSEXP);
+    Rcpp::traits::input_parameter< List >::type y(ySEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type tp(tpSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< Nullable<List> >::type availability(availabilitySEXP);
+    Rcpp::traits::input_parameter< bool >::type ranked(rankedSEXP);
+    Rcpp::traits::input_parameter< int >::type cml_type(cml_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type log(logSEXP);
+    Rcpp::traits::input_parameter< int >::type ghk_draws(ghk_drawsSEXP);
+    Rcpp::traits::input_parameter< bool >::type return_chunks(return_chunksSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_panel_probabilities(x, y, tp, beta, omega, sigma, availability, ranked, cml_type, log, ghk_draws, return_chunks));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_choicedata_cpp_ologit", (DL_FUNC) &_choicedata_cpp_ologit, 5},
@@ -294,6 +336,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_choicedata_cpp_binary_probit", (DL_FUNC) &_choicedata_cpp_binary_probit, 8},
     {"_choicedata_cpp_probit_d", (DL_FUNC) &_choicedata_cpp_probit_d, 4},
     {"_choicedata_cpp_probit_cov", (DL_FUNC) &_choicedata_cpp_probit_cov, 5},
+    {"_choicedata_cpp_probit_probabilities", (DL_FUNC) &_choicedata_cpp_probit_probabilities, 10},
+    {"_choicedata_cpp_panel_probabilities", (DL_FUNC) &_choicedata_cpp_panel_probabilities, 12},
     {NULL, NULL, 0}
 };
 

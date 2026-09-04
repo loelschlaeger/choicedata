@@ -2,6 +2,8 @@
 
 * Added support for uncorrelated normal and log-normal random effects.
 
+* Probit probabilities now come from `oeli::pmvnorm()`.
+
 * Specialized `choiceprob_*()` functions are now internal; use
   `compute_choice_probabilities()` as the public interface.
 

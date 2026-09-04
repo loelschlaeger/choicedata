@@ -186,7 +186,7 @@ check_column_probabilities <- function(
   )
   if (!is.null(column_probabilities)) {
     oeli::input_check_response(
-      check = checkmate::check_names(column_probabilities, type = "strict"),
+      check = checkmate::check_names(column_probabilities, type = "unique"),
       var_name = "column_probabilities"
     )
   }
@@ -428,7 +428,7 @@ check_beta_list <- function(beta) {
 #' @noRd
 
 choiceprob_probit_input_checks <- function(
-    X, y, Tp, cml, beta, Omega, Sigma, gamma, weights, re_position, gcdf,
+    X, y, Tp, cml, beta, Omega, Sigma, gamma, weights, re_position,
     availability, model_type
 ) {
 
@@ -730,20 +730,6 @@ choiceprob_probit_input_checks <- function(
         )
       }
     }
-
-    ### the Gaussian CDF callback must accept upper bounds and correlation
-    oeli::input_check_response(
-      check = checkmate::check_function(gcdf, args = c("upper", "corr")),
-      var_name = "gcdf"
-    )
-    gcdf_out <- try(
-      do.call(gcdf, list("upper" = c(0, 0), "corr" = diag(2))),
-      silent = TRUE
-    )
-    oeli::input_check_response(
-      check = checkmate::check_number(gcdf_out, lower = 0, upper = 1),
-      var_name = "do.call(gcdf, list(\"upper\" = c(0, 0), \"corr\" = diag(2)))"
-    )
 
   } else {
     panel_model <- model_type %in% c(12:14, 24:26, 28:30)

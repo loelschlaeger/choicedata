@@ -787,17 +787,10 @@ test_that("MMNP probabilities can be computed", {
   )
   expect_equal(rowSums(probs_all), rep(1, N))
 
-  gcdf <- function(upper, corr) {
-    mvtnorm::pmvnorm(
-      upper = upper,
-      sigma = corr,
-      algorithm = mvtnorm::Miwa()
-    )
-  }
   args <- list(
     X = data$X[1:2], y = data$y[1:2], beta = beta,
     Omega = Omega, Sigma = Sigma,
-    re_position = seq_len(P_r), gcdf = gcdf
+    re_position = seq_len(P_r)
   )
   small <- do.call(choiceprob_mmnp, args)
   small_log <- do.call(
@@ -806,6 +799,18 @@ test_that("MMNP probabilities can be computed", {
   )
   expect_equal(exp(small_log), small, tolerance = 1e-10)
   expect_equal(do.call(choiceprob_probit, args), small)
+  reference <- vapply(1:2, function(n) {
+    v_n <- as.numeric(data$X[[n]] %*% beta)
+    delta_n <- cpp_probit_d(v_n, as.integer(data$y[[n]]), FALSE)
+    omega_n <- matrix(0, nrow = P, ncol = P)
+    omega_n[seq_len(P_r), seq_len(P_r)] <- Omega
+    cov_n <- cpp_probit_cov(data$X[[n]], omega_n, Sigma, delta_n$D, 1L)
+    as.numeric(mvtnorm::pmvnorm(
+      upper = delta_n$upper / as.numeric(cov_n$scale),
+      sigma = cov_n$corr, algorithm = mvtnorm::Miwa()
+    ))
+  }, numeric(1))
+  expect_equal(small, reference, tolerance = 1e-6)
 
   x <- data$X[[1]]
   v <- as.numeric(x %*% beta)
@@ -1353,22 +1358,16 @@ test_that("MMNP panel probabilities can be computed", {
     no = 0.125 + sum(asin(rho)) / (4 * pi),
     fp = prod(pair), ap = prod(pair[c(1, 3)])
   )
-  gcdf0 <- function(upper, corr) {
-    mvtnorm::pmvnorm(upper = upper, sigma = corr,
-                     algorithm = mvtnorm::Miwa())
-  }
   got <- vapply(c("no", "fp", "ap"), function(cml) {
     choiceprob_mmnp_panel(
-      X0, y0, 3L, cml, 0, matrix(0.7), diag(c(1, 4)), 1L,
-      gcdf = gcdf0
+      X0, y0, 3L, cml, 0, matrix(0.7), diag(c(1, 4)), 1L
     )
   }, numeric(1))
-  expect_equal(got, ref, tolerance = 1e-7)
+  expect_equal(got, ref, tolerance = 1e-6)
   expect_equal(
     choiceprob_probit(
       X = X0, y = y0, Tp = 3L, beta = 0,
-      Omega = matrix(0.7), Sigma = diag(c(1, 4)),
-      gcdf = gcdf0
+      Omega = matrix(0.7), Sigma = diag(c(1, 4))
     ),
     unname(got["no"])
   )
@@ -1447,23 +1446,16 @@ test_that("MMNP ranked panel probabilities can be computed", {
       probs, lower = 0, upper = 1, any.missing = FALSE, len = N
     )
   }
-  gcdf <- function(upper, corr) {
-    mvtnorm::pmvnorm(
-      upper = upper,
-      sigma = corr,
-      algorithm = mvtnorm::Miwa()
-    )
-  }
   ref <- choiceprob_mmnp_panel(
     X = data$X[1:2], y = data$y[1:2], Tp = 2L,
     cml = "no", beta = beta, Omega = Omega, Sigma = Sigma,
-    re_position = seq_len(P_r), gcdf = gcdf, ranked = TRUE
+    re_position = seq_len(P_r), ranked = TRUE
   )
   expect_equal(
     choiceprob_probit(
       X = data$X[1:2], y = data$y[1:2], Tp = 2L,
       beta = beta, Omega = Omega, Sigma = Sigma,
-      re_position = seq_len(P_r), gcdf = gcdf
+      re_position = seq_len(P_r)
     ),
     ref
   )
@@ -1474,7 +1466,7 @@ test_that("MMNP ranked panel probabilities can be computed", {
     X = data$X[1:2], y = data$y[1:2], Tp = 2L,
     cml = "no", beta = beta_lc, Omega = omega_lc,
     Sigma = Sigma, weights = c(0.4, 0.6),
-    re_position = seq_len(P_r), gcdf = gcdf
+    re_position = seq_len(P_r)
   )
   set.seed(1)
   lc_prob <- do.call(choiceprob_probit, lc_args)
@@ -1561,26 +1553,18 @@ test_that("MMNP ordered panel probabilities can be computed", {
   cov0 <- X_mat %*% 0.7 %*% t(X_mat) + diag(2) * 2
   lower0 <- -V0
   upper0 <- 1 - V0
-  gcdf0 <- function(upper, corr, lower = -Inf) {
-    mvtnorm::pmvnorm(
-      lower = lower, upper = upper, sigma = corr,
-      algorithm = mvtnorm::Miwa()
-    )
-  }
   ref <- mvtnorm::pmvnorm(
     lower = lower0, upper = upper0, sigma = cov0,
     algorithm = mvtnorm::Miwa()
   )
   got <- choiceprob_mmnp_ordered_panel(
-    X0, y0, 2L, "no", 0.3, matrix(0.7), 2, c(0, 1), 1L,
-    gcdf = gcdf0
+    X0, y0, 2L, "no", 0.3, matrix(0.7), 2, c(0, 1), 1L
   )
-  expect_equal(got, as.numeric(ref))
+  expect_equal(got, as.numeric(ref), tolerance = 1e-6)
   expect_equal(
     choiceprob_probit(
       X = X0, y = y0, Tp = 2L, beta = 0.3,
-      Omega = matrix(0.7), Sigma = 2, gamma = c(0, 1),
-      gcdf = gcdf0
+      Omega = matrix(0.7), Sigma = 2, gamma = c(0, 1)
     ),
     got
   )
@@ -1889,30 +1873,30 @@ test_that("MMNP ordered panel latent class probabilities can be computed", {
   }
 })
 
-test_that("default Gaussian CDF helper relies on covariance matrices", {
+test_that("chunk products match mvtnorm rectangle probabilities", {
   corr <- matrix(c(1, 0.3, 0.3, 1), nrow = 2)
   upper <- c(0.5, -0.2)
   expect_equal(
-    as.numeric(pmvnorm_cdf_default(upper = upper, corr = corr)),
+    compute_chunk_product(upper, corr, chunk_indices = list(1:2)),
     as.numeric(mvtnorm::pmvnorm(
-      upper = upper, sigma = corr, algorithm = mvtnorm::GenzBretz()
-    ))
-  )
-
-  expect_equal(
-    as.numeric(pmvnorm_cdf_default(
-      upper = 0.7,
-      corr = matrix(1)
+      upper = upper, sigma = corr, algorithm = mvtnorm::Miwa()
     )),
-    stats::pnorm(0.7)
+    tolerance = 1e-6
   )
-
-  expect_identical(
-    pmvnorm_cdf_default(
-      upper = numeric(),
-      corr = matrix(numeric(0), nrow = 0)
+  lower <- c(-0.5, -1)
+  expect_equal(
+    compute_chunk_product(
+      upper, corr, chunk_indices = list(1:2), lower = lower
     ),
-    1
+    as.numeric(mvtnorm::pmvnorm(
+      lower = lower, upper = upper, sigma = corr,
+      algorithm = mvtnorm::Miwa()
+    )),
+    tolerance = 1e-6
+  )
+  expect_equal(
+    compute_chunk_product(0.7, matrix(1), chunk_indices = list(1L)),
+    stats::pnorm(0.7)
   )
 })
 
@@ -1937,16 +1921,14 @@ test_that("panel helper utilities cover edge cases", {
     compute_chunk_product(
       upper = numeric(),
       corr = matrix(numeric(0), nrow = 0),
-      gcdf = function(...) 0,
       chunk_indices = list()
     ),
     1
   )
   expect_equal(
     compute_chunk_product(
-      upper = 0,
+      upper = -40,
       corr = matrix(1),
-      gcdf = function(...) 0,
       chunk_indices = list(1L),
       logarithm = TRUE
     ),
@@ -1958,20 +1940,16 @@ test_that("panel helper utilities cover edge cases", {
     log(.Machine$double.xmin) + log(0.5)
   )
 
-  independent_cdf <- function(upper, corr) {
-    prod(stats::pnorm(upper))
-  }
   rect <- compute_chunk_product(
     upper = c(0.5, 1),
     corr = diag(2),
-    gcdf = independent_cdf,
     chunk_indices = list(1:2),
     lower = c(-0.5, 0)
   )
   rect_ref <- prod(
     stats::pnorm(c(0.5, 1)) - stats::pnorm(c(-0.5, 0))
   )
-  expect_equal(rect, rect_ref)
+  expect_equal(rect, rect_ref, tolerance = 1e-6)
 
   many_probs <- rep(0.5, 4096)
   expect_equal(

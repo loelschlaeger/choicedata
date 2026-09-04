@@ -84,9 +84,11 @@ per random effect that replaces the generated draws.
 \item \code{cml} [\code{character(1)}]: Composite marginal likelihood for panel probit
 models. Either \code{"no"} (default, the full likelihood), \code{"fp"} (all pairs of
 choice occasions), or \code{"ap"} (adjacent pairs of choice occasions).
-\item \code{gcdf} [\code{function}]: The Gaussian CDF used for probit probabilities,
-with arguments \code{upper} and \code{corr}. The default uses
-\code{\link[mvtnorm]{pmvnorm}}.
+\item \code{ghk_draws} [\code{integer(1)}]: The number of draws of the GHK simulator
+for multivariate normal probabilities in probit models, see
+\code{\link[oeli]{pmvnorm}}. Probabilities of up to three dimensions are
+computed exactly; higher dimensions use the GHK simulator on a fixed
+sequence of quasi-random Halton points. The default is \code{500}.
 }}
 }
 \value{

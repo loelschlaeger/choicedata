@@ -61,9 +61,11 @@
 #' - `cml` \[`character(1)`\]: Composite marginal likelihood for panel probit
 #'   models. Either `"no"` (default, the full likelihood), `"fp"` (all pairs of
 #'   choice occasions), or `"ap"` (adjacent pairs of choice occasions).
-#' - `gcdf` \[`function`\]: The Gaussian CDF used for probit probabilities,
-#'   with arguments `upper` and `corr`. The default uses
-#'   \code{\link[mvtnorm]{pmvnorm}}.
+#' - `ghk_draws` \[`integer(1)`\]: The number of draws of the GHK simulator
+#'   for multivariate normal probabilities in probit models, see
+#'   \code{\link[oeli]{pmvnorm}}. Probabilities of up to three dimensions are
+#'   computed exactly; higher dimensions use the GHK simulator on a fixed
+#'   sequence of quasi-random Halton points. The default is `500`.
 #'
 #' @return
 #' `choice_likelihood()` returns an object of class `choice_likelihood`, which

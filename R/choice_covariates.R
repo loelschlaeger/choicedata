@@ -279,29 +279,27 @@ covariate_names <- function(choice_effects) {
   delimiter <- attr(choice_effects, "delimiter")
 
   ### build covariate names from the variables underlying each term
+  variables <- vector("list", 3L)
+  for (r in seq_len(3L)) {
+    variables_r <- lapply(covariate_types[[r]], function(term) {
+      parsed <- tryCatch(str2lang(term), error = function(e) NULL)
+      if (is.null(parsed)) term else all.vars(parsed)
+    })
+    variables_r <- as.character(unlist(variables_r, use.names = FALSE))
+    variables[[r]] <- setdiff(unique(variables_r), ".")
+  }
   covariate_names <- character()
-  for (cov in formula_term_variables(unlist(covariate_types[c(1, 3)]))) {
+  for (cov in unique(c(variables[[1]], variables[[3]]))) {
     covariate_names <- c(
       covariate_names,
       paste(cov, as.character(choice_alternatives), sep = delimiter)
     )
   }
-  for (cov in formula_term_variables(covariate_types[[2]])) {
+  for (cov in variables[[2]]) {
     covariate_names <- c(covariate_names, cov)
   }
   unique(covariate_names)
 
-}
-
-#' @noRd
-
-formula_term_variables <- function(terms) {
-  variables <- lapply(terms, function(term) {
-    parsed <- tryCatch(str2lang(term), error = function(e) NULL)
-    if (is.null(parsed)) term else all.vars(parsed)
-  })
-  variables <- unique(unlist(variables, use.names = FALSE))
-  setdiff(variables, ".")
 }
 
 #' @noRd
@@ -409,15 +407,12 @@ build_design_matrices <- function(prep, x, choice_effects) {
       call = NULL
     )
   }
-  column_of <- function(mm) {
-    if (is.null(mm)) rep(NA_integer_, P) else match(effect_cov, colnames(mm))
-  }
-  col1 <- column_of(model_matrices[[1L]])
-  col2 <- column_of(model_matrices[[2L]])
-  col3 <- column_of(model_matrices[[3L]])
   mm1 <- model_matrices[[1L]]
   mm2 <- model_matrices[[2L]]
   mm3 <- model_matrices[[3L]]
+  col1 <- if (is.null(mm1)) rep(NA_integer_, P) else match(effect_cov, colnames(mm1))
+  col2 <- if (is.null(mm2)) rep(NA_integer_, P) else match(effect_cov, colnames(mm2))
+  col3 <- if (is.null(mm3)) rep(NA_integer_, P) else match(effect_cov, colnames(mm3))
   template <- matrix(
     0, nrow = if (ordered_type) 1L else prep$J, ncol = P,
     dimnames = list(if (!ordered_type) prep$alts, effect_name)

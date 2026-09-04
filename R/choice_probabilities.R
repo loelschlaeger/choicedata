@@ -506,9 +506,11 @@ choice_probabilities <- function(
 #' - `cml` \[`character(1)`\]: Composite marginal likelihood for panel probit
 #'   models. Either `"no"` (default, the full likelihood), `"fp"` (all pairs of
 #'   choice occasions), or `"ap"` (adjacent pairs of choice occasions).
-#' - `gcdf` \[`function`\]: The Gaussian CDF used for probit probabilities,
-#'   with arguments `upper` and `corr`. The default uses
-#'   \code{\link[mvtnorm]{pmvnorm}}.
+#' - `ghk_draws` \[`integer(1)`\]: The number of draws of the GHK simulator
+#'   for multivariate normal probabilities in probit models, see
+#'   \code{\link[oeli]{pmvnorm}}. Probabilities of up to three dimensions are
+#'   computed exactly; higher dimensions use the GHK simulator on a fixed
+#'   sequence of quasi-random Halton points. The default is `500`.
 #'
 #' @export
 
@@ -978,21 +980,6 @@ evaluate_choice_outcomes <- function(
 
 #' @noRd
 
-pmvnorm_cdf_default <- function(upper, corr, lower = -Inf) {
-  corr_mat <- as.matrix(corr)
-  if (!length(upper)) {
-    return(1)
-  }
-  mvtnorm::pmvnorm(
-    lower = lower,
-    upper = upper,
-    sigma = corr_mat,
-    algorithm = mvtnorm::GenzBretz()
-  )
-}
-
-#' @noRd
-
 evaluate_choice_probabilities <- function(
     design_list,
     choice_identifiers,
@@ -1266,7 +1253,7 @@ build_panel_chunks <- function(Tp_n, cml_type, block = 1L) {
 #' @noRd
 
 compute_chunk_product <- function(
-  upper, corr, gcdf, chunk_indices, lower = NULL,
+  upper, corr, chunk_indices, lower = -Inf, ghk_draws = 500L,
   logarithm = FALSE, return_chunks = FALSE
 ) {
   if (length(chunk_indices) == 0) {
@@ -1275,30 +1262,18 @@ compute_chunk_product <- function(
     }
     return(if (logarithm) 0 else 1)
   }
+  lower <- rep_len(as.numeric(lower), length(upper))
   probs <- numeric(length(chunk_indices))
   for (k in seq_along(chunk_indices)) {
     idx <- chunk_indices[[k]]
-    corr_chunk <- corr[idx, idx, drop = FALSE]
-    args <- list("upper" = upper[idx], "corr" = corr_chunk)
-    if (is.null(lower)) {
-      prob <- do.call(gcdf, args)
-    } else if ("lower" %in% names(formals(gcdf))) {
-      args$lower <- lower[idx]
-      prob <- do.call(gcdf, args)
-    } else {
-      corners <- expand.grid(rep(list(c(FALSE, TRUE)), length(idx)))
-      corner_prob <- numeric(nrow(corners))
-      for (i in seq_len(nrow(corners))) {
-        use_lower <- as.logical(corners[i, ])
-        bound <- upper[idx]
-        bound[use_lower] <- lower[idx][use_lower]
-        corner_prob[i] <- (-1)^sum(use_lower) * do.call(
-          gcdf,
-          list("upper" = bound, "corr" = corr_chunk)
-        )
-      }
-      prob <- sum(corner_prob)
-    }
+    prob <- oeli::pmvnorm_cpp(
+      x = as.numeric(upper[idx]),
+      mean = numeric(length(idx)),
+      Sigma = as.matrix(corr[idx, idx, drop = FALSE]),
+      lower = lower[idx],
+      method = "ghk",
+      draws = as.integer(ghk_draws)
+    )
     probs[k] <- max(as.numeric(prob), 0)
   }
   if (return_chunks) {
@@ -1312,62 +1287,9 @@ compute_chunk_product <- function(
 
 #' @noRd
 
-block_diagonal <- function(matrices) {
-  rows <- vapply(matrices, nrow, integer(1))
-  columns <- vapply(matrices, ncol, integer(1))
-  out <- matrix(0, sum(rows), sum(columns))
-  row_end <- cumsum(rows)
-  column_end <- cumsum(columns)
-  for (i in seq_along(matrices)) {
-    if (rows[i] && columns[i]) {
-      out[
-        seq.int(row_end[i] - rows[i] + 1L, row_end[i]),
-        seq.int(column_end[i] - columns[i] + 1L, column_end[i])
-      ] <- matrices[[i]]
-    }
-  }
-  out
-}
-
-#' @noRd
-
-compute_panel_probability <- function(
-  X_n, y_n, beta, Omega_completed, Sigma, Tp_n, J,
-  gcdf, ranked, cml_type, logarithm, availability_n,
-  return_chunks = FALSE
-) {
-  V_n <- as.numeric(X_n %*% beta)
-  delta_n <- vector("list", Tp_n)
-  for (t in seq_len(Tp_n)) {
-    ind <- (t - 1L) * J + seq_len(J)
-    delta_n[[t]] <- cpp_probit_d(
-      V_n[ind], as.integer(y_n[[t]]), ranked,
-      as.integer(availability_n[[t]])
-    )
-  }
-  D_n <- block_diagonal(lapply(delta_n, `[[`, "D"))
-  cov_n <- cpp_probit_cov(
-    X_n, Omega_completed, Sigma, D_n, as.integer(Tp_n)
-  )
-  scale <- as.numeric(cov_n$scale)
-  upper <- unlist(lapply(delta_n, `[[`, "upper")) / scale
-  blocks <- lengths(availability_n) - 1L
-  chunk_indices <- build_panel_chunks(Tp_n, cml_type, block = blocks)
-  compute_chunk_product(
-    upper = upper,
-    corr = cov_n$corr,
-    gcdf = gcdf,
-    chunk_indices = chunk_indices,
-    logarithm = logarithm,
-    return_chunks = return_chunks
-  )
-}
-
-#' @noRd
-
 compute_ordered_panel_probability <- function(
   X_n, y_n, beta, Omega_completed, Sigma, Tp_n, gamma_augmented,
-  gcdf, cml_type, logarithm, return_chunks = FALSE
+  ghk_draws, cml_type, logarithm, return_chunks = FALSE
 ) {
   V_n <- as.numeric(X_n %*% beta)
   cov_n <- cpp_probit_cov(
@@ -1380,9 +1302,9 @@ compute_ordered_panel_probability <- function(
   compute_chunk_product(
     upper = ub,
     corr = cov_n$corr,
-    gcdf = gcdf,
     chunk_indices = chunk_indices,
     lower = lb,
+    ghk_draws = ghk_draws,
     logarithm = logarithm,
     return_chunks = return_chunks
   )
@@ -1394,7 +1316,7 @@ choiceprob_probit <- function(
   X, y = NULL, Tp = NULL, cml = "no", beta, Omega = NULL, Sigma,
   gamma = NULL, weights = NULL, re_position = NULL, re_mixing = NULL,
   availability = NULL, draws = NULL, n_draws = 200,
-  gcdf = pmvnorm_cdf_default, input_checks = TRUE,
+  ghk_draws = 500L, input_checks = TRUE,
   logarithm = FALSE,
   ordered = !is.null(gamma),
   ranked = if (!ordered && !is.null(y) && isTRUE(length(y) > 0)) {
@@ -1412,6 +1334,10 @@ choiceprob_probit <- function(
     oeli::input_check_response(
       check = checkmate::check_flag(logarithm),
       var_name = "logarithm"
+    )
+    oeli::input_check_response(
+      check = checkmate::check_int(ghk_draws, lower = 2),
+      var_name = "ghk_draws"
     )
   }
   if (is.null(availability)) {
@@ -1446,7 +1372,7 @@ choiceprob_probit <- function(
 
   if (isTRUE(input_checks)) {
     input_res <- choiceprob_probit_input_checks(
-      X, y, Tp, cml, beta, Omega, Sigma, gamma, weights, re_position, gcdf,
+      X, y, Tp, cml, beta, Omega, Sigma, gamma, weights, re_position,
       availability, model_type = NA
     )
     Tp <- input_res$Tp
@@ -1482,7 +1408,7 @@ choiceprob_probit <- function(
 
   if (isTRUE(input_checks)) {
     input_res <- choiceprob_probit_input_checks(
-      X, y, Tp, cml, beta, Omega, Sigma, gamma, weights, re_position, gcdf,
+      X, y, Tp, cml, beta, Omega, Sigma, gamma, weights, re_position,
       availability, model_type = model_type
     )
     Tp <- input_res$Tp
@@ -1500,7 +1426,7 @@ choiceprob_probit <- function(
       Omega = Omega, Sigma = Sigma, gamma = gamma,
       weights = weights, re_position = re_position,
       re_mixing = re_mixing, availability = availability,
-      draws = draws, n_draws = n_draws, gcdf = gcdf,
+      draws = draws, n_draws = n_draws, ghk_draws = ghk_draws,
       ranked = ranked, panel = panel, logarithm = logarithm
     ))
   }
@@ -1509,7 +1435,7 @@ choiceprob_probit <- function(
     as.character(model_type),
     `0` = choiceprob_mnp(
       X = X, y = y, beta = beta, Sigma = Sigma,
-      gcdf = gcdf, ranked = ranked, logarithm = logarithm,
+      ghk_draws = ghk_draws, ranked = ranked, logarithm = logarithm,
       availability = availability
     ),
     `1` = choiceprob_mnp_ordered(
@@ -1518,12 +1444,12 @@ choiceprob_probit <- function(
     ),
     `2` = choiceprob_mnp(
       X = X, y = y, beta = beta, Sigma = Sigma,
-      gcdf = gcdf, ranked = TRUE, logarithm = logarithm,
+      ghk_draws = ghk_draws, ranked = TRUE, logarithm = logarithm,
       availability = availability
     ),
     `4` = choiceprob_mmnp(
       X = X, y = y, beta = beta, Omega = Omega, Sigma = Sigma,
-      re_position = re_position, gcdf = gcdf, ranked = ranked,
+      re_position = re_position, ghk_draws = ghk_draws, ranked = ranked,
       logarithm = logarithm, availability = availability
     ),
     `5` = choiceprob_mmnp_ordered(
@@ -1532,29 +1458,29 @@ choiceprob_probit <- function(
     ),
     `6` = choiceprob_mmnp(
       X = X, y = y, beta = beta, Omega = Omega, Sigma = Sigma,
-      re_position = re_position, gcdf = gcdf, ranked = TRUE,
+      re_position = re_position, ghk_draws = ghk_draws, ranked = TRUE,
       logarithm = logarithm, availability = availability
     ),
     `12` = choiceprob_mmnp_panel(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = Omega,
-      Sigma = Sigma, re_position = re_position, gcdf = gcdf,
+      Sigma = Sigma, re_position = re_position, ghk_draws = ghk_draws,
       ranked = ranked, logarithm = logarithm,
       availability = availability
     ),
     `13` = choiceprob_mmnp_ordered_panel(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = Omega,
       Sigma = Sigma, gamma = gamma, re_position = re_position,
-      gcdf = gcdf, logarithm = logarithm
+      ghk_draws = ghk_draws, logarithm = logarithm
     ),
     `14` = choiceprob_mmnp_panel(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = Omega,
-      Sigma = Sigma, re_position = re_position, gcdf = gcdf,
+      Sigma = Sigma, re_position = re_position, ghk_draws = ghk_draws,
       ranked = TRUE, logarithm = logarithm,
       availability = availability
     ),
     `16` = choiceprob_mmnp_lc(
       X = X, y = y, beta = beta, Omega = NULL, Sigma = Sigma,
-      weights = weights, re_position = re_position, gcdf = gcdf,
+      weights = weights, re_position = re_position, ghk_draws = ghk_draws,
       ranked = ranked, logarithm = logarithm,
       availability = availability
     ),
@@ -1565,31 +1491,31 @@ choiceprob_probit <- function(
     ),
     `18` = choiceprob_mmnp_lc(
       X = X, y = y, beta = beta, Omega = NULL, Sigma = Sigma,
-      weights = weights, re_position = re_position, gcdf = gcdf,
+      weights = weights, re_position = re_position, ghk_draws = ghk_draws,
       ranked = TRUE, logarithm = logarithm,
       availability = availability
     ),
     `24` = choiceprob_mmnp_panel_lc(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = NULL,
       Sigma = Sigma, weights = weights, re_position = re_position,
-      gcdf = gcdf, ranked = ranked, logarithm = logarithm,
+      ghk_draws = ghk_draws, ranked = ranked, logarithm = logarithm,
       availability = availability
     ),
     `25` = choiceprob_mmnp_ordered_panel_lc(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = NULL,
       Sigma = Sigma, gamma = gamma, weights = weights,
-      re_position = re_position, gcdf = gcdf,
+      re_position = re_position, ghk_draws = ghk_draws,
       logarithm = logarithm
     ),
     `26` = choiceprob_mmnp_panel_lc(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = NULL,
       Sigma = Sigma, weights = weights, re_position = re_position,
-      gcdf = gcdf, ranked = TRUE, logarithm = logarithm,
+      ghk_draws = ghk_draws, ranked = TRUE, logarithm = logarithm,
       availability = availability
     ),
     `20` = choiceprob_mmnp_lc(
       X = X, y = y, beta = beta, Omega = Omega, Sigma = Sigma,
-      weights = weights, re_position = re_position, gcdf = gcdf,
+      weights = weights, re_position = re_position, ghk_draws = ghk_draws,
       ranked = ranked, logarithm = logarithm,
       availability = availability
     ),
@@ -1600,26 +1526,26 @@ choiceprob_probit <- function(
     ),
     `22` = choiceprob_mmnp_lc(
       X = X, y = y, beta = beta, Omega = Omega, Sigma = Sigma,
-      weights = weights, re_position = re_position, gcdf = gcdf,
+      weights = weights, re_position = re_position, ghk_draws = ghk_draws,
       ranked = TRUE, logarithm = logarithm,
       availability = availability
     ),
     `28` = choiceprob_mmnp_panel_lc(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = Omega,
       Sigma = Sigma, weights = weights, re_position = re_position,
-      gcdf = gcdf, ranked = ranked, logarithm = logarithm,
+      ghk_draws = ghk_draws, ranked = ranked, logarithm = logarithm,
       availability = availability
     ),
     `29` = choiceprob_mmnp_ordered_panel_lc(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = Omega,
       Sigma = Sigma, gamma = gamma, weights = weights,
-      re_position = re_position, gcdf = gcdf,
+      re_position = re_position, ghk_draws = ghk_draws,
       logarithm = logarithm
     ),
     `30` = choiceprob_mmnp_panel_lc(
       X = X, y = y, Tp = Tp, cml = cml, beta = beta, Omega = Omega,
       Sigma = Sigma, weights = weights, re_position = re_position,
-      gcdf = gcdf, ranked = TRUE, logarithm = logarithm,
+      ghk_draws = ghk_draws, ranked = TRUE, logarithm = logarithm,
       availability = availability
     ),
     cli::cli_abort(
@@ -1633,7 +1559,7 @@ choiceprob_probit <- function(
 
 choiceprob_smnp <- function(
   X, y, Tp, cml, beta, Omega, Sigma, gamma, weights,
-  re_position, re_mixing, availability, draws, n_draws, gcdf,
+  re_position, re_mixing, availability, draws, n_draws, ghk_draws,
   ranked, panel, logarithm
 ) {
 
@@ -1646,7 +1572,7 @@ choiceprob_smnp <- function(
   if (is.null(gamma)) {
     conditional_fun <- choiceprob_mnp
     conditional_args <- list(
-      X = X, y = y, Sigma = Sigma, gcdf = gcdf, ranked = ranked,
+      X = X, y = y, Sigma = Sigma, ghk_draws = ghk_draws, ranked = ranked,
       logarithm = TRUE, availability = availability
     )
   } else {
@@ -1727,63 +1653,20 @@ choiceprob_smnp <- function(
 
 choiceprob_mnp <- function(
     X, y, beta, Sigma,
-    gcdf = pmvnorm_cdf_default,
+    ghk_draws = 500L,
     ranked = FALSE, logarithm = FALSE,
     availability = Map(seq_len, lapply(X, nrow))
 ) {
-  N <- length(X)
-  J <- dim(Sigma)[1]
-  if (J == 2L && identical(gcdf, pmvnorm_cdf_default)) {
+  if (dim(Sigma)[1] == 2L) {
     return(cpp_binary_probit(
       X, y, beta, Sigma, log = logarithm,
       availability = availability
     ))
   }
-  if (is.null(y)) {
-    probs_all <- matrix(0, N, J)
-    for (n in seq_len(N)) {
-      for (j in availability[[n]]) {
-        probs_all[n, j] <- choiceprob_mnp(
-          X = X[n], y = list(j), beta = beta, Sigma = Sigma,
-          gcdf = gcdf, ranked = FALSE, logarithm = FALSE,
-          availability = availability[n]
-        )
-      }
-    }
-    return(probs_all / rowSums(probs_all))
-  }
-  probabilities <- numeric(N)
-  for (n in seq_len(N)) {
-    if (length(availability[[n]]) == 1L) {
-      probabilities[n] <- if (logarithm) 0 else 1
-    } else {
-      V_n <- as.numeric(X[[n]] %*% beta)
-      delta_n <- cpp_probit_d(
-        V_n, as.integer(y[[n]]), ranked,
-        as.integer(availability[[n]])
-      )
-      omega <- matrix(0, ncol(X[[n]]), ncol(X[[n]]))
-      cov_n <- cpp_probit_cov(
-        X[[n]], omega, Sigma, delta_n$D, 1L
-      )
-      upper <- delta_n$upper / as.numeric(cov_n$scale)
-      if (length(upper) == 1L &&
-          (logarithm || identical(gcdf, pmvnorm_cdf_default))) {
-        probabilities[n] <- stats::pnorm(upper, log.p = logarithm)
-      } else {
-        prob_n <- do.call(
-          gcdf, list("upper" = upper, "corr" = cov_n$corr)
-        )
-        prob_n <- max(as.numeric(prob_n), 0)
-        probabilities[n] <- if (logarithm) {
-          log(prob_n + .Machine$double.xmin)
-        } else {
-          prob_n
-        }
-      }
-    }
-  }
-  probabilities
+  cpp_probit_probabilities(
+    X, y, beta, Sigma, ranked = ranked, log = logarithm,
+    availability = availability, ghk_draws = as.integer(ghk_draws)
+  )
 }
 
 #' @noRd
@@ -1801,67 +1684,22 @@ choiceprob_mnp_ordered <- function(
 choiceprob_mmnp <- function(
     X, y, beta, Omega, Sigma,
     re_position = utils::tail(seq_along(beta), nrow(Omega)),
-    gcdf = pmvnorm_cdf_default,
+    ghk_draws = 500L,
     ranked = FALSE, logarithm = FALSE,
     availability = Map(seq_len, lapply(X, nrow))
 ) {
-  N <- length(X)
-  P <- length(beta)
-  J <- dim(Sigma)[1]
-  if (J == 2L && identical(gcdf, pmvnorm_cdf_default)) {
+  if (dim(Sigma)[1] == 2L) {
     return(cpp_binary_probit(
       X, y, beta, Sigma, omega = Omega,
       position = as.integer(re_position), log = logarithm,
       availability = availability
     ))
   }
-  if (is.null(y)) {
-    probs_all <- matrix(0, N, J)
-    for (n in seq_len(N)) {
-      for (j in availability[[n]]) {
-        probs_all[n, j] <- choiceprob_mmnp(
-          X = X[n], y = list(j), beta = beta, Omega = Omega,
-          Sigma = Sigma, re_position = re_position, gcdf = gcdf,
-          ranked = FALSE, logarithm = FALSE,
-          availability = availability[n]
-        )
-      }
-    }
-    return(probs_all / rowSums(probs_all))
-  }
-  Omega_completed <- matrix(0, P, P)
-  Omega_completed[re_position, re_position] <- Omega
-  probabilities <- numeric(N)
-  for (n in seq_len(N)) {
-    if (length(availability[[n]]) == 1L) {
-      probabilities[n] <- if (logarithm) 0 else 1
-    } else {
-      V_n <- as.numeric(X[[n]] %*% beta)
-      delta_n <- cpp_probit_d(
-        V_n, as.integer(y[[n]]), ranked,
-        as.integer(availability[[n]])
-      )
-      cov_n <- cpp_probit_cov(
-        X[[n]], Omega_completed, Sigma, delta_n$D, 1L
-      )
-      upper <- delta_n$upper / as.numeric(cov_n$scale)
-      if (length(upper) == 1L &&
-          (logarithm || identical(gcdf, pmvnorm_cdf_default))) {
-        probabilities[n] <- stats::pnorm(upper, log.p = logarithm)
-      } else {
-        prob_n <- do.call(
-          gcdf, list("upper" = upper, "corr" = cov_n$corr)
-        )
-        prob_n <- max(as.numeric(prob_n), 0)
-        probabilities[n] <- if (logarithm) {
-          log(prob_n + .Machine$double.xmin)
-        } else {
-          prob_n
-        }
-      }
-    }
-  }
-  probabilities
+  cpp_probit_probabilities(
+    X, y, beta, Sigma, omega = Omega, position = as.integer(re_position),
+    ranked = ranked, log = logarithm, availability = availability,
+    ghk_draws = as.integer(ghk_draws)
+  )
 }
 
 #' @noRd
@@ -1882,7 +1720,7 @@ choiceprob_mmnp_ordered <- function(
 choiceprob_mmnp_lc <- function(
     X, y, beta, Omega, Sigma, weights,
     re_position = NULL,
-    gcdf = pmvnorm_cdf_default,
+    ghk_draws = 500L,
     ranked = FALSE, logarithm = FALSE,
     availability = Map(seq_len, lapply(X, nrow))
 ) {
@@ -1895,13 +1733,13 @@ choiceprob_mmnp_lc <- function(
     class_prob <- if (is.null(Omega)) {
       choiceprob_mnp(
         X = X, y = y, beta = beta[[c]], Sigma = Sigma,
-        gcdf = gcdf, ranked = ranked, logarithm = logarithm,
+        ghk_draws = ghk_draws, ranked = ranked, logarithm = logarithm,
         availability = availability
       )
     } else {
       choiceprob_mmnp(
         X = X, y = y, beta = beta[[c]], Omega = Omega[[c]], Sigma = Sigma,
-        re_position = re_position, gcdf = gcdf, ranked = ranked,
+        re_position = re_position, ghk_draws = ghk_draws, ranked = ranked,
         logarithm = logarithm, availability = availability
       )
     }
@@ -1946,49 +1784,21 @@ choiceprob_mmnp_panel <- function(
     Tp, cml,
     beta, Omega, Sigma,
     re_position = utils::tail(seq_along(beta), nrow(Omega)),
-    gcdf = pmvnorm_cdf_default,
+    ghk_draws = 500L,
     ranked = FALSE, logarithm = FALSE,
     availability = Map(seq_len, lapply(X, nrow)),
     return_chunks = FALSE
 ) {
-  N <- length(Tp)
-  J <- dim(Sigma)[1]
   P <- length(beta)
   Omega_completed <- matrix(0, P, P)
   Omega_completed[re_position, re_position] <- Omega
-  cml_type <- switch(cml,
-    "no" = 0,
-    "fp" = 1,
-    "ap" = 2
+  cml_type <- match(cml, c("no", "fp", "ap")) - 1L
+  cpp_panel_probabilities(
+    X, y, as.integer(Tp), beta, Omega_completed, Sigma,
+    availability = availability, ranked = ranked,
+    cml_type = cml_type, log = logarithm,
+    ghk_draws = as.integer(ghk_draws), return_chunks = return_chunks
   )
-  csTp <- c(0, cumsum(Tp))
-  probabilities <- if (return_chunks) vector("list", N) else numeric(N)
-  for (n in seq_len(N)) {
-    ind_n <- (csTp[n] + 1):(csTp[n + 1])
-    X_n <- do.call(rbind, X[ind_n])
-    y_n <- y[ind_n]
-    prob_n <- compute_panel_probability(
-      X_n = X_n,
-      y_n = y_n,
-      beta = beta,
-      Omega_completed = Omega_completed,
-      Sigma = Sigma,
-      Tp_n = Tp[n],
-      J = J,
-      gcdf = gcdf,
-      ranked = ranked,
-      cml_type = cml_type,
-      logarithm = logarithm,
-      availability_n = availability[ind_n],
-      return_chunks = return_chunks
-    )
-    if (return_chunks) {
-      probabilities[[n]] <- prob_n
-    } else {
-      probabilities[n] <- prob_n
-    }
-  }
-  probabilities
 }
 
 #' @noRd
@@ -1998,7 +1808,7 @@ choiceprob_mmnp_ordered_panel <- function(
     Tp, cml,
     beta, Omega, Sigma, gamma,
     re_position = utils::tail(seq_along(beta), nrow(Omega)),
-    gcdf = pmvnorm_cdf_default,
+    ghk_draws = 500L,
     logarithm = FALSE, return_chunks = FALSE
 ) {
   N <- length(Tp)
@@ -2041,7 +1851,7 @@ choiceprob_mmnp_ordered_panel <- function(
         Sigma = Sigma,
         Tp_n = Tp[n],
         gamma_augmented = gamma_augmented,
-        gcdf = gcdf,
+        ghk_draws = ghk_draws,
         cml_type = cml_type,
         logarithm = logarithm,
         return_chunks = return_chunks
@@ -2063,7 +1873,7 @@ choiceprob_mmnp_panel_lc <- function(
     Tp, cml,
     beta, Omega, Sigma, weights,
     re_position = NULL,
-    gcdf = pmvnorm_cdf_default,
+    ghk_draws = 500L,
     ranked = FALSE, logarithm = FALSE,
     availability = Map(seq_len, lapply(X, nrow))
 ) {
@@ -2077,7 +1887,7 @@ choiceprob_mmnp_panel_lc <- function(
     if (is.null(Omega)) {
       obs_log <- choiceprob_mnp(
         X = X, y = y, beta = beta[[c]], Sigma = Sigma,
-        gcdf = gcdf, ranked = ranked, logarithm = TRUE,
+        ghk_draws = ghk_draws, ranked = ranked, logarithm = TRUE,
         availability = availability
       )
       pos <- c(0L, cumsum(Tp))
@@ -2095,7 +1905,7 @@ choiceprob_mmnp_panel_lc <- function(
       class_chunks[[c]] <- choiceprob_mmnp_panel(
         X = X, y = y, Tp = Tp, cml = cml,
         beta = beta[[c]], Omega = Omega[[c]], Sigma = Sigma,
-        re_position = re_position, gcdf = gcdf, ranked = ranked,
+        re_position = re_position, ghk_draws = ghk_draws, ranked = ranked,
         logarithm = TRUE, availability = availability,
         return_chunks = TRUE
       )
@@ -2118,7 +1928,7 @@ choiceprob_mmnp_ordered_panel_lc <- function(
     Tp, cml,
     beta, Omega, Sigma, gamma, weights,
     re_position = NULL,
-    gcdf = pmvnorm_cdf_default,
+    ghk_draws = 500L,
     logarithm = FALSE
 ) {
   if (is.null(re_position) && !is.null(Omega)) {
@@ -2148,7 +1958,7 @@ choiceprob_mmnp_ordered_panel_lc <- function(
       class_chunks[[c]] <- choiceprob_mmnp_ordered_panel(
         X = X, y = y, Tp = Tp, cml = cml,
         beta = beta[[c]], Omega = Omega[[c]], Sigma = Sigma,
-        gamma = gamma, re_position = re_position, gcdf = gcdf,
+        gamma = gamma, re_position = re_position, ghk_draws = ghk_draws,
         logarithm = TRUE, return_chunks = TRUE
       )
     }
