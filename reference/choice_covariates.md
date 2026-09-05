@@ -27,7 +27,12 @@ choice_covariates(
 generate_choice_covariates(
   choice_effects = NULL,
   choice_identifiers = generate_choice_identifiers(N = 100),
-  labels = covariate_names(choice_effects),
+  labels = if (is.null(choice_effects)) {
+     character()
+ } else {
+    
+    covariate_names(choice_effects)
+ },
   n = nrow(choice_identifiers),
   marginals = list(),
   correlation = diag(length(labels)),
@@ -161,9 +166,20 @@ design_matrices(
 ## Value
 
 `choice_covariates()` and `generate_choice_covariates()` return a
-`choice_covariates` tibble. `covariate_names()` returns a character
-vector. `design_matrices()` returns one numeric design matrix per choice
-occasion in a list; its `Tp` attribute records the panel lengths.
+`choice_covariates` tibble with the identifier and covariate columns.
+The column roles are stored in the attributes `format`,
+`column_decider`, `column_occasion`, `column_alternative`,
+`column_ac_covariates`, `column_as_covariates`, `delimiter`, and
+`cross_section`, analogous to
+[`choice_data`](https://loelschlaeger.de/choicedata/reference/choice_data.md).
+
+`covariate_names()` returns a `character` vector.
+
+`design_matrices()` returns a `list` of class `choice_design_matrices`
+with one numeric design matrix per choice occasion, see the section
+below. The attributes `Tp` (the number of choice occasions per decider),
+`alternatives`, `availability` (the indices of the available
+alternatives per occasion), and `choice_type` describe the structure.
 
 ## Design matrices
 

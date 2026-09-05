@@ -96,6 +96,9 @@ columns:
 2.  `column_occasion` contains the choice occasion identifiers (only if
     `column_occasion` is not `NULL` and `cross_section = FALSE`).
 
+The column names are stored in the attributes `column_decider` and
+`column_occasion`, the attribute `cross_section` records the data type.
+
 ## Examples
 
 ``` r

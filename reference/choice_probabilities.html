@@ -55,7 +55,7 @@ on the choice parameters and the choice data.</p></li>
 <span>  cross_section <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">column_occasion</span><span class="op">)</span>,</span>
 <span>  column_probabilities <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  logarithm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  aggregate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"occasion"</span>, <span class="st">"sequence"</span><span class="op">)</span></span>
+<span>  aggregate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"occasion"</span>, <span class="st">"decider"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">compute_choice_probabilities</span><span class="op">(</span></span>
@@ -64,7 +64,7 @@ on the choice parameters and the choice data.</p></li>
 <span>  <span class="va">choice_effects</span>,</span>
 <span>  choice_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  input_checks <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  aggregate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"occasion"</span>, <span class="st">"sequence"</span><span class="op">)</span>,</span>
+<span>  aggregate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"occasion"</span>, <span class="st">"decider"</span><span class="op">)</span>,</span>
 <span>  logarithm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -116,7 +116,8 @@ Are the supplied or requested values log-probabilities?</p></dd>
 <dt id="arg-aggregate">aggregate<a class="anchor" aria-label="anchor" href="#arg-aggregate"></a></dt>
 <dd><p>[<code>character(1)</code>]<br>
 Probability unit. <code>"occasion"</code> returns one result per choice occasion.
-<code>"sequence"</code> returns the joint result for each decider's observed sequence.</p></dd>
+<code>"decider"</code> returns the joint result for each decider's observed sequence of
+choices.</p></dd>
 
 
 <dt id="arg-choice-parameters">choice_parameters<a class="anchor" aria-label="anchor" href="#arg-choice-parameters"></a></dt>
@@ -143,12 +144,34 @@ probabilities?</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments.</p></dd>
+<dd><p>Additional arguments for the probability computation:</p><ul><li><p><code>n_draws</code> [<code>integer(1)</code>]: The number of draws for simulated
+probabilities, which are required for mixed logit models and for mixed
+probit models with non-normal random effects. The default is <code>200</code>.</p></li>
+<li><p><code>draws</code> [<code>matrix</code>]: A matrix of standard normal draws with one column
+per random effect that replaces the generated draws.</p></li>
+<li><p><code>cml</code> [<code>character(1)</code>]: Composite marginal likelihood for panel probit
+models. Either <code>"no"</code> (default, the full likelihood), <code>"fp"</code> (all pairs of
+choice occasions), or <code>"ap"</code> (adjacent pairs of choice occasions).</p></li>
+<li><p><code>ghk_draws</code> [<code>integer(1)</code>]: The number of draws of the GHK simulator
+for multivariate normal probabilities in probit models, see
+<code><a href="http://loelschlaeger.de/oeli/reference/dmvnorm.html" class="external-link">pmvnorm</a></code>. Probabilities of up to three dimensions are
+computed exactly; higher dimensions use the GHK simulator on a fixed
+sequence of quasi-random Halton points. The default is <code>500</code>.</p></li>
+</ul></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>choice_probabilities</code> tibble.</p>
+    <p>A <code>choice_probabilities</code> tibble with the identifier columns followed by the
+probability column(s). If <code>choice_only = TRUE</code>, there is a single column
+<code>choice_probability</code> (or <code>log_choice_probability</code> if <code>logarithm = TRUE</code>).
+Otherwise, there is one column per choice alternative. The attributes
+<code>column_decider</code>, <code>column_occasion</code>, <code>cross_section</code>,
+<code>column_probabilities</code>, <code>choice_only</code>, <code>logarithm</code>, and <code>aggregate</code> store
+the column roles and the probability type.</p>
+<p>If <code>choice_only = FALSE</code> and <code>aggregate = "decider"</code>, the tibble instead has
+one row per possible outcome sequence and decider, with the sequence in the
+list column <code>outcome</code>.</p>
     </div>
 
     <div class="section level2">
@@ -457,7 +480,7 @@ probabilities?</p></dd>
 <span class="r-in"><span>  choice_parameters <span class="op">=</span> <span class="va">parameters</span>,</span></span>
 <span class="r-in"><span>  choice_data <span class="op">=</span> <span class="va">simulated_data</span>,</span></span>
 <span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">effects</span>,</span></span>
-<span class="r-in"><span>  aggregate <span class="op">=</span> <span class="st">"sequence"</span>,</span></span>
+<span class="r-in"><span>  aggregate <span class="op">=</span> <span class="st">"decider"</span>,</span></span>
 <span class="r-in"><span>  cml <span class="op">=</span> <span class="st">"ap"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>

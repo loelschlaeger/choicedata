@@ -6,7 +6,7 @@ The `choice_alternatives` object defines the set of choice alternatives.
 
 ``` r
 choice_alternatives(
-  J = 2,
+  J = length(alternatives),
   alternatives = LETTERS[1:J],
   base = NULL,
   ordered = FALSE

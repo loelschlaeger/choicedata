@@ -58,11 +58,33 @@ compute_choice_likelihood(
 - input_checks:
 
   \[`logical(1)`\]  
-  Check inputs?
+  Check the pre-computed design matrices and choice indices against the
+  parameters on the first likelihood evaluation? Later evaluations skip
+  these checks because the pre-computed quantities do not change.
 
 - ...:
 
-  Additional arguments.
+  Additional arguments for the probability computation:
+
+  - `n_draws` \[`integer(1)`\]: The number of draws for simulated
+    probabilities, which are required for mixed logit models and for
+    mixed probit models with non-normal random effects. The default is
+    `200`.
+
+  - `draws` \[`matrix`\]: A matrix of standard normal draws with one
+    column per random effect that replaces the generated draws.
+
+  - `cml` \[`character(1)`\]: Composite marginal likelihood for panel
+    probit models. Either `"no"` (default, the full likelihood), `"fp"`
+    (all pairs of choice occasions), or `"ap"` (adjacent pairs of choice
+    occasions).
+
+  - `ghk_draws` \[`integer(1)`\]: The number of draws of the GHK
+    simulator for multivariate normal probabilities in probit models,
+    see [`pmvnorm`](http://loelschlaeger.de/oeli/reference/dmvnorm.md).
+    Probabilities of up to three dimensions are computed exactly; higher
+    dimensions use the GHK simulator on a fixed sequence of quasi-random
+    Halton points. The default is `500`.
 
 - choice_parameters:
 

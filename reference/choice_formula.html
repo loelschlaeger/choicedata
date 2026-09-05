@@ -114,8 +114,8 @@ constants, ASCs) are added to the model. They can be removed by adding
 <code>+ 0</code> in the second part, e.g., <code>choice ~ A | B + 0 | C</code>. To not include
 any covariates of the second type but to estimate ASCs, add <code>1</code> in the
 second part, e.g., <code>choice ~ A | 1 | C</code>. The expression
-<code>choice ~ A | 0 | C</code> is interpreted as no covariates of the second type and
-no ASCs.</p></li>
+<code>choice ~ A | 0 | C</code> is interpreted as no covariates of the second type
+and no ASCs.</p></li>
 <li><p>To not include covariates of any type, add <code>0</code> in the respective
 part, e.g., <code>choice ~ 0 | B | C</code>.</p></li>
 <li><p>Some parts of the formula can be omitted when there is no ambiguity.
@@ -127,6 +127,10 @@ right-hand side are possible via the function <code><a href="https://rdrr.io/r/b
 <code>choice ~ I(A1^2 + A2 * 2)</code>. In this case, a random effect can be defined
 for the transformed covariate, e.g.,
 <code>random_effects = c("I(A1^2 + A2 * 2)" = "cn")</code>.</p></li>
+<li><p>Ordered choice models (see <code>ordered</code> in
+<code><a href="choice_alternatives.html">choice_alternatives</a></code>) have a single utility per choice
+occasion. Their covariates must be placed in the first part and ASCs must
+be removed, e.g., <code>choice ~ age + income | 0</code>.</p></li>
 </ol></div>
     <div class="section level2">
     <h2 id="specifying-random-effects">Specifying random effects<a class="anchor" aria-label="anchor" href="#specifying-random-effects"></a></h2>

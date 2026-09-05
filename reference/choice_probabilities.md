@@ -16,7 +16,7 @@ choice_probabilities(
   cross_section = is.null(column_occasion),
   column_probabilities = NULL,
   logarithm = FALSE,
-  aggregate = c("occasion", "sequence")
+  aggregate = c("occasion", "decider")
 )
 
 compute_choice_probabilities(
@@ -25,7 +25,7 @@ compute_choice_probabilities(
   choice_effects,
   choice_only = TRUE,
   input_checks = TRUE,
-  aggregate = c("occasion", "sequence"),
+  aggregate = c("occasion", "decider"),
   logarithm = FALSE,
   ...
 )
@@ -77,8 +77,8 @@ compute_choice_probabilities(
 
   \[`character(1)`\]  
   Probability unit. `"occasion"` returns one result per choice occasion.
-  `"sequence"` returns the joint result for each decider's observed
-  sequence.
+  `"decider"` returns the joint result for each decider's observed
+  sequence of choices.
 
 - choice_parameters:
 
@@ -113,11 +113,41 @@ compute_choice_probabilities(
 
 - ...:
 
-  Additional arguments.
+  Additional arguments for the probability computation:
+
+  - `n_draws` \[`integer(1)`\]: The number of draws for simulated
+    probabilities, which are required for mixed logit models and for
+    mixed probit models with non-normal random effects. The default is
+    `200`.
+
+  - `draws` \[`matrix`\]: A matrix of standard normal draws with one
+    column per random effect that replaces the generated draws.
+
+  - `cml` \[`character(1)`\]: Composite marginal likelihood for panel
+    probit models. Either `"no"` (default, the full likelihood), `"fp"`
+    (all pairs of choice occasions), or `"ap"` (adjacent pairs of choice
+    occasions).
+
+  - `ghk_draws` \[`integer(1)`\]: The number of draws of the GHK
+    simulator for multivariate normal probabilities in probit models,
+    see [`pmvnorm`](http://loelschlaeger.de/oeli/reference/dmvnorm.md).
+    Probabilities of up to three dimensions are computed exactly; higher
+    dimensions use the GHK simulator on a fixed sequence of quasi-random
+    Halton points. The default is `500`.
 
 ## Value
 
-A `choice_probabilities` tibble.
+A `choice_probabilities` tibble with the identifier columns followed by
+the probability column(s). If `choice_only = TRUE`, there is a single
+column `choice_probability` (or `log_choice_probability` if
+`logarithm = TRUE`). Otherwise, there is one column per choice
+alternative. The attributes `column_decider`, `column_occasion`,
+`cross_section`, `column_probabilities`, `choice_only`, `logarithm`, and
+`aggregate` store the column roles and the probability type.
+
+If `choice_only = FALSE` and `aggregate = "decider"`, the tibble instead
+has one row per possible outcome sequence and decider, with the sequence
+in the list column `outcome`.
 
 ## Examples
 
@@ -426,7 +456,7 @@ compute_choice_probabilities(
   choice_parameters = parameters,
   choice_data = simulated_data,
   choice_effects = effects,
-  aggregate = "sequence",
+  aggregate = "decider",
   cml = "ap"
 )
 #> # A tibble: 1 × 2

@@ -57,7 +57,8 @@ generate_choice_preferences(
 
 An object of class `choice_preferences`, which is a `tibble` with the
 deciders' preferences. The column names are the names of the effects in
-the choice model. The first column contains the decider identifiers.
+the choice model. The first column contains the decider identifiers, its
+name is stored in the attribute `column_decider`.
 
 ## Examples
 

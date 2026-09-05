@@ -132,18 +132,7 @@
 <span><span class="co">#&gt; #   choice &lt;chr&gt;</span></span></code></pre></div>
 <p>We can construct model design matrices:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mode_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_effects.html">choice_effects</a></span><span class="op">(</span></span>
-<span>  choice_formula <span class="op">=</span> <span class="fu"><a href="reference/choice_formula.html">choice_formula</a></span><span class="op">(</span></span>
-<span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">cost</span> <span class="op">|</span> <span class="va">income</span> <span class="op">|</span> <span class="va">wait</span>,</span>
-<span>    error_term <span class="op">=</span> <span class="st">"probit"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  choice_alternatives <span class="op">=</span> <span class="fu"><a href="reference/choice_alternatives.html">choice_alternatives</a></span><span class="op">(</span></span>
-<span>    J <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>    alternatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">travel_mode_choice</span><span class="op">$</span><span class="va">mode</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">mode_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_data.html">choice_data</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">mode_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_data.html">choice_data</a></span><span class="op">(</span></span>
 <span>  data_frame <span class="op">=</span> <span class="va">travel_mode_choice</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"long"</span>,</span>
 <span>  column_choice <span class="op">=</span> <span class="st">"choice"</span>,</span>
@@ -151,6 +140,17 @@
 <span>  column_alternative <span class="op">=</span> <span class="st">"mode"</span>,</span>
 <span>  column_ac_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"income"</span>, <span class="st">"size"</span><span class="op">)</span>,</span>
 <span>  column_as_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wait"</span>, <span class="st">"cost"</span>, <span class="st">"travel"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">mode_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_effects.html">choice_effects</a></span><span class="op">(</span></span>
+<span>  choice_formula <span class="op">=</span> <span class="fu"><a href="reference/choice_formula.html">choice_formula</a></span><span class="op">(</span></span>
+<span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">cost</span> <span class="op">|</span> <span class="va">income</span> <span class="op">|</span> <span class="va">wait</span>,</span>
+<span>    error_term <span class="op">=</span> <span class="st">"probit"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  choice_alternatives <span class="op">=</span> <span class="fu"><a href="reference/choice_alternatives.html">choice_alternatives</a></span><span class="op">(</span></span>
+<span>    alternatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">travel_mode_choice</span><span class="op">$</span><span class="va">mode</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  choice_data <span class="op">=</span> <span class="va">mode_data</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">mode_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_covariates.html">design_matrices</a></span><span class="op">(</span><span class="va">mode_data</span>, <span class="va">mode_effects</span><span class="op">)</span></span>

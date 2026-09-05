@@ -98,7 +98,11 @@ generate_choice_responses(
 
 ## Value
 
-A `choice_responses` tibble.
+A `choice_responses` tibble with the identifier columns followed by the
+response column(s). The attributes `column_choice`, `column_decider`,
+`column_occasion`, `cross_section`, and `column_response_columns` (all
+non-identifier columns, e.g., the ranking columns for ranked responses)
+store the column roles.
 
 ## Examples
 

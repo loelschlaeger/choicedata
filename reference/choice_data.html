@@ -74,7 +74,7 @@ choice_responses and choice_covariates."><meta property="og:image" content="http
 <span>  column_alternative <span class="op">=</span> <span class="st">"alternative"</span>,</span>
 <span>  column_decider <span class="op">=</span> <span class="st">"deciderID"</span>,</span>
 <span>  column_occasion <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  alternatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">data_frame</span><span class="op">[[</span><span class="va">column_alternative</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  alternatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">data_frame</span><span class="op">[[</span><span class="va">column_alternative</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  delimiter <span class="op">=</span> <span class="st">"_"</span>,</span>
 <span>  choice_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"unordered"</span>, <span class="st">"ordered"</span>, <span class="st">"ranked"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -195,8 +195,35 @@ Unique labels for the choice alternatives.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>choice_data</code> tibble.</p>
-    </div>
+    <p>A <code>choice_data</code> tibble in the supplied <code>format</code>. It contains the identifier
+columns, the response column(s), and the covariate columns of <code>data_frame</code>.
+The column roles are stored as attributes, which the functions consuming
+the object rely on:</p><dl><dt><code>format</code></dt>
+<dd><p>Either <code>"wide"</code> or <code>"long"</code>.</p></dd>
+
+<dt><code>column_choice</code></dt>
+<dd><p>The name of the response column.</p></dd>
+
+<dt><code>column_decider</code>, <code>column_occasion</code></dt>
+<dd><p>The identifier columns.</p></dd>
+
+<dt><code>column_alternative</code></dt>
+<dd><p>The alternative column (<code>format = "long"</code>).</p></dd>
+
+<dt><code>column_ac_covariates</code>, <code>column_as_covariates</code></dt>
+<dd><p>The names of the
+alternative-constant and alternative-specific covariates.</p></dd>
+
+<dt><code>column_as_covariates_wide</code></dt>
+<dd><p>The alternative-specific covariate
+columns in wide layout.</p></dd>
+
+<dt><code>delimiter</code>, <code>cross_section</code>, <code>choice_type</code></dt>
+<dd><p>The corresponding
+input arguments.</p></dd>
+
+
+</dl></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

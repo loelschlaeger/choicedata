@@ -111,6 +111,12 @@ The following rules apply:
     defined for the transformed covariate, e.g.,
     `random_effects = c("I(A1^2 + A2 * 2)" = "cn")`.
 
+6.  Ordered choice models (see `ordered` in
+    [`choice_alternatives`](https://loelschlaeger.de/choicedata/reference/choice_alternatives.md))
+    have a single utility per choice occasion. Their covariates must be
+    placed in the first part and ASCs must be removed, e.g.,
+    `choice ~ age + income | 0`.
+
 ## Specifying random effects
 
 Specify random effects as `"<covariate>" = "<distribution>"`. Each

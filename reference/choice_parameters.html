@@ -141,8 +141,9 @@ Number of latent classes.</p></dd>
 <dt id="arg-choice-parameters">choice_parameters<a class="anchor" aria-label="anchor" href="#arg-choice-parameters"></a></dt>
 <dd><p>[<code>choice_parameters</code> | <code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric()</a></code>]<br>
 A <code>choice_parameters</code> object.
-For <code>switch_parameter_space()</code>, a numeric vector in optimization space is
-also accepted and converted back to a <code>choice_parameters</code> object.</p></dd>
+For <code>switch_parameter_space()</code> and <code>validate_choice_parameters()</code>, a numeric
+vector in optimization space is also accepted and converted back to a
+<code>choice_parameters</code> object.</p></dd>
 
 
 <dt id="arg-allow-missing">allow_missing<a class="anchor" aria-label="anchor" href="#arg-allow-missing"></a></dt>
@@ -276,8 +277,6 @@ log weight ratios use the first class as reference</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793  0.4160670  0.0000000 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        l_3 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1.0000000 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "choice_parameters" "numeric"          </span>
 <span class="r-in"><span><span class="fu">switch_parameter_space</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_parameters <span class="op">=</span> <span class="va">optimization_parameters</span>,</span></span>
 <span class="r-in"><span>  choice_effects <span class="op">=</span> <span class="va">choice_effects</span></span></span>

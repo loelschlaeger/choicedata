@@ -65,7 +65,12 @@ design_matrices() builds design matrices.
 <span><span class="fu">generate_choice_covariates</span><span class="op">(</span></span>
 <span>  choice_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  choice_identifiers <span class="op">=</span> <span class="fu"><a href="choice_identifiers.html">generate_choice_identifiers</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">100</span><span class="op">)</span>,</span>
-<span>  labels <span class="op">=</span> <span class="fu">covariate_names</span><span class="op">(</span><span class="va">choice_effects</span><span class="op">)</span>,</span>
+<span>  labels <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">choice_effects</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>     <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span></span>
+<span> <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    </span>
+<span>    <span class="fu">covariate_names</span><span class="op">(</span><span class="va">choice_effects</span><span class="op">)</span></span>
+<span> <span class="op">}</span>,</span>
 <span>  n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">choice_identifiers</span><span class="op">)</span>,</span>
 <span>  marginals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  correlation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">labels</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -195,9 +200,17 @@ Print information about the simulated regressors?</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>choice_covariates()</code> and <code>generate_choice_covariates()</code> return a
-<code>choice_covariates</code> tibble. <code>covariate_names()</code> returns a character vector.
-<code>design_matrices()</code> returns one numeric design matrix per choice occasion in
-a list; its <code>Tp</code> attribute records the panel lengths.</p>
+<code>choice_covariates</code> tibble with the identifier and covariate columns. The
+column roles are stored in the attributes <code>format</code>, <code>column_decider</code>,
+<code>column_occasion</code>, <code>column_alternative</code>, <code>column_ac_covariates</code>,
+<code>column_as_covariates</code>, <code>delimiter</code>, and <code>cross_section</code>, analogous to
+<code><a href="choice_data.html">choice_data</a></code>.</p>
+<p><code>covariate_names()</code> returns a <code>character</code> vector.</p>
+<p><code>design_matrices()</code> returns a <code>list</code> of class <code>choice_design_matrices</code> with
+one numeric design matrix per choice occasion, see the section below. The
+attributes <code>Tp</code> (the number of choice occasions per decider), <code>alternatives</code>,
+<code>availability</code> (the indices of the available alternatives per occasion), and
+<code>choice_type</code> describe the structure.</p>
     </div>
     <div class="section level2">
     <h2 id="design-matrices">Design matrices<a class="anchor" aria-label="anchor" href="#design-matrices"></a></h2>

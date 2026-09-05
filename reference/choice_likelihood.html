@@ -102,11 +102,26 @@ The default is extracted from <code>choice_data</code>.</p></dd>
 
 <dt id="arg-input-checks">input_checks<a class="anchor" aria-label="anchor" href="#arg-input-checks"></a></dt>
 <dd><p>[<code>logical(1)</code>]<br>
-Check inputs?</p></dd>
+Check the pre-computed design matrices and choice indices against the
+parameters on the first likelihood evaluation? Later evaluations skip these
+checks because the pre-computed quantities do not change.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments.</p></dd>
+<dd><p>Additional arguments for the probability computation:</p><ul><li><p><code>n_draws</code> [<code>integer(1)</code>]: The number of draws for simulated
+probabilities, which are required for mixed logit models and for mixed
+probit models with non-normal random effects. The default is <code>200</code>.</p></li>
+<li><p><code>draws</code> [<code>matrix</code>]: A matrix of standard normal draws with one column
+per random effect that replaces the generated draws.</p></li>
+<li><p><code>cml</code> [<code>character(1)</code>]: Composite marginal likelihood for panel probit
+models. Either <code>"no"</code> (default, the full likelihood), <code>"fp"</code> (all pairs of
+choice occasions), or <code>"ap"</code> (adjacent pairs of choice occasions).</p></li>
+<li><p><code>ghk_draws</code> [<code>integer(1)</code>]: The number of draws of the GHK simulator
+for multivariate normal probabilities in probit models, see
+<code><a href="http://loelschlaeger.de/oeli/reference/dmvnorm.html" class="external-link">pmvnorm</a></code>. Probabilities of up to three dimensions are
+computed exactly; higher dimensions use the GHK simulator on a fixed
+sequence of quasi-random Halton points. The default is <code>500</code>.</p></li>
+</ul></dd>
 
 
 <dt id="arg-choice-parameters">choice_parameters<a class="anchor" aria-label="anchor" href="#arg-choice-parameters"></a></dt>

@@ -39,7 +39,7 @@ long_to_wide(
   column_alternative = "alternative",
   column_decider = "deciderID",
   column_occasion = NULL,
-  alternatives = unique(data_frame[[column_alternative]]),
+  alternatives = as.character(unique(data_frame[[column_alternative]])),
   delimiter = "_",
   choice_type = c("unordered", "ordered", "ranked")
 )
@@ -172,7 +172,39 @@ wide_to_long(
 
 ## Value
 
-A `choice_data` tibble.
+A `choice_data` tibble in the supplied `format`. It contains the
+identifier columns, the response column(s), and the covariate columns of
+`data_frame`. The column roles are stored as attributes, which the
+functions consuming the object rely on:
+
+- `format`:
+
+  Either `"wide"` or `"long"`.
+
+- `column_choice`:
+
+  The name of the response column.
+
+- `column_decider`, `column_occasion`:
+
+  The identifier columns.
+
+- `column_alternative`:
+
+  The alternative column (`format = "long"`).
+
+- `column_ac_covariates`, `column_as_covariates`:
+
+  The names of the alternative-constant and alternative-specific
+  covariates.
+
+- `column_as_covariates_wide`:
+
+  The alternative-specific covariate columns in wide layout.
+
+- `delimiter`, `cross_section`, `choice_type`:
+
+  The corresponding input arguments.
 
 ## Examples
 

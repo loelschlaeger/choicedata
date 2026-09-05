@@ -95,7 +95,8 @@ covariate and alternative name,</p></li>
 <li><p><code>"covariate"</code>, the (transformed) covariate name connected to the effect,</p></li>
 <li><p><code>"alternative"</code>, the alternative name connected to the effect (only
 if the effect is alternative-specific),</p></li>
-<li><p><code>"as_covariate"</code>, indicator whether the covariate is alternative-specific,</p></li>
+<li><p><code>"as_covariate"</code>, indicator whether the covariate is
+alternative-specific,</p></li>
 <li><p><code>"as_effect"</code>, indicator whether the effect is alternative-specific,</p></li>
 <li><p><code>"mixing"</code>, a factor with levels in the order</p><ol><li><p><code>"cn"</code> (correlated normal distribution),</p></li>
 <li><p><code>"cln"</code> (positively signed correlated log-normal distribution),</p></li>
@@ -104,8 +105,8 @@ if the effect is alternative-specific),</p></li>
 <li><p><code>"ln"</code> (positively signed uncorrelated log-normal distribution),</p></li>
 <li><p><code>"ln-"</code> (negatively signed uncorrelated log-normal distribution),</p></li>
 </ol><p>indicating the type of random effect.</p></li>
-</ol><p>For identification, the choice effects are ordered according to the following
-rules:</p><ol><li><p>Non-random effects come before random effects.</p></li>
+</ol><p>For identification, the choice effects are ordered according to the
+following rules:</p><ol><li><p>Non-random effects come before random effects.</p></li>
 <li><p>Otherwise, the order is determined by occurrence in <code>formula</code>.</p></li>
 </ol><p>It contains the arguments <code>choice_formula</code>, <code>choice_alternatives</code>, and
 <code>delimiter</code> as attributes.</p>

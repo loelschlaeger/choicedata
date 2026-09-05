@@ -105,9 +105,9 @@ switch_parameter_space(choice_parameters, choice_effects)
 
   \[`choice_parameters` \|
   [`numeric()`](https://rdrr.io/r/base/numeric.html)\]  
-  A `choice_parameters` object. For `switch_parameter_space()`, a
-  numeric vector in optimization space is also accepted and converted
-  back to a `choice_parameters` object.
+  A `choice_parameters` object. For `switch_parameter_space()` and
+  `validate_choice_parameters()`, a numeric vector in optimization space
+  is also accepted and converted back to a `choice_parameters` object.
 
 - allow_missing:
 
@@ -258,8 +258,6 @@ choice_effects <- choice_effects(
 #>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793  0.4160670  0.0000000 
 #>        l_3 
 #>  1.0000000 
-#> attr(,"class")
-#> [1] "choice_parameters" "numeric"          
 switch_parameter_space(
   choice_parameters = optimization_parameters,
   choice_effects = choice_effects
