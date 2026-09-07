@@ -68,10 +68,9 @@
 #'   `choice ~ I(A1^2 + A2 * 2)`. In this case, a random effect can be defined
 #'   for the transformed covariate, e.g.,
 #'   `random_effects = c("I(A1^2 + A2 * 2)" = "cn")`.
-#'   \item Ordered choice models (see `ordered` in
-#'   \code{\link{choice_alternatives}}) have a single utility per choice
-#'   occasion. Their covariates must be placed in the first part and ASCs must
-#'   be removed, e.g., `choice ~ age + income | 0`.
+#'   \item Ordered choice models have a single utility per choice occasion.
+#'   Their covariates must be placed in the first part and ASCs must be
+#'   removed, e.g., `choice ~ age + income | 0`.
 #' }
 #'
 #' @section Specifying random effects:
