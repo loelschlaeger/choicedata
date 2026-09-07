@@ -4,7 +4,8 @@
 #' The `choice_formula` object defines the choice model equation.
 #'
 #' @param formula \[`formula`\]\cr
-#' A symbolic description of the choice model, see details.
+#' A symbolic description of the choice model, see the details on
+#' specifying the model formula.
 #'
 #' @param error_term \[`character(1)`\]\cr
 #' Defines the model's error term. Current options are:
@@ -13,7 +14,12 @@
 #' - `"logit"`: errors follow a type-I extreme value distribution
 #'
 #' @param random_effects \[`character()`\]\cr
-#' Named vector defining random effects, see details.
+#' Named vector defining random effects, see the details on specifying
+#' random effects.
+#'
+#' @param latent_class_effects \[`character()`\]\cr
+#' Names of covariates whose effects differ between latent classes, see the
+#' details on specifying latent class effects.
 #'
 #' @return
 #' An object of class `choice_formula`, which is a `list` of the elements:
@@ -24,6 +30,8 @@
 #'   \item{`covariate_types`}{The (up to) three different types of covariates.}
 #'   \item{`ASC`}{Does the model have ASCs?}
 #'   \item{`random_effects`}{The names of covariates with random effects.}
+#'   \item{`latent_class_effects`}{The names of covariates with latent class
+#'     effects.}
 #' }
 #'
 #' @section Specifying the model formula:
@@ -80,6 +88,15 @@
 #' - `"cln-"`: negatively signed correlated log-normal
 #' - `"ln-"`: negatively signed uncorrelated log-normal
 #'
+#' @section Specifying latent class effects:
+#' The covariates in `latent_class_effects` have effects that differ between
+#' the latent classes of a mixture model; use `"ASC"` for alternative-specific
+#' constants. A random effect named here has a class-specific mean and
+#' covariance, any other effect a class-specific coefficient. Effects that
+#' are not named are the same in every class, and random effects with and
+#' without latent class effects are uncorrelated. A model with more than one
+#' latent class needs at least one latent class effect.
+#'
 #' @export
 #'
 #' @keywords model
@@ -89,13 +106,15 @@
 #' choice_formula(
 #'   formula = choice ~ I(A^2 + 1) | B | I(log(C)),
 #'   error_term = "probit",
-#'   random_effects = c("I(A^2+1)" = "cn", "B" = "cn")
+#'   random_effects = c("I(A^2+1)" = "cn", "B" = "cn"),
+#'   latent_class_effects = "B"
 #' )
 
 choice_formula <- function(
   formula,
   error_term = "probit",
-  random_effects = character()
+  random_effects = character(),
+  latent_class_effects = character()
 ) {
 
   ### input checks
@@ -106,6 +125,7 @@ choice_formula <- function(
     random_effects,
     choices = c("cn", "n", "cln", "ln", "cln-", "ln-")
   )
+  latent_class_effects <- check_latent_class_effects(latent_class_effects)
 
   ### read formula
   formula <- Formula::as.Formula(formula)
@@ -195,6 +215,29 @@ choice_formula <- function(
   }
   names(random_effects) <- random_effect_names
 
+  ### check latent_class_effects
+  latent_class_effects <- gsub("\\s+", "", latent_class_effects)
+  for (i in seq_along(latent_class_effects)) {
+    effect <- latent_class_effects[i]
+    if (!identical(effect, "ASC")) {
+      matched <- match(canonical_formula_term(effect), available_keys)
+      if (!is.na(matched)) latent_class_effects[i] <- available_effects[matched]
+    }
+    if (!latent_class_effects[i] %in% c(available_effects, if (ASC) "ASC")) {
+      cli::cli_abort(
+        "Input {.var latent_class_effects} contains {.val {effect}}, but it is
+        not on the right-hand side of {.var formula}",
+        call = NULL
+      )
+    }
+  }
+  if (anyDuplicated(latent_class_effects)) {
+    cli::cli_abort(
+      "Input {.var latent_class_effects} contains duplicate formula terms.",
+      call = NULL
+    )
+  }
+
   ### build object
   structure(
     list(
@@ -203,7 +246,8 @@ choice_formula <- function(
       choice = choice,
       covariate_types = covariate_types,
       ASC = ASC,
-      random_effects = random_effects
+      random_effects = random_effects,
+      latent_class_effects = latent_class_effects
     ),
     class = c("choice_formula", "list")
   )
@@ -270,6 +314,11 @@ print.choice_formula <- function(x, ...) {
     ul2 <- cli::cli_ul()
     cli::cli_li(paste0(names(x$random_effects), ": ", x$random_effects))
     cli::cli_end(ul2)
+  }
+  if (length(x$latent_class_effects) > 0) {
+    cli::cli_li(paste(
+      "latent class effects:", paste(x$latent_class_effects, collapse = ", ")
+    ))
   }
   cli::cli_end(ul)
   invisible(x)
@@ -392,9 +441,10 @@ resolve_choice_formula <- function(
   })
   choice_formula$covariate_types <- covariate_types
 
-  ### resolve random effects to actual column names (if any)
+  ### resolve random and latent class effects to actual column names
   re <- choice_formula$random_effects
-  if (length(re) > 0) {
+  lc <- choice_formula$latent_class_effects
+  if (length(re) > 0 || length(lc) > 0) {
     term_map <- list()
     all_cols <- character(0)
     for (r in seq_len(3L)) {
@@ -423,22 +473,23 @@ resolve_choice_formula <- function(
       }
     }
     all_cols <- unique(all_cols)
-    new_names <- character(0); new_vals <- character(0)
-    keys <- names(re); keys <- c(keys[keys == "."], keys[keys != "."])
-    for (k in keys) {
-      dist <- unname(re[[k]])
-      cols_k <- if (identical(k, "ASC")) {
+    resolve_term <- function(k) {
+      if (identical(k, "ASC")) {
         "ASC"
       } else if (identical(k, ".")) {
         all_cols
       } else {
-        kk <- canonical_formula_term(k)
-        cols_k <- term_map[[kk]]
+        cols_k <- term_map[[canonical_formula_term(k)]]
         if (is.null(cols_k)) intersect(k, all_cols) else cols_k
       }
+    }
+    new_names <- character(0); new_vals <- character(0)
+    keys <- names(re); keys <- c(keys[keys == "."], keys[keys != "."])
+    for (k in keys) {
+      cols_k <- resolve_term(k)
       if (length(cols_k)) {
         new_names <- c(new_names, cols_k)
-        new_vals  <- c(new_vals, rep(dist, length(cols_k)))
+        new_vals  <- c(new_vals, rep(unname(re[[k]]), length(cols_k)))
       }
     }
     if (length(new_names)) {
@@ -448,6 +499,12 @@ resolve_choice_formula <- function(
       )
     } else {
       choice_formula$random_effects <- character(0)
+    }
+    choice_formula$latent_class_effects <- unique(unlist(
+      lapply(lc, resolve_term), use.names = FALSE
+    ))
+    if (is.null(choice_formula$latent_class_effects)) {
+      choice_formula$latent_class_effects <- character(0)
     }
   }
 

@@ -383,6 +383,17 @@ check_random_effects <- function(random_effects, choices) {
   invisible(random_effects)
 }
 
+check_latent_class_effects <- function(latent_class_effects) {
+  check_not_missing(latent_class_effects)
+  oeli::input_check_response(
+    check = checkmate::check_character(
+      latent_class_effects, any.missing = FALSE, unique = TRUE
+    ),
+    var_name = "latent_class_effects"
+  )
+  invisible(latent_class_effects)
+}
+
 check_Tp <- function(Tp, N) {
   check_not_missing(Tp)
   N <- check_N(N)

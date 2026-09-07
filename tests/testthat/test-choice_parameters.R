@@ -44,7 +44,8 @@ test_that("choice parameters can be generated", {
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
       formula = choice ~ A | 0 + B,
-      random_effects = c("B" = "cn")
+      random_effects = c("B" = "cn"),
+      latent_class_effects = "B"
     ),
     choice_alternatives = choice_alternatives(J = 3)
   )
@@ -56,6 +57,18 @@ test_that("choice parameters can be generated", {
   expect_length(x_lc$beta, 2L)
   expect_length(x_lc$Omega, 2L)
   expect_equal(x_lc$weights, c(0.5, 0.5))
+  expect_identical(x_lc$beta[[1]][["A"]], x_lc$beta[[2]][["A"]])
+  expect_false(identical(x_lc$beta[[1]][["B_B"]], x_lc$beta[[2]][["B_B"]]))
+  expect_error(
+    generate_choice_parameters(
+      choice_effects(
+        choice_formula = choice_formula(formula = choice ~ A | 0 + B),
+        choice_alternatives = choice_alternatives(J = 3)
+      ),
+      C = 2L
+    ),
+    "latent_class_effects"
+  )
 
   ordered_effects <- choice_effects(
     choice_formula = choice_formula(
@@ -70,11 +83,57 @@ test_that("choice parameters can be generated", {
   expect_true(is.numeric(y$Sigma))
 })
 
+test_that("a named partial beta fixes only the named effects", {
+  choice_effects <- choice_effects(
+    choice_formula = choice_formula(
+      formula = choice ~ x | y | z, latent_class_effects = "x"
+    ),
+    choice_alternatives = choice_alternatives(J = 3)
+  )
+  set.seed(1)
+  parameters <- generate_choice_parameters(
+    choice_effects = choice_effects,
+    fixed_parameters = choice_parameters(beta = c(x = 1))
+  )
+  expect_length(parameters$beta, nrow(choice_effects))
+  expect_identical(parameters$beta[["x"]], 1)
+  mixture <- generate_choice_parameters(
+    choice_effects = choice_effects,
+    fixed_parameters = choice_parameters(beta = list(c(x = 1), c(x = -1))),
+    C = 2
+  )
+  expect_identical(mixture$beta[[2]][["x"]], -1)
+  reordered <- validate_choice_parameters(
+    choice_parameters = choice_parameters(beta = rev(parameters$beta)),
+    choice_effects = choice_effects,
+    allow_missing = TRUE
+  )
+  expect_identical(reordered$beta, parameters$beta)
+  misnamed <- parameters$beta
+  names(misnamed) <- rep("w", length(misnamed))
+  expect_error(
+    validate_choice_parameters(
+      choice_parameters = choice_parameters(beta = misnamed),
+      choice_effects = choice_effects,
+      allow_missing = TRUE
+    ),
+    "beta"
+  )
+  expect_error(
+    generate_choice_parameters(
+      choice_effects = choice_effects,
+      fixed_parameters = choice_parameters(beta = c(w = 1))
+    ),
+    "beta"
+  )
+})
+
 test_that("choice parameter can be validated", {
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
       formula = choice ~ A | 0 + B,
-      random_effects = c("B" = "cn")
+      random_effects = c("B" = "cn"),
+      latent_class_effects = c("A", "B")
     ),
     choice_alternatives = choice_alternatives(J = 3)
   )
@@ -235,19 +294,82 @@ test_that("choice parameters can switch parameter spaces", {
   )
 
   ### latent class mixed multinomial probit model
+  class_effects <- choice_effects(
+    choice_formula = choice_formula(
+      formula = choice ~ A | B,
+      random_effects = c("A" = "cn"),
+      latent_class_effects = c("A", "B", "ASC")
+    ),
+    choice_alternatives = choice_alternatives(J = J)
+  )
   lc_parameters <- choice_parameters(
     beta = list(choice_parameters$beta, -choice_parameters$beta),
     Omega = list(choice_parameters$Omega, 2 * choice_parameters$Omega),
     Sigma = choice_parameters$Sigma,
     weights = c(0.35, 0.65)
   )
-  lc_o_space <- switch_parameter_space(lc_parameters, choice_effects)
+  lc_o_space <- switch_parameter_space(lc_parameters, class_effects)
   lc_i_space <- switch_parameter_space(
     as.numeric(lc_o_space),
-    choice_effects
+    class_effects
   )
   expect_equal(lc_i_space, lc_parameters)
   expect_true("w_2" %in% names(lc_o_space))
+  expect_error(
+    switch_parameter_space(lc_parameters, choice_effects),
+    "latent_class_effects"
+  )
+
+  ### effects with and without latent classes
+  mixed_effects <- choice_effects(
+    choice_formula = choice_formula(
+      formula = choice ~ A + C | 0,
+      random_effects = c("A" = "cn", "C" = "cn"),
+      latent_class_effects = "C"
+    ),
+    choice_alternatives = choice_alternatives(J = J)
+  )
+  set.seed(1)
+  mixed_parameters <- generate_choice_parameters(mixed_effects, C = 2)
+  expect_identical(
+    mixed_parameters$Omega[[1]]["A", "A"], mixed_parameters$Omega[[2]]["A", "A"]
+  )
+  expect_identical(mixed_parameters$Omega[[1]]["A", "C"], 0)
+  mixed_o_space <- switch_parameter_space(mixed_parameters, mixed_effects)
+  expect_named(
+    mixed_o_space,
+    c(
+      "beta_1_1", "beta_2_1", "beta_1", "o_1_1", "o_2_1", "o_1", "l_2", "l_3",
+      "w_2"
+    )
+  )
+  expect_equal(
+    switch_parameter_space(as.numeric(mixed_o_space), mixed_effects),
+    mixed_parameters
+  )
+  expect_error(
+    validate_choice_parameters(
+      choice_parameters(
+        beta = list(c(A = 1, C = 1), c(A = 2, C = 1)),
+        Omega = mixed_parameters$Omega, Sigma = mixed_parameters$Sigma,
+        weights = c(0.5, 0.5)
+      ),
+      mixed_effects
+    ),
+    "must not differ by class"
+  )
+  correlated <- mixed_parameters$Omega
+  correlated[[1]]["A", "C"] <- correlated[[1]]["C", "A"] <- 0.1
+  expect_error(
+    validate_choice_parameters(
+      choice_parameters(
+        beta = mixed_parameters$beta, Omega = correlated,
+        Sigma = mixed_parameters$Sigma, weights = c(0.5, 0.5)
+      ),
+      mixed_effects
+    ),
+    "uncorrelated"
+  )
 
   ### ordered model
   J <- 3
@@ -268,15 +390,23 @@ test_that("choice parameters can switch parameter spaces", {
   i_space_ord <- switch_parameter_space(o_space_ord, ordered_effects)
   expect_equal(ordered_parameters$Sigma, i_space_ord$Sigma)
   expect_equal(ordered_parameters$gamma, i_space_ord$gamma)
+  ordered_class_effects <- choice_effects(
+    choice_formula = choice_formula(
+      formula = choice ~ A | 0, latent_class_effects = "A"
+    ),
+    choice_alternatives = choice_alternatives(J = J, ordered = TRUE)
+  )
   ordered_lc <- choice_parameters(
     beta = list(ordered_parameters$beta, -ordered_parameters$beta),
     Sigma = ordered_parameters$Sigma,
     gamma = ordered_parameters$gamma,
     weights = c(0.25, 0.75)
   )
-  ordered_lc_o <- switch_parameter_space(ordered_lc, ordered_effects)
+  ordered_lc_o <- switch_parameter_space(ordered_lc, ordered_class_effects)
   expect_equal(
-    switch_parameter_space(as.numeric(ordered_lc_o), ordered_effects),
+    switch_parameter_space(
+      as.numeric(ordered_lc_o), ordered_class_effects
+    ),
     ordered_lc
   )
 })

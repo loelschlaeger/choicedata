@@ -35,7 +35,8 @@
 #'     random_effects = c(
 #'       "price" = "cn",
 #'       "income" = "cn"
-#'     )
+#'     ),
+#'     latent_class_effects = "price"
 #'   ),
 #'   choice_alternatives = choice_alternatives(J = 3)
 #' )

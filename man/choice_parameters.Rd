@@ -34,14 +34,18 @@ switch_parameter_space(choice_parameters, choice_effects)
 The coefficient vector for computing the linear-in-parameters systematic
 utility \eqn{V = X\beta}.
 
-For a latent class model, a list of one coefficient vector per class.}
+For a latent class model, a list of one coefficient vector per class.
+Only the effects named in \code{latent_class_effects} of the
+\code{\link{choice_formula}} may differ between the classes.}
 
 \item{Omega}{[\code{matrix(nrow = P_r, ncol = P_r)} | \code{list(C)} | \code{NULL}]\cr
 The covariance matrix of random effects.
 
 Not used when \code{P_r = 0}.
 
-In a latent class model, a list of one covariance matrix per class.
+In a latent class model, a list of one covariance matrix per class. Only
+the block of the random effects with latent class effects may differ
+between the classes, and it is uncorrelated with the other random effects.
 
 Covariances involving uncorrelated random effects are fixed to zero.}
 
@@ -68,7 +72,9 @@ A \code{\link{choice_effects}} object.}
 \item{fixed_parameters}{[\code{choice_parameters}]\cr
 A \code{\link{choice_parameters}} object.
 Its supplied components are kept fixed.
-Missing components are completed as described below.}
+Missing components are completed as described below. A named \code{beta} is
+matched to the effects by name and may contain only some of the effects;
+the remaining coefficients are drawn.}
 
 \item{C}{[\code{integer(1)}]\cr
 Number of latent classes.}
@@ -105,10 +111,12 @@ These functions construct, validate, and transform an object of class
 \code{choice_parameters}, which defines the parameters of a choice model.
 \itemize{
 \item \code{choice_parameters()} constructs a \code{choice_parameters} object.
-\item \code{generate_choice_parameters()} samples parameters at random, see details.
+\item \code{generate_choice_parameters()} samples parameters at random, see the
+details on sampling missing choice model parameters.
 \item \code{validate_choice_parameters()} checks model-specific dimensions.
 \item \code{switch_parameter_space()} transforms a \code{choice_parameters} object between
-the interpretation and optimization space, see details.
+the interpretation and optimization space, see the details on the
+parameter spaces.
 }
 }
 \section{Sampling missing choice model parameters}{
@@ -119,11 +127,16 @@ from \code{fixed_parameters}.
 
 Missing components are generated as follows:
 \describe{
-\item{\code{beta}}{Drawn independently for each class from a multivariate normal
-distribution with zero mean and covariance matrix \code{10 * diag(P)}.}
-\item{\code{Omega}}{Drawn independently for each class from an Inverse-Wishart
-distribution with \code{P_r + 2} degrees of freedom and identity scale matrix.
-Covariances involving uncorrelated random effects are then set to zero.}
+\item{\code{beta}}{Drawn from a multivariate normal distribution with zero
+mean and covariance matrix \code{10 * diag(P)}, independently for each class
+for the effects with latent classes and once for the others. A named
+\code{beta} with fewer than \code{P} entries fixes the named effects and draws the
+others.}
+\item{\code{Omega}}{Drawn from an Inverse-Wishart distribution with identity
+scale matrix and degrees of freedom equal to the dimension plus two,
+independently for each class for the block of the random effects with
+latent classes and once for the block of the others. Covariances
+involving uncorrelated random effects are then set to zero.}
 \item{\code{Sigma}}{For unordered probit models, the lower right block is drawn
 from an Inverse-Wishart distribution with \code{J + 1} degrees of freedom and
 identity scale matrix. The first row and column are fixed to zero and the
@@ -157,8 +170,10 @@ fixed to one, and transformed to a vectorized unique Cholesky factor
 \item for ordered probit models, the positive scalar \code{Sigma} is log-transformed
 \item the first ordered threshold is fixed to zero and omitted; logarithms of
 the remaining positive threshold increments are used
-\item latent class parameters are concatenated in class order, and \code{C - 1}
-log weight ratios use the first class as reference
+\item in a latent class model, the coefficients and Cholesky elements of the
+effects with latent classes are concatenated in class order and
+followed by those of the other effects, which appear once; \code{C - 1} log
+weight ratios use the first class as reference
 }
 }
 }

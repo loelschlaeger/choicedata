@@ -57,7 +57,9 @@ alternative-specific,
 \item \code{"ln-"} (negatively signed uncorrelated log-normal distribution),
 }
 
-indicating the type of random effect.
+indicating the type of random effect,
+\item \code{"latent_class"}, indicator whether the effect differs between latent
+classes.
 }
 
 For identification, the choice effects are ordered according to the

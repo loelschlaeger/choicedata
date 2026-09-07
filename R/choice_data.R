@@ -43,8 +43,8 @@
 #' Column names with alternative-constant covariates.
 #'
 #' @param delimiter \[`character(1)`\]\cr
-#' Delimiter separating alternative identifiers from covariate names in wide
-#' format.
+#' Delimiter separating alternative identifiers from covariate names when
+#' `format = "wide"`.
 #'
 #' @param choice_type \[`character(1)`\]\cr
 #' Type of choice responses.

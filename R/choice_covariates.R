@@ -32,8 +32,8 @@
 #' Column names with alternative-specific covariates.
 #'
 #' @param delimiter \[`character(1)`\]\cr
-#' Delimiter separating alternative identifiers from covariate names in wide
-#' format.
+#' Delimiter separating alternative identifiers from covariate names when
+#' `format = "wide"`.
 #'
 #' @inheritParams choice_identifiers
 #'

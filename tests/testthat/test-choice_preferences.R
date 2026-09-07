@@ -7,7 +7,8 @@ test_that("choice preferences can be generated", {
         "price" = "n",
         "income" = "ln",
         "comfort" = "ln-"
-      )
+      ),
+      latent_class_effects = c("price", "income", "comfort", "ASC")
     ),
     choice_alternatives = choice_alternatives(J = 3)
   )
@@ -84,7 +85,10 @@ test_that("choice preferences can be generated", {
   expect_equal(unname(as.matrix(preferences_lc[-1])), expected_lc)
 
   fixed_effects <- choice_effects(
-    choice_formula(choice ~ price, error_term = "probit"),
+    choice_formula(
+      choice ~ price, error_term = "probit",
+      latent_class_effects = c("price", "ASC")
+    ),
     choice_alternatives(J = 3)
   )
   P_fixed <- compute_P(fixed_effects)

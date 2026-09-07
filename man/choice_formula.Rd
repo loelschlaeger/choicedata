@@ -5,13 +5,19 @@
 \alias{print.choice_formula}
 \title{Define choice model formula}
 \usage{
-choice_formula(formula, error_term = "probit", random_effects = character())
+choice_formula(
+  formula,
+  error_term = "probit",
+  random_effects = character(),
+  latent_class_effects = character()
+)
 
 \method{print}{choice_formula}(x, ...)
 }
 \arguments{
 \item{formula}{[\code{formula}]\cr
-A symbolic description of the choice model, see details.}
+A symbolic description of the choice model, see the details on
+specifying the model formula.}
 
 \item{error_term}{[\code{character(1)}]\cr
 Defines the model's error term. Current options are:
@@ -21,7 +27,12 @@ Defines the model's error term. Current options are:
 }}
 
 \item{random_effects}{[\code{character()}]\cr
-Named vector defining random effects, see details.}
+Named vector defining random effects, see the details on specifying
+random effects.}
+
+\item{latent_class_effects}{[\code{character()}]\cr
+Names of covariates whose effects differ between latent classes, see the
+details on specifying latent class effects.}
 
 \item{x}{[\code{choice_formula}]\cr
 A \code{\link{choice_formula}} object.}
@@ -37,6 +48,8 @@ An object of class \code{choice_formula}, which is a \code{list} of the elements
 \item{\code{covariate_types}}{The (up to) three different types of covariates.}
 \item{\code{ASC}}{Does the model have ASCs?}
 \item{\code{random_effects}}{The names of covariates with random effects.}
+\item{\code{latent_class_effects}}{The names of covariates with latent class
+effects.}
 }
 }
 \description{
@@ -101,12 +114,24 @@ Available distributions are:
 }
 }
 
+\section{Specifying latent class effects}{
+
+The covariates in \code{latent_class_effects} have effects that differ between
+the latent classes of a mixture model; use \code{"ASC"} for alternative-specific
+constants. A random effect named here has a class-specific mean and
+covariance, any other effect a class-specific coefficient. Effects that
+are not named are the same in every class, and random effects with and
+without latent class effects are uncorrelated. A model with more than one
+latent class needs at least one latent class effect.
+}
+
 \examples{
 ### specify a choice formula
 choice_formula(
   formula = choice ~ I(A^2 + 1) | B | I(log(C)),
   error_term = "probit",
-  random_effects = c("I(A^2+1)" = "cn", "B" = "cn")
+  random_effects = c("I(A^2+1)" = "cn", "B" = "cn"),
+  latent_class_effects = "B"
 )
 }
 \keyword{model}

@@ -317,7 +317,8 @@
 #' effects <- choice_effects(
 #'   choice_formula = choice_formula(
 #'     formula = choice ~ x + z | 0,
-#'     error_term = "logit"
+#'     error_term = "logit",
+#'     latent_class_effects = c("x", "z")
 #'   ),
 #'   choice_alternatives = choice_alternatives(J = 2)
 #' )
@@ -341,7 +342,8 @@
 #' effects <- choice_effects(
 #'   choice_formula = choice_formula(
 #'     formula = choice ~ x + z | 0,
-#'     error_term = "probit"
+#'     error_term = "probit",
+#'     latent_class_effects = c("x", "z")
 #'   ),
 #'   choice_alternatives = choice_alternatives(J = 2)
 #' )

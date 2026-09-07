@@ -2,6 +2,14 @@
 
 * Added support for uncorrelated normal and log-normal random effects.
 
+* Added `latent_class_effects` to `choice_formula()`, which names the effects
+  that differ between latent classes, and the column `latent_class` to
+  `choice_effects()`.
+
+* A named `beta` is matched to the effects by name instead of by position,
+  and `generate_choice_parameters()` completes a named `beta` that fixes only
+  some of the effects.
+
 * Probit probabilities now come from `oeli::pmvnorm()`.
 
 * Specialized `choiceprob_*()` functions are now internal; use

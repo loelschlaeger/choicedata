@@ -12,7 +12,8 @@ test_that("choice_likelihood precomputes sufficient statistics", {
     choice_formula = choice_formula(
       formula = choice ~ price + time + change + comfort | 0,
       error_term = "probit",
-      random_effects = c(price = "cn")
+      random_effects = c(price = "cn"),
+      latent_class_effects = c("price", "time")
     ),
     choice_alternatives = choice_alternatives(
       J = 2, alternatives = c("A", "B")
@@ -133,7 +134,8 @@ test_that("choice_likelihood precomputes sufficient statistics", {
     choice_formula = choice_formula(
       formula = choice ~ price + time + change + comfort | 0,
       error_term = "logit",
-      random_effects = c(price = "cn")
+      random_effects = c(price = "cn"),
+      latent_class_effects = c("price", "time", "change", "comfort")
     ),
     choice_alternatives = choice_alternatives(
       J = 2, alternatives = c("A", "B")

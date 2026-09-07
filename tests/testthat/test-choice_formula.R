@@ -240,6 +240,29 @@ test_that("misspecifications in choice_formula can be detected", {
   )
 })
 
+test_that("latent class effects are checked and stored", {
+  x <- choice_formula(
+    formula = choice ~ A + I(B^2) | C,
+    random_effects = c("A" = "cn"),
+    latent_class_effects = c("I(B^2)", "ASC")
+  )
+  expect_identical(x$latent_class_effects, c("I(B^2)", "ASC"))
+  expect_error(
+    choice_formula(formula = choice ~ A | C, latent_class_effects = "D"),
+    "not on the right-hand side"
+  )
+  expect_error(
+    choice_formula(
+      formula = choice ~ A | C, latent_class_effects = c("A", "A")
+    ),
+    "latent_class_effects"
+  )
+  expect_error(
+    choice_formula(formula = choice ~ A | 0, latent_class_effects = "ASC"),
+    "not on the right-hand side"
+  )
+})
+
 test_that("choice_formula can be printed", {
   expect_error(
     print.choice_formula(1),

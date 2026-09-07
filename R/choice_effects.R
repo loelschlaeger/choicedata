@@ -40,7 +40,9 @@
 #'    5. `"ln"` (positively signed uncorrelated log-normal distribution),
 #'    6. `"ln-"` (negatively signed uncorrelated log-normal distribution),
 #'
-#'    indicating the type of random effect.
+#'    indicating the type of random effect,
+#' 8. `"latent_class"`, indicator whether the effect differs between latent
+#'    classes.
 #'
 #' For identification, the choice effects are ordered according to the
 #' following rules:
@@ -98,6 +100,7 @@ choice_effects <- function(
   ordered_alternatives <- isTRUE(attr(choice_alternatives, "ordered"))
   covariate_types <- choice_formula$covariate_types
   random_effects <- choice_formula$random_effects
+  latent_class_effects <- choice_formula$latent_class_effects
 
   if (isTRUE(ordered_alternatives)) {
     if (choice_formula$ASC || length(covariate_types[[2]]) > 0 ||
@@ -122,6 +125,7 @@ choice_effects <- function(
     as_covariate = logical(),
     as_effect = logical(),
     mixing = character(),
+    latent_class = logical(),
     stringsAsFactors = FALSE
   )
   for (var in covariate_types[[1]]) {
@@ -132,6 +136,7 @@ choice_effects <- function(
       as_covariate = TRUE,
       as_effect = FALSE,
       mixing = random_effects[var],
+      latent_class = var %in% latent_class_effects,
       delimiter = delimiter
     )
   }
@@ -152,6 +157,7 @@ choice_effects <- function(
       as_covariate = FALSE,
       as_effect = TRUE,
       mixing = random_effects[var],
+      latent_class = var %in% latent_class_effects,
       delimiter = delimiter,
       covariate_label = if (identical(var, "ASC")) NA_character_ else var
     )
@@ -164,6 +170,7 @@ choice_effects <- function(
       as_covariate = TRUE,
       as_effect = TRUE,
       mixing = random_effects[var],
+      latent_class = var %in% latent_class_effects,
       delimiter = delimiter
     )
   }
@@ -173,6 +180,7 @@ choice_effects <- function(
   )
   overview$as_covariate <- as.logical(overview$as_covariate)
   overview$as_effect <- as.logical(overview$as_effect)
+  overview$latent_class <- as.logical(overview$latent_class)
   overview$mixing <- factor(
     overview$mixing,
     levels = c("cn", "cln", "cln-", "n", "ln", "ln-"),
@@ -206,8 +214,8 @@ choice_effects <- function(
 #' @noRd
 
 append_effects <- function(
-  overview, covariate, alternatives, as_covariate, as_effect, mixing, delimiter,
-  covariate_label = covariate
+  overview, covariate, alternatives, as_covariate, as_effect, mixing,
+  latent_class, delimiter, covariate_label = covariate
 ) {
   mixing <- if (length(mixing) == 0L || isTRUE(all(is.na(mixing)))) {
     NA_character_
@@ -240,6 +248,7 @@ append_effects <- function(
       } else {
         mixing
       },
+      latent_class = isTRUE(latent_class),
       stringsAsFactors = FALSE
     )
     rownames(new_row) <- NULL

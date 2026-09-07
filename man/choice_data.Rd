@@ -95,8 +95,8 @@ Column names with alternative-constant covariates.}
 Column names of \code{data_frame} with alternative-specific covariates.}
 
 \item{delimiter}{[\code{character(1)}]\cr
-Delimiter separating alternative identifiers from covariate names in wide
-format.}
+Delimiter separating alternative identifiers from covariate names when
+\code{format = "wide"}.}
 
 \item{cross_section}{[\code{logical(1)}]\cr
 Treat choice data as cross-sectional?}

@@ -27,7 +27,8 @@ test_that("effect overview can be created", {
           c(2L, 3L, 3L),
           levels = c("cn", "cln", "cln-", "n", "ln", "ln-"),
           class = c("ordered", "factor")
-        )
+        ),
+        latent_class = c(FALSE, FALSE, FALSE)
       ),
       row.names = c(NA, 3L),
       class = c("choice_effects", "data.frame"),
@@ -85,7 +86,8 @@ test_that("effect overview can be created", {
           c(NA_integer_, NA_integer_, NA_integer_, NA_integer_),
           levels = c("cn", "cln", "cln-", "n", "ln", "ln-"),
           class = c("ordered", "factor")
-        )
+        ),
+        latent_class = c(FALSE, FALSE, FALSE, FALSE)
       ),
       row.names = c(NA, -4L),
       class = c("choice_effects", "data.frame"),
