@@ -557,3 +557,26 @@ test_that("long_to_wide accepts a factor column of alternatives", {
   expect_equal(nrow(wide), 210L)
   expect_true(all(c("wait_plane", "cost_car") %in% names(wide)))
 })
+
+test_that("train_test splits by deciders and by occasions", {
+  data("train_choice")
+
+  by_decider <- train_test(train_choice, test_proportion = 0.2)
+  by_occasion <- train_test(
+    train_choice, test_number = 1, by = "occasion",
+    column_occasion = "occasionID"
+  )
+
+  deciders <- unique(train_choice$deciderID)
+  expect_named(by_decider, c("train", "test"))
+  expect_length(
+    unique(by_decider$test$deciderID), round(0.2 * length(deciders))
+  )
+  expect_length(
+    intersect(by_decider$train$deciderID, by_decider$test$deciderID), 0L
+  )
+  expect_identical(nrow(by_occasion$test), length(deciders))
+  expect_identical(
+    nrow(by_occasion$train) + nrow(by_occasion$test), nrow(train_choice)
+  )
+})

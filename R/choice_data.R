@@ -1391,3 +1391,134 @@ check_as_covariates <- function(
     "column_as_covariates_wide" = column_as_wide
   )
 }
+
+#' Split choice data into a train and a test subset
+#'
+#' @description
+#' This function splits choice data by deciders or by choice occasions, for
+#' example to fit a model on the train subset and to evaluate its predictions
+#' on the test subset.
+#'
+#' @details
+#' Exactly one of `test_proportion` and `test_number` sets the size of the test
+#' subset. Splitting by occasions keeps every decider in both subsets and
+#' applies the size per decider, which requires panel data.
+#'
+#' @inheritParams choice_data
+#'
+#' @param test_proportion \[`numeric(1)` | `NULL`\]\cr
+#' The proportion of deciders or occasions in the test subset.
+#'
+#' @param test_number \[`integer(1)` | `NULL`\]\cr
+#' The number of deciders, or of occasions per decider, in the test subset.
+#'
+#' @param by \[`character(1)`\]\cr
+#' Split by `"decider"` or by `"occasion"`.
+#'
+#' @param random \[`logical(1)`\]\cr
+#' Draw the test subset at random? Else, it is the last deciders or occasions.
+#'
+#' @return
+#' A `list` of two subsets of `data_frame`, named `train` and `test`.
+#'
+#' @export
+#'
+#' @keywords data
+#'
+#' @examples
+#' data("train_choice")
+#'
+#' ### 20% of the deciders in the test subset
+#' parts <- train_test(train_choice, test_proportion = 0.2)
+#' lengths(lapply(parts, function(part) unique(part$deciderID)))
+#'
+#' ### the last choice occasion of every decider in the test subset
+#' parts <- train_test(
+#'   train_choice, test_number = 1, by = "occasion",
+#'   column_occasion = "occasionID"
+#' )
+#' nrow(parts$test)
+
+train_test <- function(
+  data_frame,
+  test_proportion = NULL,
+  test_number = NULL,
+  by = "decider",
+  random = FALSE,
+  column_decider = "deciderID",
+  column_occasion = NULL
+) {
+
+  ### input checks
+  check_not_missing(data_frame)
+  oeli::input_check_response(
+    checkmate::check_data_frame(data_frame, min.rows = 1), "data_frame"
+  )
+  if (is.choice_data(data_frame, error = FALSE)) {
+    column_decider <- attr(data_frame, "column_decider")
+    column_occasion <- attr(data_frame, "column_occasion")
+  }
+  check_column_decider(column_decider, null.ok = FALSE)
+  check_column_occasion(column_occasion, column_decider, null.ok = TRUE)
+  oeli::input_check_response(
+    checkmate::check_number(
+      test_proportion, lower = 0, upper = 1, null.ok = TRUE
+    ),
+    "test_proportion"
+  )
+  oeli::input_check_response(
+    checkmate::check_count(test_number, positive = TRUE, null.ok = TRUE),
+    "test_number"
+  )
+  if (is.null(test_proportion) == is.null(test_number)) {
+    oeli::input_check_response(
+      "Must give exactly one of `test_proportion` and `test_number`.",
+      "data_frame"
+    )
+  }
+  oeli::input_check_response(
+    checkmate::check_choice(by, choices = c("decider", "occasion")), "by"
+  )
+  oeli::input_check_response(checkmate::check_flag(random), "random")
+  oeli::input_check_response(
+    checkmate::check_names(column_decider, subset.of = names(data_frame)),
+    "column_decider"
+  )
+  deciders <- data_frame[[column_decider]]
+  select <- function(available) {
+    size <- if (is.null(test_number)) {
+      round(test_proportion * length(available))
+    } else {
+      min(test_number, length(available))
+    }
+    if (random) {
+      sort(available[sample.int(length(available), size)])
+    } else {
+      utils::tail(available, size)
+    }
+  }
+
+  ### build test subset
+  test <- if (identical(by, "decider")) {
+    deciders %in% select(unique(deciders))
+  } else {
+    oeli::input_check_response(
+      checkmate::check_names(column_occasion, subset.of = names(data_frame)),
+      "column_occasion"
+    )
+    rows <- seq_len(nrow(data_frame))
+    selected <- logical(nrow(data_frame))
+    for (decider in unique(deciders)) {
+      own <- rows[deciders == decider]
+      own <- own[order(data_frame[[column_occasion]][own])]
+      selected[select(own)] <- TRUE
+    }
+    selected
+  }
+
+  ### the two subsets
+  list(
+    train = data_frame[!test, , drop = FALSE],
+    test = data_frame[test, , drop = FALSE]
+  )
+}

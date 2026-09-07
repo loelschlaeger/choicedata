@@ -29,6 +29,9 @@
 
 * `J` in `choice_alternatives()` defaults to the number of supplied choice
   alternatives.
+  
+* New function `train_test()`, which splits choice data by deciders or by choice
+  occasions into a train and a test subset.
 
 * Removed unused package dependencies.
 
