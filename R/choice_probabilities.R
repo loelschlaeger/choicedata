@@ -556,6 +556,7 @@ compute_choice_probabilities <- function(
       )
     }
     is.choice_parameters(x, error = TRUE)
+    if (!isTRUE(input_checks)) return(x)
     validate_choice_parameters(
       x,
       choice_effects,
@@ -640,7 +641,7 @@ compute_choice_probabilities <- function(
     attr(choice_indices, "Tp") <- Tp
   }
 
-  probabilities <- lapply(parameters, function(x) {
+  evaluate <- function(x, numeric_only = FALSE) {
     if (!length(design_list)) return(NULL)
     do.call(
       evaluate_choice_probabilities,
@@ -654,13 +655,34 @@ compute_choice_probabilities <- function(
           choice_indices = choice_indices,
           ranked = ranked && isTRUE(choice_only),
           input_checks = input_checks,
+          numeric_only = numeric_only,
           aggregate = aggregate,
           logarithm = logarithm
         ),
         probability_args
       )
     )
-  })
+  }
+
+  ### a batch shares one result object: the first parameter set builds it,
+  ### the others only replace its probability columns
+  batch_template <- length(parameters) > 1L && length(design_list) > 0L &&
+    (!isTRUE(choice_only) || all(observed))
+  probabilities <- if (batch_template) {
+    first <- evaluate(parameters[[1L]])
+    columns <- attr(first, "column_probabilities")
+    template <- unclass(first)
+    c(list(first), lapply(parameters[-1L], function(x) {
+      values <- matrix(evaluate(x, numeric_only = TRUE), ncol = length(columns))
+      for (k in seq_along(columns)) {
+        template[[columns[k]]] <- values[, k]
+      }
+      class(template) <- class(first)
+      template
+    }))
+  } else {
+    lapply(parameters, evaluate)
+  }
   probabilities <- lapply(probabilities, function(value) {
     if (!is.null(all_sequence_identifiers)) {
       probability_column <- if (logarithm) {

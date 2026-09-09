@@ -183,8 +183,11 @@ choice_likelihood <- function(
     prob_args$n_draws <- NULL
   }
 
-  ### evaluation function (input checks run on the first evaluation only)
+  ### evaluation function (input checks run on the first evaluation only,
+  ### and the names of the contributions are built once)
   checks_pending <- isTRUE(input_checks)
+  occasion_names <- NULL
+  decider_names <- NULL
   objective <- function(
       choice_parameters,
       logarithm = TRUE,
@@ -256,18 +259,23 @@ choice_likelihood <- function(
       )
     }
     if (identical(aggregate, "occasion")) {
-      identifier_data <- as.data.frame(choice_identifiers)
-      contribution_names <- if (ncol(identifier_data) > 1L) {
-        do.call(paste, c(identifier_data, sep = ":"))
-      } else {
-        as.character(identifier_data[[1L]])
+      if (is.null(occasion_names)) {
+        identifier_data <- as.data.frame(choice_identifiers)
+        occasion_names <<- if (ncol(identifier_data) > 1L) {
+          do.call(paste, c(identifier_data, sep = ":"))
+        } else {
+          as.character(identifier_data[[1L]])
+        }
       }
-      names(log_prob) <- contribution_names
+      names(log_prob) <- occasion_names
     } else if (identical(aggregate, "decider")) {
-      column_decider <- attr(choice_identifiers, "column_decider")
-      names(log_prob) <- unique(as.character(
-        choice_identifiers[[column_decider]]
-      ))
+      if (is.null(decider_names)) {
+        column_decider <- attr(choice_identifiers, "column_decider")
+        decider_names <<- unique(as.character(
+          choice_identifiers[[column_decider]]
+        ))
+      }
+      names(log_prob) <- decider_names
     }
     log_value <- if (identical(aggregate, "total")) sum(log_prob) else log_prob
     value <- if (isTRUE(logarithm)) log_value else exp(log_value)
