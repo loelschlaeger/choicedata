@@ -32,6 +32,8 @@
 #'   \item{`random_effects`}{The names of covariates with random effects.}
 #'   \item{`latent_class_effects`}{The names of covariates with latent class
 #'     effects.}
+#'   \item{`xlevels`}{The factor levels of the covariates, added once the
+#'     formula has been resolved with data in \code{\link{choice_effects}}.}
 #' }
 #'
 #' @section Specifying the model formula:
@@ -279,6 +281,19 @@ canonical_formula_term <- function(term) {
 
 #' @noRd
 
+formula_model_matrix <- function(form, data, r, xlevels = NULL) {
+  part <- stats::formula(form, lhs = 0, rhs = r, collapse = c(FALSE, TRUE))
+  part <- stats::delete.response(stats::terms(part, data = data))
+  frame <- stats::model.frame(
+    part, data = data, xlev = xlevels[[r]], na.action = stats::na.pass
+  )
+  mm <- stats::model.matrix(part, data = frame)
+  attr(mm, "xlevels") <- stats::.getXlevels(part, frame)
+  mm
+}
+
+#' @noRd
+
 is.choice_formula <- function(
   x,
   error = FALSE,
@@ -415,11 +430,16 @@ resolve_choice_formula <- function(
     }
   }
 
-  ### resolve covariate types
-  covariate_types <- lapply(seq_len(3L), function(r) {
-    mm <- oeli::try_silent(
-      stats::model.matrix(form, data = x, lhs = 0, rhs = r)
-    )
+  ### resolve covariate types, keeping the factor levels of the first data
+  model_matrices <- lapply(seq_len(3L), function(r) {
+    oeli::try_silent(formula_model_matrix(form, x, r, choice_formula$xlevels))
+  })
+  if (is.null(choice_formula$xlevels)) {
+    choice_formula$xlevels <- lapply(model_matrices, function(mm) {
+      if (inherits(mm, "fail")) NULL else attr(mm, "xlevels")
+    })
+  }
+  covariate_types <- lapply(model_matrices, function(mm) {
     oeli::input_check_response(
       check = if (inherits(mm, "fail")) as.character(mm) else TRUE,
       var_name = "formula"
@@ -447,9 +467,7 @@ resolve_choice_formula <- function(
     term_map <- list()
     all_cols <- character(0)
     for (r in seq_len(3L)) {
-      mm <- oeli::try_silent(
-        stats::model.matrix(form, data = x, lhs = 0, rhs = r)
-      )
+      mm <- model_matrices[[r]]
       if (inherits(mm, "fail")) next
       if (is.null(mm) || ncol(mm) == 0L) next
       asg <- attr(mm, "assign")

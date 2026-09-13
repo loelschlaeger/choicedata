@@ -50,6 +50,8 @@ An object of class \code{choice_formula}, which is a \code{list} of the elements
 \item{\code{random_effects}}{The names of covariates with random effects.}
 \item{\code{latent_class_effects}}{The names of covariates with latent class
 effects.}
+\item{\code{xlevels}}{The factor levels of the covariates, added once the
+formula has been resolved with data in \code{\link{choice_effects}}.}
 }
 }
 \description{

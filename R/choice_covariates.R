@@ -304,12 +304,8 @@ covariate_names <- function(choice_effects) {
 
 #' @noRd
 
-drop_intercept <- function(form, df, r) {
-  mm <- oeli::try_silent(
-    stats::model.matrix(
-      form, data = df, rhs = r, lhs = 0, na.action = stats::na.pass
-    )
-  )
+drop_intercept <- function(form, df, r, xlevels = NULL) {
+  mm <- oeli::try_silent(formula_model_matrix(form, df, r, xlevels))
   oeli::input_check_response(
     check = if (inherits(mm, "fail")) as.character(mm) else TRUE,
     var_name = "formula"
@@ -393,7 +389,7 @@ build_design_matrices <- function(prep, x, choice_effects) {
 
   ### model matrices for the three formula parts
   model_matrices <- lapply(seq_len(3L), function(r) {
-    drop_intercept(form, prep$x_long, r)
+    drop_intercept(form, prep$x_long, r, choice_formula$xlevels)
   })
   effect_name <- as.character(choice_effects$effect_name)
   effect_cov <- as.character(choice_effects$covariate)
