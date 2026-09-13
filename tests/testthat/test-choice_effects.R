@@ -198,20 +198,24 @@ test_that("number of effects can be computed", {
 })
 
 test_that("effects can be created with resolving", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
+
   expect_identical(
     choice_effects(
       choice_formula = choice_formula(
-        form = choice ~ comfort
+        form = choice ~ factor(comfort)
       ),
       choice_alternatives = choice_alternatives(
         J = 2, alternatives = c("A", "B")
       ),
       choice_data = choice_data(
-        data_frame = train_choice,
+        data_frame = Train,
         format = "wide",
-        column_occasion = "occasionID"
+        column_decider = "id",
+        column_occasion = "choiceid"
       )
     )$effect_name,
-    c("comfort1", "comfort2", "ASC_B")
+    c("factor(comfort)1", "factor(comfort)2", "ASC_B")
   )
 })

@@ -1,9 +1,13 @@
 test_that("choice_covariates can be defined", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
+  skip_if_not_installed("AER")
+  data("TravelMode", package = "AER")
 
   ### long format
   expect_true(
     choice_covariates(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_decider = "individual",
       column_occasion = NULL,
@@ -18,10 +22,10 @@ test_that("choice_covariates can be defined", {
   ### wide format
   expect_true(
     choice_covariates(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       column_alternative = NULL,
       column_ac_covariates = NULL,
       column_as_covariates = NULL,
@@ -93,6 +97,11 @@ test_that("covariate names can be deduced from choice effects", {
 })
 
 test_that("design matrices can be build", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
+  skip_if_not_installed("AER")
+  data("TravelMode", package = "AER")
+  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
 
   ### simulation case
   choice_effects <- choice_effects(
@@ -118,11 +127,11 @@ test_that("design matrices can be build", {
 
   ### empirical data case (wide)
   choice_data <- choice_data(
-    data_frame = train_choice,
+    data_frame = Train,
     format = "wide",
     column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID",
+    column_decider = "id",
+    column_occasion = "choiceid",
     column_alternative = NULL,
     column_ac_covariates = NULL,
     column_as_covariates = NULL,
@@ -168,7 +177,7 @@ test_that("design matrices can be build", {
 
   ### empirical data case (long)
   choice_data <- choice_data(
-    data_frame = travel_mode_choice,
+    data_frame = TravelMode,
     format = "long",
     column_choice = "choice",
     column_decider = "individual",
@@ -179,10 +188,10 @@ test_that("design matrices can be build", {
   )
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
-      choice ~ cost | income + size | wait + travel
+      choice ~ vcost | income + size | wait + travel
     ),
     choice_alternatives = choice_alternatives(
-      J = 4, alternatives = c("bus", "car", "plane", "train")
+      J = 4, alternatives = c("air", "bus", "car", "train")
     )
   )
   design_matrices <- design_matrices(

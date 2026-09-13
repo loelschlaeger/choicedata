@@ -86,13 +86,16 @@ generate_choice_identifiers(N = 2, Tp = 2)
 ### cross-sectional case
 generate_choice_identifiers(N = 5, column_occasion = NULL)
 
+\dontshow{if (requireNamespace("AER", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ### read choice identifiers
+data("TravelMode", package = "AER")
 choice_identifiers(
-  data_frame = travel_mode_choice,
+  data_frame = TravelMode,
   format = "long",
   column_decider = "individual",
   column_occasion = NULL,
   cross_section = TRUE
 )
+\dontshow{\}) # examplesIf}
 }
 \keyword{data}

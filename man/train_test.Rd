@@ -50,17 +50,19 @@ subset. Splitting by occasions keeps every decider in both subsets and
 applies the size per decider, which requires panel data.
 }
 \examples{
-data("train_choice")
+\dontshow{if (requireNamespace("mlogit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+data("Train", package = "mlogit")
 
 ### 20\% of the deciders in the test subset
-parts <- train_test(train_choice, test_proportion = 0.2)
-lengths(lapply(parts, function(part) unique(part$deciderID)))
+parts <- train_test(Train, test_proportion = 0.2, column_decider = "id")
+lengths(lapply(parts, function(part) unique(part$id)))
 
 ### the last choice occasion of every decider in the test subset
 parts <- train_test(
-  train_choice, test_number = 1, by = "occasion",
-  column_occasion = "occasionID"
+  Train, test_number = 1, by = "occasion",
+  column_decider = "id", column_occasion = "choiceid"
 )
 nrow(parts$test)
+\dontshow{\}) # examplesIf}
 }
 \keyword{data}

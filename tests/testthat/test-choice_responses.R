@@ -84,7 +84,8 @@ test_that("simulation of probit choice responses works", {
 })
 
 test_that("simulation of logit choice responses works", {
-  data(train_choice)
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
 
   choice_effects <- choice_effects(
     choice_formula = choice_formula(
@@ -96,13 +97,13 @@ test_that("simulation of logit choice responses works", {
   )
 
   covariates <- choice_covariates(
-    data_frame = train_choice,
+    data_frame = Train,
     format = "wide",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
+    column_decider = "id",
+    column_occasion = "choiceid"
   )
   covariates <- covariates[
-    order(covariates$occasionID, covariates$deciderID),
+    order(covariates$choiceid, covariates$id),
   ]
 
   params <- choice_parameters(

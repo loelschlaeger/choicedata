@@ -47,9 +47,11 @@
 #' ### cross-sectional case
 #' generate_choice_identifiers(N = 5, column_occasion = NULL)
 #'
+#' @examplesIf requireNamespace("AER", quietly = TRUE)
 #' ### read choice identifiers
+#' data("TravelMode", package = "AER")
 #' choice_identifiers(
-#'   data_frame = travel_mode_choice,
+#'   data_frame = TravelMode,
 #'   format = "long",
 #'   column_decider = "individual",
 #'   column_occasion = NULL,

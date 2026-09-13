@@ -16,6 +16,8 @@ Language: en-US
 URL: https://github.com/loelschlaeger/choicedata, https://loelschlaeger.de/choicedata/
 BugReports: https://github.com/loelschlaeger/choicedata/issues
 Suggests:
+    AER,
+    mlogit,
     mvtnorm,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

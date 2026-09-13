@@ -23,7 +23,8 @@
 
 * Probability calculations now use Rcpp.
 
-* Added additional choice data sets for demonstrations.
+* Added the choice data sets `water_conservation_choice`, `wind_power_choice`,
+  and `lichess_berserk_choice`.
 
 * `long_to_wide()` now accepts a `factor` column of alternatives.
 

@@ -1050,3 +1050,15 @@ choiceprob_logit_input_checks <- function(
   }
   result
 }
+
+#' @noRd
+
+standardize_choice_indicator <- function(data_frame, column_choice) {
+  if (!is.null(column_choice) && column_choice %in% names(data_frame)) {
+    indicator <- data_frame[[column_choice]]
+    if (is.logical(indicator)) {
+      data_frame[[column_choice]] <- as.integer(indicator)
+    }
+  }
+  data_frame
+}

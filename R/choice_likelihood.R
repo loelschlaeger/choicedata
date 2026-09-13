@@ -78,9 +78,9 @@
 #'
 #' @keywords probability
 #'
-#' @examples
+#' @examplesIf requireNamespace("mlogit", quietly = TRUE)
 #' ### compute choice likelihood
-#' data(list = "train_choice")
+#' data("Train", package = "mlogit")
 #'
 #' choice_effects <- choice_effects(
 #'   choice_formula = choice_formula(
@@ -94,11 +94,11 @@
 #' )
 #'
 #' choice_data <- choice_data(
-#'   data_frame = train_choice,
+#'   data_frame = Train,
 #'   format = "wide",
 #'   column_choice = "choice",
-#'   column_decider = "deciderID",
-#'   column_occasion = "occasionID"
+#'   column_decider = "id",
+#'   column_occasion = "choiceid"
 #' )
 #'
 #' likelihood <- choice_likelihood(

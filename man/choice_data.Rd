@@ -71,10 +71,10 @@ integer score, and for ranked data it is omitted in favor of one column per
 alternative (see \code{choice_type}).
 
 In long layout the same column is evaluated once per alternative: unordered
-data must use a binary indicator (1 for the chosen alternative, 0 otherwise),
-ordered data repeats the ordinal value for every alternative, and ranked data
-stores consecutive ranks \code{1:k} for the observed top \code{k} alternatives and \code{NA}
-for unranked alternatives.
+data use a binary indicator, \code{1} or \code{TRUE} for the chosen alternative and
+\code{0} or \code{FALSE} otherwise; ordered data repeats the ordinal value for every
+alternative, and ranked data stores consecutive ranks \code{1:k} for the
+observed top \code{k} alternatives and \code{NA} for unranked alternatives.
 
 An entirely missing response marks an occasion that is omitted from the
 likelihood. Set to \code{NULL} for purely covariate tables.}
@@ -157,16 +157,23 @@ choice_effects <- choice_effects(
 )
 generate_choice_data(choice_effects = choice_effects)
 
-### transform between long/wide format
+\dontshow{if (requireNamespace("AER", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+### transform from long to wide format
+data("TravelMode", package = "AER")
+TravelMode$choice <- as.integer(TravelMode$choice == "yes")
 long_to_wide(
-  data_frame = travel_mode_choice,
+  data_frame = TravelMode,
   column_alternative = "mode",
   column_decider = "individual"
 )
+\dontshow{\}) # examplesIf}
+\dontshow{if (requireNamespace("mlogit", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+### transform from wide to long format
+data("Train", package = "mlogit")
 wide_to_long(
-  data_frame = train_choice
+  data_frame = Train
 )
-
+\dontshow{\}) # examplesIf}
 ### individual choice sets and a missing response
 partial_data <- data.frame(
   deciderID = c(1, 1, 2),

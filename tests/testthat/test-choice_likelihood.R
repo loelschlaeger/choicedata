@@ -1,11 +1,13 @@
 test_that("choice_likelihood precomputes sufficient statistics", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
 
   choice_data <- choice_data(
-    data_frame = train_choice[1:4, ],
+    data_frame = Train[1:4, ],
     format = "wide",
     column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
+    column_decider = "id",
+    column_occasion = "choiceid"
   )
 
   choice_effects <- choice_effects(
@@ -32,14 +34,14 @@ test_that("choice_likelihood precomputes sufficient statistics", {
   expect_length(likelihood$design_matrices, nrow(choice_data))
   expect_length(likelihood$choice_indices, nrow(choice_data))
 
-  missing_frame <- train_choice[1:4, ]
+  missing_frame <- Train[1:4, ]
   missing_frame$choice[2] <- NA_character_
   missing_data <- choice_data(
     data_frame = missing_frame,
     format = "wide",
     column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
+    column_decider = "id",
+    column_occasion = "choiceid"
   )
   missing_likelihood <- choice_likelihood(
     choice_data = missing_data,
@@ -55,14 +57,14 @@ test_that("choice_likelihood precomputes sufficient statistics", {
 
   choice_parameters <- generate_choice_parameters(choice_effects)
 
-  all_missing_frame <- train_choice[1:4, ]
+  all_missing_frame <- Train[1:4, ]
   all_missing_frame$choice <- NA_character_
   all_missing_data <- choice_data(
     data_frame = all_missing_frame,
     format = "wide",
     column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
+    column_decider = "id",
+    column_occasion = "choiceid"
   )
   all_missing_likelihood <- choice_likelihood(
     choice_data = all_missing_data,

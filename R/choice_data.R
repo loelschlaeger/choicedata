@@ -19,10 +19,10 @@
 #' alternative (see `choice_type`).
 #'
 #' In long layout the same column is evaluated once per alternative: unordered
-#' data must use a binary indicator (1 for the chosen alternative, 0 otherwise),
-#' ordered data repeats the ordinal value for every alternative, and ranked data
-#' stores consecutive ranks `1:k` for the observed top `k` alternatives and `NA`
-#' for unranked alternatives.
+#' data use a binary indicator, `1` or `TRUE` for the chosen alternative and
+#' `0` or `FALSE` otherwise; ordered data repeats the ordinal value for every
+#' alternative, and ranked data stores consecutive ranks `1:k` for the
+#' observed top `k` alternatives and `NA` for unranked alternatives.
 #'
 #' An entirely missing response marks an occasion that is omitted from the
 #' likelihood. Set to `NULL` for purely covariate tables.
@@ -96,16 +96,24 @@
 #' )
 #' generate_choice_data(choice_effects = choice_effects)
 #'
-#' ### transform between long/wide format
+#' @examplesIf requireNamespace("AER", quietly = TRUE)
+#' ### transform from long to wide format
+#' data("TravelMode", package = "AER")
+#' TravelMode$choice <- as.integer(TravelMode$choice == "yes")
 #' long_to_wide(
-#'   data_frame = travel_mode_choice,
+#'   data_frame = TravelMode,
 #'   column_alternative = "mode",
 #'   column_decider = "individual"
 #' )
+#'
+#' @examplesIf requireNamespace("mlogit", quietly = TRUE)
+#' ### transform from wide to long format
+#' data("Train", package = "mlogit")
 #' wide_to_long(
-#'   data_frame = train_choice
+#'   data_frame = Train
 #' )
 #'
+#' @examples
 #' ### individual choice sets and a missing response
 #' partial_data <- data.frame(
 #'   deciderID = c(1, 1, 2),
@@ -160,6 +168,9 @@ choice_data <- function(
   choice_type <- match.arg(choice_type)
   if (identical(choice_type, "ranked")) {
     check_column_choice(column_choice, null.ok = FALSE)
+  }
+  if (identical(format, "long") && identical(choice_type, "unordered")) {
+    data_frame <- standardize_choice_indicator(data_frame, column_choice)
   }
   rank_cols <- character()
   if (identical(format, "wide") && identical(choice_type, "ranked")) {
@@ -743,6 +754,9 @@ long_to_wide <- function(
   check_alternatives(alternatives)
   check_delimiter(delimiter)
   choice_type <- match.arg(choice_type)
+  if (identical(choice_type, "unordered")) {
+    data_frame <- standardize_choice_indicator(data_frame, column_choice)
+  }
 
   ### validate observation rows and responses
   id_cols <- c(column_decider, column_occasion)
@@ -1425,17 +1439,17 @@ check_as_covariates <- function(
 #'
 #' @keywords data
 #'
-#' @examples
-#' data("train_choice")
+#' @examplesIf requireNamespace("mlogit", quietly = TRUE)
+#' data("Train", package = "mlogit")
 #'
 #' ### 20% of the deciders in the test subset
-#' parts <- train_test(train_choice, test_proportion = 0.2)
-#' lengths(lapply(parts, function(part) unique(part$deciderID)))
+#' parts <- train_test(Train, test_proportion = 0.2, column_decider = "id")
+#' lengths(lapply(parts, function(part) unique(part$id)))
 #'
 #' ### the last choice occasion of every decider in the test subset
 #' parts <- train_test(
-#'   train_choice, test_number = 1, by = "occasion",
-#'   column_occasion = "occasionID"
+#'   Train, test_number = 1, by = "occasion",
+#'   column_decider = "id", column_occasion = "choiceid"
 #' )
 #' nrow(parts$test)
 

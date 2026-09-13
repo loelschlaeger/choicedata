@@ -1,9 +1,13 @@
 test_that("choice_identifiers can be defined", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
+  skip_if_not_installed("AER")
+  data("TravelMode", package = "AER")
 
   ### long format
   expect_true(
     choice_identifiers(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_decider = "individual",
       column_occasion = NULL,
@@ -14,19 +18,19 @@ test_that("choice_identifiers can be defined", {
   ### wide format
   expect_true(
     choice_identifiers(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       cross_section = FALSE
     ) |> is.choice_identifiers()
   )
   expect_true(
     choice_identifiers(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       cross_section = TRUE
     ) |> is.choice_identifiers()
   )
@@ -238,16 +242,22 @@ test_that("decider identifiers can be obtained", {
 })
 
 test_that("choice_identifiers can be extracted", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
+  skip_if_not_installed("AER")
+  data("TravelMode", package = "AER")
+  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
 
   ### wide choice_data (panel)
-  x <- choice_data(train_choice, column_occasion = "occasionID")
+  x <- choice_data(Train, column_decider = "id", column_occasion = "choiceid")
   expect_true(
     extract_choice_identifiers(x) |> is.choice_identifiers()
   )
 
   ### wide choice_data (cross-sectional)
   x <- choice_data(
-    train_choice, column_occasion = "occasionID", cross_section = TRUE
+    Train, column_decider = "id", column_occasion = "choiceid",
+    cross_section = TRUE
   )
   expect_true(
     extract_choice_identifiers(x) |> is.choice_identifiers()
@@ -255,7 +265,7 @@ test_that("choice_identifiers can be extracted", {
 
   ### long choice_data
   x <- choice_data(
-    data_frame = travel_mode_choice,
+    data_frame = TravelMode,
     format = "long",
     column_decider = "individual",
     column_alternative = "mode"

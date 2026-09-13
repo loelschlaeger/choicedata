@@ -1,9 +1,14 @@
 test_that("choice_data can be defined", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
+  skip_if_not_installed("AER")
+  data("TravelMode", package = "AER")
+  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
 
   ### long format (all columns)
   expect_true(
     choice_data(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_choice = "choice",
       column_decider = "individual",
@@ -17,7 +22,7 @@ test_that("choice_data can be defined", {
   ### long format (selected columns)
   expect_true(
     choice_data(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_choice = "choice",
       column_decider = "individual",
@@ -33,11 +38,11 @@ test_that("choice_data can be defined", {
   ### wide format
   expect_true(
     choice_data(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
       column_choice = "choice",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       column_alternative = NULL,
       column_ac_covariates = NULL,
       column_as_covariates = NULL,
@@ -49,11 +54,11 @@ test_that("choice_data can be defined", {
   ### wide format (selected columns)
   expect_true(
     choice_data(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
       column_choice = "choice",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       column_alternative = NULL,
       column_ac_covariates = NULL,
       column_as_covariates = "price",
@@ -63,14 +68,14 @@ test_that("choice_data can be defined", {
   )
 
   ### wide format with a missing response
-  missing_wide <- train_choice[1:4, ]
+  missing_wide <- Train[1:4, ]
   missing_wide$choice[2] <- NA_character_
   missing_data <- choice_data(
     data_frame = missing_wide,
     format = "wide",
     column_choice = "choice",
-    column_decider = "deciderID",
-    column_occasion = "occasionID"
+    column_decider = "id",
+    column_occasion = "choiceid"
   )
   expect_s3_class(missing_data, "choice_data")
   expect_true(is.na(missing_data$choice[2]))
@@ -249,11 +254,13 @@ test_that("generate_choice_data keeps covariate order", {
 })
 
 test_that("alternative names can be guessed from wide format", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
 
   ### with column_choice available
   expect_identical(
     guess_alternatives_wide(
-      data_frame = train_choice,
+      data_frame = Train,
       column_choice = "choice",
       delimiter = "_"
     ),
@@ -263,7 +270,7 @@ test_that("alternative names can be guessed from wide format", {
   ### without column_choice available
   expect_identical(
     guess_alternatives_wide(
-      data_frame = train_choice,
+      data_frame = Train,
       column_choice = NULL,
       delimiter = "_"
     ),
@@ -287,21 +294,26 @@ test_that("alternative names can be guessed from wide format", {
 })
 
 test_that("data can be transformed between long and wide format", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
+  skip_if_not_installed("AER")
+  data("TravelMode", package = "AER")
+  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
 
   expect_s3_class(
     long_to_wide(
-      travel_mode_choice,
+      TravelMode,
       column_alternative = "mode",
       column_decider = "individual"
     ),
     "tbl_df"
   )
-  expect_s3_class(wide_to_long(train_choice), "tbl_df")
+  expect_s3_class(wide_to_long(Train), "tbl_df")
 
   ### from long format to wide format
   expect_identical(
     long_to_wide(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       column_as_covariates = character(), # ignore as covariates
       column_choice = "choice",
       column_alternative = "mode",
@@ -312,48 +324,51 @@ test_that("data can be transformed between long and wide format", {
   )
   expect_identical(
     long_to_wide(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       column_alternative = "mode",
       column_decider = "individual"
     ) |> colnames(),
-    c("individual", "income", "size", "wait_plane", "wait_train",
-      "wait_bus", "wait_car", "cost_plane", "cost_train", "cost_bus",
-      "cost_car", "travel_plane", "travel_train", "travel_bus", "travel_car",
-      "choice")
+    c("individual", "income", "size", "wait_air", "wait_train", "wait_bus",
+      "wait_car", "vcost_air", "vcost_train", "vcost_bus", "vcost_car",
+      "travel_air", "travel_train", "travel_bus", "travel_car", "gcost_air",
+      "gcost_train", "gcost_bus", "gcost_car", "choice")
   )
 
   ### from wide format to long format
   expect_identical(
     wide_to_long(
-      data_frame = train_choice[, 1:3]
+      data_frame = Train[, 1:3]
     ) |> colnames(),
-    c("deciderID", "occasionID", "choice", "alternative")
+    c("choiceid", "id", "choice", "alternative")
   )
   expect_identical(
     wide_to_long(
-      data_frame = train_choice
+      data_frame = Train
     ) |> colnames(),
-    c("deciderID", "occasionID", "choice", "alternative", "price",
-      "time", "change", "comfort")
+    c("choiceid", "id", "choice", "alternative", "price", "time", "change",
+      "comfort")
   )
 
   ### from wide format to long format without alternatives
   expect_identical(
     wide_to_long(
-      data_frame = train_choice[, -3], column_choice = NULL
+      data_frame = Train[, -3], column_choice = NULL
     ) |> colnames(),
-    c("deciderID", "occasionID", "alternative", "price",
-      "time", "change", "comfort")
+    c("choiceid", "id", "alternative", "price", "time", "change", "comfort")
   )
 
 })
 
 test_that("alternative-specific covariates can be detected", {
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
+  skip_if_not_installed("AER")
+  data("TravelMode", package = "AER")
 
   ### long format (trivial case)
   expect_identical(
     check_as_covariates(
-      data_frame = travel_mode_choice[, c("individual", "mode")],
+      data_frame = TravelMode[, c("individual", "mode")],
       format = "long",
       column_choice = NULL,
       column_decider = "individual",
@@ -370,7 +385,7 @@ test_that("alternative-specific covariates can be detected", {
   ### long format (all columns)
   expect_identical(
     check_as_covariates(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_choice = "choice",
       column_decider = "individual",
@@ -379,11 +394,12 @@ test_that("alternative-specific covariates can be detected", {
     ),
     list(
       column_ac_covariates = c("income", "size"),
-      column_as_covariates = c("wait", "cost", "travel"),
+      column_as_covariates = c("wait", "vcost", "travel", "gcost"),
       column_as_covariates_wide = c(
-        "wait_bus", "cost_bus", "travel_bus", "wait_car", "cost_car",
-        "travel_car", "wait_plane", "cost_plane", "travel_plane", "wait_train",
-        "cost_train", "travel_train"
+        "wait_air", "vcost_air", "travel_air", "gcost_air", "wait_bus",
+        "vcost_bus", "travel_bus", "gcost_bus", "wait_car", "vcost_car",
+        "travel_car", "gcost_car", "wait_train", "vcost_train", "travel_train",
+        "gcost_train"
       )
     )
   )
@@ -391,7 +407,7 @@ test_that("alternative-specific covariates can be detected", {
   ### long format (selected columns)
   expect_identical(
     check_as_covariates(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_choice = "choice",
       column_decider = "individual",
@@ -403,13 +419,13 @@ test_that("alternative-specific covariates can be detected", {
       column_ac_covariates = "size",
       column_as_covariates = "wait",
       column_as_covariates_wide = c(
-        "wait_bus", "wait_car", "wait_plane", "wait_train"
+        "wait_air", "wait_bus", "wait_car", "wait_train"
       )
     )
   )
   expect_error(
     check_as_covariates(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_choice = "choice",
       column_decider = "individual",
@@ -420,7 +436,7 @@ test_that("alternative-specific covariates can be detected", {
   )
   expect_error(
     check_as_covariates(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_choice = "choice",
       column_decider = "individual",
@@ -431,7 +447,7 @@ test_that("alternative-specific covariates can be detected", {
   )
   expect_error(
     check_as_covariates(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_choice = "choice",
       column_decider = "individual",
@@ -442,7 +458,7 @@ test_that("alternative-specific covariates can be detected", {
   )
   expect_error(
     check_as_covariates(
-      data_frame = travel_mode_choice,
+      data_frame = TravelMode,
       format = "long",
       column_choice = "choice",
       column_decider = "individual",
@@ -455,11 +471,11 @@ test_that("alternative-specific covariates can be detected", {
   ### wide format (trivial case)
   expect_identical(
     check_as_covariates(
-      data_frame = train_choice[, c("deciderID", "occasionID")],
+      data_frame = Train[, c("id", "choiceid")],
       format = "wide",
       column_choice = NULL,
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
     ),
     list(
       column_ac_covariates = character(0),
@@ -471,11 +487,11 @@ test_that("alternative-specific covariates can be detected", {
   ### wide format (all columns)
   expect_identical(
     check_as_covariates(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
       column_choice = "choice",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       delimiter = "_"
     ),
     list(
@@ -484,8 +500,8 @@ test_that("alternative-specific covariates can be detected", {
         "change", "comfort", "price", "time"
       ),
       column_as_covariates_wide = c(
-        "price_A", "time_A", "change_A", "comfort_A",
-        "price_B", "time_B", "change_B", "comfort_B"
+        "price_A", "price_B", "time_A", "time_B", "change_A", "change_B",
+        "comfort_A", "comfort_B"
       )
     )
   )
@@ -493,11 +509,11 @@ test_that("alternative-specific covariates can be detected", {
   ### wide format (selected columns)
   expect_identical(
     check_as_covariates(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
       column_choice = "choice",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       column_ac_covariates = character(),
       column_as_covariates = "price",
       delimiter = "_"
@@ -510,11 +526,11 @@ test_that("alternative-specific covariates can be detected", {
   )
   expect_error(
     check_as_covariates(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
       column_choice = "choice",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       column_ac_covariates = "unknown",
       delimiter = "_"
     ),
@@ -522,11 +538,11 @@ test_that("alternative-specific covariates can be detected", {
   )
   expect_error(
     check_as_covariates(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
       column_choice = "choice",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       column_as_covariates = "unknown",
       delimiter = "_"
     ),
@@ -534,11 +550,11 @@ test_that("alternative-specific covariates can be detected", {
   )
   expect_error(
     check_as_covariates(
-      data_frame = train_choice,
+      data_frame = Train,
       format = "wide",
       column_choice = "choice",
-      column_decider = "deciderID",
-      column_occasion = "occasionID",
+      column_decider = "id",
+      column_occasion = "choiceid",
       column_ac_covariates = "price",
       delimiter = "_"
     ),
@@ -547,36 +563,57 @@ test_that("alternative-specific covariates can be detected", {
 })
 
 test_that("long_to_wide accepts a factor column of alternatives", {
-  data_frame <- travel_mode_choice
-  data_frame$mode <- factor(data_frame$mode)
+  skip_if_not_installed("AER")
+  data("TravelMode", package = "AER")
+  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
+
+  expect_true(is.factor(TravelMode$mode))
   wide <- long_to_wide(
-    data_frame = data_frame,
+    data_frame = TravelMode,
     column_alternative = "mode",
     column_decider = "individual"
   )
   expect_equal(nrow(wide), 210L)
-  expect_true(all(c("wait_plane", "cost_car") %in% names(wide)))
+  expect_true(all(c("wait_air", "vcost_car") %in% names(wide)))
 })
 
 test_that("train_test splits by deciders and by occasions", {
-  data("train_choice")
+  skip_if_not_installed("mlogit")
+  data("Train", package = "mlogit")
 
-  by_decider <- train_test(train_choice, test_proportion = 0.2)
+  by_decider <- train_test(Train, test_proportion = 0.2, column_decider = "id")
   by_occasion <- train_test(
-    train_choice, test_number = 1, by = "occasion",
-    column_occasion = "occasionID"
+    Train, test_number = 1, by = "occasion",
+    column_decider = "id", column_occasion = "choiceid"
   )
 
-  deciders <- unique(train_choice$deciderID)
+  deciders <- unique(Train$id)
   expect_named(by_decider, c("train", "test"))
-  expect_length(
-    unique(by_decider$test$deciderID), round(0.2 * length(deciders))
-  )
-  expect_length(
-    intersect(by_decider$train$deciderID, by_decider$test$deciderID), 0L
-  )
+  expect_length(unique(by_decider$test$id), round(0.2 * length(deciders)))
+  expect_length(intersect(by_decider$train$id, by_decider$test$id), 0L)
   expect_identical(nrow(by_occasion$test), length(deciders))
   expect_identical(
-    nrow(by_occasion$train) + nrow(by_occasion$test), nrow(train_choice)
+    nrow(by_occasion$train) + nrow(by_occasion$test), nrow(Train)
+  )
+})
+
+test_that("long format accepts a logical choice indicator", {
+  long <- data.frame(
+    deciderID = c(1, 1, 2, 2),
+    alternative = c("A", "B", "A", "B"),
+    choice = c(TRUE, FALSE, FALSE, TRUE),
+    cost = c(1, 2, 3, 4)
+  )
+  x <- choice_data(
+    data_frame = long, format = "long", column_alternative = "alternative"
+  )
+  expect_identical(x$choice, c(1L, 0L, 0L, 1L))
+  expect_identical(long_to_wide(long)$choice, c("A", "B"))
+  long$choice <- factor(c("yes", "no", "no", "yes"))
+  expect_error(
+    choice_data(
+      data_frame = long, format = "long", column_alternative = "alternative"
+    ),
+    "integerish"
   )
 })
