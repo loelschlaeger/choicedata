@@ -3,7 +3,7 @@ test_that("choice_data can be defined", {
   data("Train", package = "mlogit")
   skip_if_not_installed("AER")
   data("TravelMode", package = "AER")
-  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
+  TravelMode$choice <- TravelMode$choice == "yes"
 
   ### long format (all columns)
   expect_true(
@@ -298,7 +298,7 @@ test_that("data can be transformed between long and wide format", {
   data("Train", package = "mlogit")
   skip_if_not_installed("AER")
   data("TravelMode", package = "AER")
-  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
+  TravelMode$choice <- TravelMode$choice == "yes"
 
   expect_s3_class(
     long_to_wide(
@@ -565,7 +565,7 @@ test_that("alternative-specific covariates can be detected", {
 test_that("long_to_wide accepts a factor column of alternatives", {
   skip_if_not_installed("AER")
   data("TravelMode", package = "AER")
-  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
+  TravelMode$choice <- TravelMode$choice == "yes"
 
   expect_true(is.factor(TravelMode$mode))
   wide <- long_to_wide(

@@ -101,7 +101,7 @@ test_that("design matrices can be build", {
   data("Train", package = "mlogit")
   skip_if_not_installed("AER")
   data("TravelMode", package = "AER")
-  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
+  TravelMode$choice <- TravelMode$choice == "yes"
 
   ### simulation case
   choice_effects <- choice_effects(

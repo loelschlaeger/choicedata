@@ -160,7 +160,7 @@ generate_choice_data(choice_effects = choice_effects)
 \dontshow{if (requireNamespace("AER", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 ### transform from long to wide format
 data("TravelMode", package = "AER")
-TravelMode$choice <- as.integer(TravelMode$choice == "yes")
+TravelMode$choice <- TravelMode$choice == "yes"
 long_to_wide(
   data_frame = TravelMode,
   column_alternative = "mode",

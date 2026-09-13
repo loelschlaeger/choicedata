@@ -246,7 +246,7 @@ test_that("choice_identifiers can be extracted", {
   data("Train", package = "mlogit")
   skip_if_not_installed("AER")
   data("TravelMode", package = "AER")
-  TravelMode$choice <- as.integer(TravelMode$choice == "yes")
+  TravelMode$choice <- TravelMode$choice == "yes"
 
   ### wide choice_data (panel)
   x <- choice_data(Train, column_decider = "id", column_occasion = "choiceid")
