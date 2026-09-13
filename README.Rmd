@@ -71,12 +71,16 @@ The objects are designed to be modular and can be combined in various ways to cr
 
 ### Empirical data
 
-The `travel_mode_choice` data set contains the revealed preferences of 210
-travelers choosing between plane, train, bus, and car: 
+The `TravelMode` data set of the
+[**AER**](https://CRAN.R-project.org/package=AER) package [@Kleiber2008]
+contains the revealed preferences of 210 travelers choosing between air,
+train, bus, and car:
 
 ```{r travel-example}
 library("choicedata")
-travel_mode_choice
+data("TravelMode", package = "AER")
+TravelMode$choice <- TravelMode$choice == "yes"
+head(TravelMode)
 ```
 
 We can transform the data from long (one row per choice alternative) to wide
@@ -84,7 +88,7 @@ format (one row per choice occasion):
 
 ```{r travel-example-to-wide}
 long_to_wide(
-  data_frame = travel_mode_choice,
+  data_frame = TravelMode,
   column_alternative = "mode",
   column_decider = "individual"
 )
@@ -94,22 +98,22 @@ We can construct model design matrices:
 
 ```{r travel-example-to-design}
 mode_data <- choice_data(
-  data_frame = travel_mode_choice,
+  data_frame = TravelMode,
   format = "long",
   column_choice = "choice",
   column_decider = "individual",
   column_alternative = "mode",
   column_ac_covariates = c("income", "size"),
-  column_as_covariates = c("wait", "cost", "travel")
+  column_as_covariates = c("wait", "vcost", "travel", "gcost")
 )
 
 mode_effects <- choice_effects(
   choice_formula = choice_formula(
-    formula = choice ~ cost | income | wait,
+    formula = choice ~ vcost | income | wait,
     error_term = "probit"
   ),
   choice_alternatives = choice_alternatives(
-    alternatives = unique(travel_mode_choice$mode)
+    alternatives = levels(TravelMode$mode)
   ),
   choice_data = mode_data
 )
