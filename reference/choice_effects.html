@@ -104,7 +104,9 @@ alternative-specific,</p></li>
 <li><p><code>"n"</code> (uncorrelated normal distribution),</p></li>
 <li><p><code>"ln"</code> (positively signed uncorrelated log-normal distribution),</p></li>
 <li><p><code>"ln-"</code> (negatively signed uncorrelated log-normal distribution),</p></li>
-</ol><p>indicating the type of random effect.</p></li>
+</ol><p>indicating the type of random effect,</p></li>
+<li><p><code>"latent_class"</code>, indicator whether the effect differs between latent
+classes.</p></li>
 </ol><p>For identification, the choice effects are ordered according to the
 following rules:</p><ol><li><p>Non-random effects come before random effects.</p></li>
 <li><p>Otherwise, the order is determined by occurrence in <code>formula</code>.</p></li>
@@ -137,15 +139,15 @@ following rules:</p><ol><li><p>Non-random effects come before random effects.</p
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6           price       beta_6         price        &lt;NA&gt;         TRUE     FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 7        income_B       beta_7        income           B        FALSE      TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 8        income_C       beta_8        income           C        FALSE      TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   mixing</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     cn</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     cn</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8     cn</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mixing latent_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   &lt;NA&gt;        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   &lt;NA&gt;        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   &lt;NA&gt;        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   &lt;NA&gt;        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   &lt;NA&gt;        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     cn        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7     cn        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     cn        FALSE</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

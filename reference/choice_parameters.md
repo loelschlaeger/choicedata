@@ -5,13 +5,14 @@ These functions construct, validate, and transform an object of class
 
 - `choice_parameters()` constructs a `choice_parameters` object.
 
-- `generate_choice_parameters()` samples parameters at random, see
-  details.
+- `generate_choice_parameters()` samples parameters at random, see the
+  details on sampling missing choice model parameters.
 
 - `validate_choice_parameters()` checks model-specific dimensions.
 
 - `switch_parameter_space()` transforms a `choice_parameters` object
-  between the interpretation and optimization space, see details.
+  between the interpretation and optimization space, see the details on
+  the parameter spaces.
 
 ## Usage
 
@@ -48,6 +49,9 @@ switch_parameter_space(choice_parameters, choice_effects)
   systematic utility \\V = X\beta\\.
 
   For a latent class model, a list of one coefficient vector per class.
+  Only the effects named in `latent_class_effects` of the
+  [`choice_formula`](https://loelschlaeger.de/choicedata/reference/choice_formula.md)
+  may differ between the classes.
 
 - Omega:
 
@@ -57,6 +61,9 @@ switch_parameter_space(choice_parameters, choice_effects)
   Not used when `P_r = 0`.
 
   In a latent class model, a list of one covariance matrix per class.
+  Only the block of the random effects with latent class effects may
+  differ between the classes, and it is uncorrelated with the other
+  random effects.
 
   Covariances involving uncorrelated random effects are fixed to zero.
 
@@ -94,7 +101,9 @@ switch_parameter_space(choice_parameters, choice_effects)
 
   \[`choice_parameters`\]  
   A `choice_parameters` object. Its supplied components are kept fixed.
-  Missing components are completed as described below.
+  Missing components are completed as described below. A named `beta` is
+  matched to the effects by name and may contain only some of the
+  effects; the remaining coefficients are drawn.
 
 - C:
 
@@ -154,15 +163,19 @@ Missing components are generated as follows:
 
 - `beta`:
 
-  Drawn independently for each class from a multivariate normal
-  distribution with zero mean and covariance matrix `10 * diag(P)`.
+  Drawn from a multivariate normal distribution with zero mean and
+  covariance matrix `10 * diag(P)`, independently for each class for the
+  effects with latent classes and once for the others. A named `beta`
+  with fewer than `P` entries fixes the named effects and draws the
+  others.
 
 - `Omega`:
 
-  Drawn independently for each class from an Inverse-Wishart
-  distribution with `P_r + 2` degrees of freedom and identity scale
-  matrix. Covariances involving uncorrelated random effects are then set
-  to zero.
+  Drawn from an Inverse-Wishart distribution with identity scale matrix
+  and degrees of freedom equal to the dimension plus two, independently
+  for each class for the block of the random effects with latent classes
+  and once for the block of the others. Covariances involving
+  uncorrelated random effects are then set to zero.
 
 - `Sigma`:
 
@@ -211,7 +224,9 @@ object between the interpretation and optimization space.
   - the first ordered threshold is fixed to zero and omitted; logarithms
     of the remaining positive threshold increments are used
 
-  - latent class parameters are concatenated in class order, and `C - 1`
+  - in a latent class model, the coefficients and Cholesky elements of
+    the effects with latent classes are concatenated in class order and
+    followed by those of the other effects, which appear once; `C - 1`
     log weight ratios use the first class as reference
 
 ## Examples

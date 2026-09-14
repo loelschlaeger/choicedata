@@ -113,10 +113,10 @@ label of the chosen alternative, for ordered data it is the ordered factor or
 integer score, and for ranked data it is omitted in favor of one column per
 alternative (see <code>choice_type</code>).</p>
 <p>In long layout the same column is evaluated once per alternative: unordered
-data must use a binary indicator (1 for the chosen alternative, 0 otherwise),
-ordered data repeats the ordinal value for every alternative, and ranked data
-stores consecutive ranks <code>1:k</code> for the observed top <code>k</code> alternatives and <code>NA</code>
-for unranked alternatives.</p>
+data use a binary indicator, <code>1</code> or <code>TRUE</code> for the chosen alternative and
+<code>0</code> or <code>FALSE</code> otherwise; ordered data repeats the ordinal value for every
+alternative, and ranked data stores consecutive ranks <code>1:k</code> for the
+observed top <code>k</code> alternatives and <code>NA</code> for unranked alternatives.</p>
 <p>An entirely missing response marks an occasion that is omitted from the
 likelihood. Set to <code>NULL</code> for purely covariate tables.</p></dd>
 
@@ -148,8 +148,8 @@ Column names of <code>data_frame</code> with alternative-specific covariates.</p
 
 <dt id="arg-delimiter">delimiter<a class="anchor" aria-label="anchor" href="#arg-delimiter"></a></dt>
 <dd><p>[<code>character(1)</code>]<br>
-Delimiter separating alternative identifiers from covariate names in wide
-format.</p></dd>
+Delimiter separating alternative identifiers from covariate names when
+<code>format = "wide"</code>.</p></dd>
 
 
 <dt id="arg-cross-section">cross_section<a class="anchor" aria-label="anchor" href="#arg-cross-section"></a></dt>
@@ -252,47 +252,51 @@ input arguments.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 10        1          A       1.30    0.172  -<span style="color: #BB0000;">0.090</span><span style="color: #BB0000; text-decoration: underline;">3</span>  1.92 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 90 more rows</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">### transform between long/wide format</span></span></span>
+<span class="r-in"><span><span class="co">### transform from long to wide format</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"TravelMode"</span>, package <span class="op">=</span> <span class="st">"AER"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">TravelMode</span><span class="op">$</span><span class="va">choice</span> <span class="op">&lt;-</span> <span class="va">TravelMode</span><span class="op">$</span><span class="va">choice</span> <span class="op">==</span> <span class="st">"yes"</span></span></span>
 <span class="r-in"><span><span class="fu">long_to_wide</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data_frame <span class="op">=</span> <span class="va">travel_mode_choice</span>,</span></span>
+<span class="r-in"><span>  data_frame <span class="op">=</span> <span class="va">TravelMode</span>,</span></span>
 <span class="r-in"><span>  column_alternative <span class="op">=</span> <span class="st">"mode"</span>,</span></span>
 <span class="r-in"><span>  column_decider <span class="op">=</span> <span class="st">"individual"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 210 × 16</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    individual income  size wait_plane wait_train wait_bus wait_car cost_plane</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>          1  21.6      1         69         34       35        0       36.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>          2  18.5      2         64         44       53        0       35.8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>          3  24.7      1         69         34       35        0       71.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>          4  43.2      3         64         44       53        0       30.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>          5  27.8      2         64         44       53        0       37.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>          6  12.3      1         69         40       35        0       36.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>          7  27.8      1         45         34       35        0       91.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>          8   7.41     1         69         34       35        0       74.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>          9  24.7      1         69         34       35        0       36.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>         10  43.2      2         69         34       35        0       35.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 210 × 20</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    individual income  size wait_air wait_train wait_bus wait_car vcost_air</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1              35     1       69         34       35        0        59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2              30     2       64         44       53        0        58</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 3              40     1       69         34       35        0       115</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 4              70     3       64         44       53        0        49</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 5              45     2       64         44       53        0        60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 6              20     1       69         40       35        0        59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 7              45     1       45         34       35        0       148</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 8              12     1       69         34       35        0       121</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 9              40     1       69         34       35        0        59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 10             70     2       69         34       35        0        58</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 200 more rows</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 8 more variables: cost_train &lt;dbl&gt;, cost_bus &lt;dbl&gt;, cost_car &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   travel_plane &lt;int&gt;, travel_train &lt;int&gt;, travel_bus &lt;int&gt;, travel_car &lt;int&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   choice &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 12 more variables: vcost_train &lt;int&gt;, vcost_bus &lt;int&gt;, vcost_car &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   travel_air &lt;int&gt;, travel_train &lt;int&gt;, travel_bus &lt;int&gt;, travel_car &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   gcost_air &lt;int&gt;, gcost_train &lt;int&gt;, gcost_bus &lt;int&gt;, gcost_car &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   choice &lt;fct&gt;</span></span>
+<span class="r-in"><span><span class="co">### transform from wide to long format</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Train"</span>, package <span class="op">=</span> <span class="st">"mlogit"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">wide_to_long</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data_frame <span class="op">=</span> <span class="va">train_choice</span></span></span>
+<span class="r-in"><span>  data_frame <span class="op">=</span> <span class="va">Train</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5,858 × 8</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    deciderID occasionID choice alternative price  time change comfort</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>         1          1      1 A            10.9  2.5       0 1      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>         1          1      0 B            18.2  2.5       0 1      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>         1          2      1 A            10.9  2.5       0 1      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>         1          2      0 B            14.5  2.17      0 1      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>         1          3      1 A            10.9  1.92      0 1      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>         1          3      0 B            18.2  1.92      0 0      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>         1          4      0 A            18.2  2.17      0 1      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>         1          4      1 B            14.5  2.5       0 0      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>         1          5      0 A            10.9  2.5       0 1      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>         1          5      1 B            14.5  2.5       0 0      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    choiceid    id choice alternative price  time change comfort</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>        1     1      1 A            <span style="text-decoration: underline;">2</span>400   150      0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>        1     1      0 B            <span style="text-decoration: underline;">4</span>000   150      0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>        2     1      1 A            <span style="text-decoration: underline;">2</span>400   150      0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>        2     1      0 B            <span style="text-decoration: underline;">3</span>200   130      0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>        3     1      1 A            <span style="text-decoration: underline;">2</span>400   115      0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>        3     1      0 B            <span style="text-decoration: underline;">4</span>000   115      0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>        4     1      0 A            <span style="text-decoration: underline;">4</span>000   130      0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>        4     1      1 B            <span style="text-decoration: underline;">3</span>200   150      0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>        5     1      0 A            <span style="text-decoration: underline;">2</span>400   150      0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>        5     1      1 B            <span style="text-decoration: underline;">3</span>200   150      0       0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 5,848 more rows</span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### individual choice sets and a missing response</span></span></span>
 <span class="r-in"><span><span class="va">partial_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  deciderID <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>

@@ -166,7 +166,7 @@ is a <code>list</code> containing the design matrices, choice indices, and ident
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">### compute choice likelihood</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span>list <span class="op">=</span> <span class="st">"train_choice"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Train"</span>, package <span class="op">=</span> <span class="st">"mlogit"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">choice_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_effects.html">choice_effects</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  choice_formula <span class="op">=</span> <span class="fu"><a href="choice_formula.html">choice_formula</a></span><span class="op">(</span></span></span>
@@ -180,11 +180,11 @@ is a <code>list</code> containing the design matrices, choice indices, and ident
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">choice_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="choice_data.html">choice_data</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data_frame <span class="op">=</span> <span class="va">train_choice</span>,</span></span>
+<span class="r-in"><span>  data_frame <span class="op">=</span> <span class="va">Train</span>,</span></span>
 <span class="r-in"><span>  format <span class="op">=</span> <span class="st">"wide"</span>,</span></span>
 <span class="r-in"><span>  column_choice <span class="op">=</span> <span class="st">"choice"</span>,</span></span>
-<span class="r-in"><span>  column_decider <span class="op">=</span> <span class="st">"deciderID"</span>,</span></span>
-<span class="r-in"><span>  column_occasion <span class="op">=</span> <span class="st">"occasionID"</span></span></span>
+<span class="r-in"><span>  column_decider <span class="op">=</span> <span class="st">"id"</span>,</span></span>
+<span class="r-in"><span>  column_occasion <span class="op">=</span> <span class="st">"choiceid"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">likelihood</span> <span class="op">&lt;-</span> <span class="fu">choice_likelihood</span><span class="op">(</span></span></span>
@@ -201,7 +201,7 @@ is a <code>list</code> containing the design matrices, choice indices, and ident
 <span class="r-in"><span>  choice_likelihood <span class="op">=</span> <span class="va">likelihood</span>,</span></span>
 <span class="r-in"><span>  logarithm <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] -141614.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] -6130004649</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

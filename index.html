@@ -88,83 +88,79 @@
 <div class="section level3">
 <h3 id="empirical-data">Empirical data<a class="anchor" aria-label="anchor" href="#empirical-data"></a>
 </h3>
-<p>The <code>travel_mode_choice</code> data set contains the revealed preferences of 210 travelers choosing between plane, train, bus, and car:</p>
+<p>The <code>TravelMode</code> data set of the <a href="https://CRAN.R-project.org/package=AER" class="external-link"><strong>AER</strong></a> package (<a href="#ref-Kleiber2008">Kleiber and Zeileis 2008</a>) contains the revealed preferences of 210 travelers choosing between air, train, bus, and car:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/loelschlaeger/choicedata" class="external-link">"choicedata"</a></span><span class="op">)</span></span>
-<span><span class="va">travel_mode_choice</span></span>
-<span><span class="co">#&gt; # A tibble: 840 × 8</span></span>
-<span><span class="co">#&gt;    individual mode  choice  wait  cost travel income  size</span></span>
-<span><span class="co">#&gt;         &lt;int&gt; &lt;chr&gt;  &lt;int&gt; &lt;int&gt; &lt;dbl&gt;  &lt;int&gt;  &lt;dbl&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt;  1          1 plane      0    69 36.4     100   21.6     1</span></span>
-<span><span class="co">#&gt;  2          1 train      0    34 19.1     372   21.6     1</span></span>
-<span><span class="co">#&gt;  3          1 bus        0    35 15.4     417   21.6     1</span></span>
-<span><span class="co">#&gt;  4          1 car        1     0  6.17    180   21.6     1</span></span>
-<span><span class="co">#&gt;  5          2 plane      0    64 35.8      68   18.5     2</span></span>
-<span><span class="co">#&gt;  6          2 train      0    44 19.1     354   18.5     2</span></span>
-<span><span class="co">#&gt;  7          2 bus        0    53 15.4     399   18.5     2</span></span>
-<span><span class="co">#&gt;  8          2 car        1     0  6.79    255   18.5     2</span></span>
-<span><span class="co">#&gt;  9          3 plane      0    69 71.0     125   24.7     1</span></span>
-<span><span class="co">#&gt; 10          3 train      0    34 60.5     892   24.7     1</span></span>
-<span><span class="co">#&gt; # ℹ 830 more rows</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"TravelMode"</span>, package <span class="op">=</span> <span class="st">"AER"</span><span class="op">)</span></span>
+<span><span class="va">TravelMode</span><span class="op">$</span><span class="va">choice</span> <span class="op">&lt;-</span> <span class="va">TravelMode</span><span class="op">$</span><span class="va">choice</span> <span class="op">==</span> <span class="st">"yes"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">TravelMode</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   individual  mode choice wait vcost travel gcost income size</span></span>
+<span><span class="co">#&gt; 1          1   air  FALSE   69    59    100    70     35    1</span></span>
+<span><span class="co">#&gt; 2          1 train  FALSE   34    31    372    71     35    1</span></span>
+<span><span class="co">#&gt; 3          1   bus  FALSE   35    25    417    70     35    1</span></span>
+<span><span class="co">#&gt; 4          1   car   TRUE    0    10    180    30     35    1</span></span>
+<span><span class="co">#&gt; 5          2   air  FALSE   64    58     68    68     30    2</span></span>
+<span><span class="co">#&gt; 6          2 train  FALSE   44    31    354    84     30    2</span></span></code></pre></div>
 <p>We can transform the data from long (one row per choice alternative) to wide format (one row per choice occasion):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/choice_data.html">long_to_wide</a></span><span class="op">(</span></span>
-<span>  data_frame <span class="op">=</span> <span class="va">travel_mode_choice</span>,</span>
+<span>  data_frame <span class="op">=</span> <span class="va">TravelMode</span>,</span>
 <span>  column_alternative <span class="op">=</span> <span class="st">"mode"</span>,</span>
 <span>  column_decider <span class="op">=</span> <span class="st">"individual"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 210 × 16</span></span>
-<span><span class="co">#&gt;    individual income  size wait_plane wait_train wait_bus wait_car cost_plane</span></span>
-<span><span class="co">#&gt;         &lt;int&gt;  &lt;dbl&gt; &lt;int&gt;      &lt;int&gt;      &lt;int&gt;    &lt;int&gt;    &lt;int&gt;      &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt;  1          1  21.6      1         69         34       35        0       36.4</span></span>
-<span><span class="co">#&gt;  2          2  18.5      2         64         44       53        0       35.8</span></span>
-<span><span class="co">#&gt;  3          3  24.7      1         69         34       35        0       71.0</span></span>
-<span><span class="co">#&gt;  4          4  43.2      3         64         44       53        0       30.3</span></span>
-<span><span class="co">#&gt;  5          5  27.8      2         64         44       53        0       37.0</span></span>
-<span><span class="co">#&gt;  6          6  12.3      1         69         40       35        0       36.4</span></span>
-<span><span class="co">#&gt;  7          7  27.8      1         45         34       35        0       91.4</span></span>
-<span><span class="co">#&gt;  8          8   7.41     1         69         34       35        0       74.7</span></span>
-<span><span class="co">#&gt;  9          9  24.7      1         69         34       35        0       36.4</span></span>
-<span><span class="co">#&gt; 10         10  43.2      2         69         34       35        0       35.8</span></span>
+<span><span class="co">#&gt; # A tibble: 210 × 20</span></span>
+<span><span class="co">#&gt;    individual income  size wait_air wait_train wait_bus wait_car vcost_air</span></span>
+<span><span class="co">#&gt;    &lt;fct&gt;       &lt;int&gt; &lt;int&gt;    &lt;int&gt;      &lt;int&gt;    &lt;int&gt;    &lt;int&gt;     &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1 1              35     1       69         34       35        0        59</span></span>
+<span><span class="co">#&gt;  2 2              30     2       64         44       53        0        58</span></span>
+<span><span class="co">#&gt;  3 3              40     1       69         34       35        0       115</span></span>
+<span><span class="co">#&gt;  4 4              70     3       64         44       53        0        49</span></span>
+<span><span class="co">#&gt;  5 5              45     2       64         44       53        0        60</span></span>
+<span><span class="co">#&gt;  6 6              20     1       69         40       35        0        59</span></span>
+<span><span class="co">#&gt;  7 7              45     1       45         34       35        0       148</span></span>
+<span><span class="co">#&gt;  8 8              12     1       69         34       35        0       121</span></span>
+<span><span class="co">#&gt;  9 9              40     1       69         34       35        0        59</span></span>
+<span><span class="co">#&gt; 10 10             70     2       69         34       35        0        58</span></span>
 <span><span class="co">#&gt; # ℹ 200 more rows</span></span>
-<span><span class="co">#&gt; # ℹ 8 more variables: cost_train &lt;dbl&gt;, cost_bus &lt;dbl&gt;, cost_car &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   travel_plane &lt;int&gt;, travel_train &lt;int&gt;, travel_bus &lt;int&gt;, travel_car &lt;int&gt;,</span></span>
-<span><span class="co">#&gt; #   choice &lt;chr&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; # ℹ 12 more variables: vcost_train &lt;int&gt;, vcost_bus &lt;int&gt;, vcost_car &lt;int&gt;,</span></span>
+<span><span class="co">#&gt; #   travel_air &lt;int&gt;, travel_train &lt;int&gt;, travel_bus &lt;int&gt;, travel_car &lt;int&gt;,</span></span>
+<span><span class="co">#&gt; #   gcost_air &lt;int&gt;, gcost_train &lt;int&gt;, gcost_bus &lt;int&gt;, gcost_car &lt;int&gt;,</span></span>
+<span><span class="co">#&gt; #   choice &lt;fct&gt;</span></span></code></pre></div>
 <p>We can construct model design matrices:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mode_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_data.html">choice_data</a></span><span class="op">(</span></span>
-<span>  data_frame <span class="op">=</span> <span class="va">travel_mode_choice</span>,</span>
+<span>  data_frame <span class="op">=</span> <span class="va">TravelMode</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"long"</span>,</span>
 <span>  column_choice <span class="op">=</span> <span class="st">"choice"</span>,</span>
 <span>  column_decider <span class="op">=</span> <span class="st">"individual"</span>,</span>
 <span>  column_alternative <span class="op">=</span> <span class="st">"mode"</span>,</span>
 <span>  column_ac_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"income"</span>, <span class="st">"size"</span><span class="op">)</span>,</span>
-<span>  column_as_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wait"</span>, <span class="st">"cost"</span>, <span class="st">"travel"</span><span class="op">)</span></span>
+<span>  column_as_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wait"</span>, <span class="st">"vcost"</span>, <span class="st">"travel"</span>, <span class="st">"gcost"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">mode_effects</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_effects.html">choice_effects</a></span><span class="op">(</span></span>
 <span>  choice_formula <span class="op">=</span> <span class="fu"><a href="reference/choice_formula.html">choice_formula</a></span><span class="op">(</span></span>
-<span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">cost</span> <span class="op">|</span> <span class="va">income</span> <span class="op">|</span> <span class="va">wait</span>,</span>
+<span>    formula <span class="op">=</span> <span class="va">choice</span> <span class="op">~</span> <span class="va">vcost</span> <span class="op">|</span> <span class="va">income</span> <span class="op">|</span> <span class="va">wait</span>,</span>
 <span>    error_term <span class="op">=</span> <span class="st">"probit"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  choice_alternatives <span class="op">=</span> <span class="fu"><a href="reference/choice_alternatives.html">choice_alternatives</a></span><span class="op">(</span></span>
-<span>    alternatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">travel_mode_choice</span><span class="op">$</span><span class="va">mode</span><span class="op">)</span></span>
+<span>    alternatives <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">TravelMode</span><span class="op">$</span><span class="va">mode</span><span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  choice_data <span class="op">=</span> <span class="va">mode_data</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">mode_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/choice_covariates.html">design_matrices</a></span><span class="op">(</span><span class="va">mode_data</span>, <span class="va">mode_effects</span><span class="op">)</span></span>
 <span><span class="va">mode_design</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       cost income_car income_plane income_train ASC_car ASC_plane ASC_train</span></span>
-<span><span class="co">#&gt; bus     15          0            0            0       0         0         0</span></span>
-<span><span class="co">#&gt; car      6         22            0            0       1         0         0</span></span>
-<span><span class="co">#&gt; plane   36          0           22            0       0         1         0</span></span>
-<span><span class="co">#&gt; train   19          0            0           22       0         0         1</span></span>
-<span><span class="co">#&gt;       wait_bus wait_car wait_plane wait_train</span></span>
-<span><span class="co">#&gt; bus         35        0          0          0</span></span>
-<span><span class="co">#&gt; car          0        0          0          0</span></span>
-<span><span class="co">#&gt; plane        0        0         69          0</span></span>
-<span><span class="co">#&gt; train        0        0          0         34</span></span></code></pre></div>
+<span><span class="co">#&gt;       vcost income_bus income_car income_train ASC_bus ASC_car ASC_train</span></span>
+<span><span class="co">#&gt; air      59          0          0            0       0       0         0</span></span>
+<span><span class="co">#&gt; bus      25         35          0            0       1       0         0</span></span>
+<span><span class="co">#&gt; car      10          0         35            0       0       1         0</span></span>
+<span><span class="co">#&gt; train    31          0          0           35       0       0         1</span></span>
+<span><span class="co">#&gt;       wait_air wait_bus wait_car wait_train</span></span>
+<span><span class="co">#&gt; air         69        0        0          0</span></span>
+<span><span class="co">#&gt; bus          0       35        0          0</span></span>
+<span><span class="co">#&gt; car          0        0        0          0</span></span>
+<span><span class="co">#&gt; train        0        0        0         34</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="simulated-choice">Simulated choice<a class="anchor" aria-label="anchor" href="#simulated-choice"></a>
@@ -264,6 +260,9 @@
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-Bauer2023" class="csl-entry">
 Bauer, D., M. Batram, S. Büscher, and L. Oelschläger. 2023. <em>Rprobit: Estimation of Multinomial Probit Models</em>. <a href="https://github.com/dbauer72/Rprobit" class="external-link uri">https://github.com/dbauer72/Rprobit</a>.
+</div>
+<div id="ref-Kleiber2008" class="csl-entry">
+Kleiber, Christian, and Achim Zeileis. 2008. <em>Applied Econometrics with R</em>. Springer. <a href="https://doi.org/10.1007/978-0-387-77318-6" class="external-link uri">https://doi.org/10.1007/978-0-387-77318-6</a>.
 </div>
 <div id="ref-Oelschlaeger2025" class="csl-entry">
 Oelschläger, L., and D. Bauer. 2025. <em>RprobitB: Bayesian Probit Choice Modeling</em>. <a href="https://CRAN.R-project.org/package=RprobitB" class="external-link uri">https://CRAN.R-project.org/package=RprobitB</a>.

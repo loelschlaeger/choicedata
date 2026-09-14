@@ -92,8 +92,8 @@ design_matrices(
 - delimiter:
 
   \[`character(1)`\]  
-  Delimiter separating alternative identifiers from covariate names in
-  wide format.
+  Delimiter separating alternative identifiers from covariate names when
+  `format = "wide"`.
 
 - cross_section:
 

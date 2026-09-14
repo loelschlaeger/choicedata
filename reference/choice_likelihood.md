@@ -142,7 +142,7 @@ identifiers.
 
 ``` r
 ### compute choice likelihood
-data(list = "train_choice")
+data("Train", package = "mlogit")
 
 choice_effects <- choice_effects(
   choice_formula = choice_formula(
@@ -156,11 +156,11 @@ choice_effects <- choice_effects(
 )
 
 choice_data <- choice_data(
-  data_frame = train_choice,
+  data_frame = Train,
   format = "wide",
   column_choice = "choice",
-  column_decider = "deciderID",
-  column_occasion = "occasionID"
+  column_decider = "id",
+  column_occasion = "choiceid"
 )
 
 likelihood <- choice_likelihood(
@@ -177,5 +177,5 @@ compute_choice_likelihood(
   choice_likelihood = likelihood,
   logarithm = TRUE
 )
-#> [1] -141614.3
+#> [1] -6130004649
 ```

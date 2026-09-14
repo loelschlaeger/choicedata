@@ -5,7 +5,12 @@ The `choice_formula` object defines the choice model equation.
 ## Usage
 
 ``` r
-choice_formula(formula, error_term = "probit", random_effects = character())
+choice_formula(
+  formula,
+  error_term = "probit",
+  random_effects = character(),
+  latent_class_effects = character()
+)
 
 # S3 method for class 'choice_formula'
 print(x, ...)
@@ -16,7 +21,8 @@ print(x, ...)
 - formula:
 
   \[`formula`\]  
-  A symbolic description of the choice model, see details.
+  A symbolic description of the choice model, see the details on
+  specifying the model formula.
 
 - error_term:
 
@@ -30,7 +36,14 @@ print(x, ...)
 - random_effects:
 
   \[[`character()`](https://rdrr.io/r/base/character.html)\]  
-  Named vector defining random effects, see details.
+  Named vector defining random effects, see the details on specifying
+  random effects.
+
+- latent_class_effects:
+
+  \[[`character()`](https://rdrr.io/r/base/character.html)\]  
+  Names of covariates whose effects differ between latent classes, see
+  the details on specifying latent class effects.
 
 - x:
 
@@ -68,6 +81,16 @@ An object of class `choice_formula`, which is a `list` of the elements:
 - `random_effects`:
 
   The names of covariates with random effects.
+
+- `latent_class_effects`:
+
+  The names of covariates with latent class effects.
+
+- `xlevels`:
+
+  The factor levels of the covariates, added once the formula has been
+  resolved with data in
+  [`choice_effects`](https://loelschlaeger.de/choicedata/reference/choice_effects.md).
 
 ## Specifying the model formula
 
@@ -111,11 +134,9 @@ The following rules apply:
     defined for the transformed covariate, e.g.,
     `random_effects = c("I(A1^2 + A2 * 2)" = "cn")`.
 
-6.  Ordered choice models (see `ordered` in
-    [`choice_alternatives`](https://loelschlaeger.de/choicedata/reference/choice_alternatives.md))
-    have a single utility per choice occasion. Their covariates must be
-    placed in the first part and ASCs must be removed, e.g.,
-    `choice ~ age + income | 0`.
+6.  Ordered choice models have a single utility per choice occasion.
+    Their covariates must be placed in the first part and ASCs must be
+    removed, e.g., `choice ~ age + income | 0`.
 
 ## Specifying random effects
 
@@ -137,6 +158,17 @@ Available distributions are:
 
 - `"ln-"`: negatively signed uncorrelated log-normal
 
+## Specifying latent class effects
+
+The covariates in `latent_class_effects` have effects that differ
+between the latent classes of a mixture model; use `"ASC"` for
+alternative-specific constants. A random effect named here has a
+class-specific mean and covariance, any other effect a class-specific
+coefficient. Effects that are not named are the same in every class, and
+random effects with and without latent class effects are uncorrelated. A
+model with more than one latent class needs at least one latent class
+effect.
+
 ## Examples
 
 ``` r
@@ -144,7 +176,8 @@ Available distributions are:
 choice_formula(
   formula = choice ~ I(A^2 + 1) | B | I(log(C)),
   error_term = "probit",
-  random_effects = c("I(A^2+1)" = "cn", "B" = "cn")
+  random_effects = c("I(A^2+1)" = "cn", "B" = "cn"),
+  latent_class_effects = "B"
 )
 #> 
 #> ── Choice formula 
@@ -153,4 +186,5 @@ choice_formula(
 #> • random effects:
 #>   • I(A^2+1): cn
 #>   • B: cn
+#> • latent class effects: B
 ```

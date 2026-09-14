@@ -79,10 +79,11 @@ wide_to_long(
   in favor of one column per alternative (see `choice_type`).
 
   In long layout the same column is evaluated once per alternative:
-  unordered data must use a binary indicator (1 for the chosen
-  alternative, 0 otherwise), ordered data repeats the ordinal value for
-  every alternative, and ranked data stores consecutive ranks `1:k` for
-  the observed top `k` alternatives and `NA` for unranked alternatives.
+  unordered data use a binary indicator, `1` or `TRUE` for the chosen
+  alternative and `0` or `FALSE` otherwise; ordered data repeats the
+  ordinal value for every alternative, and ranked data stores
+  consecutive ranks `1:k` for the observed top `k` alternatives and `NA`
+  for unranked alternatives.
 
   An entirely missing response marks an occasion that is omitted from
   the likelihood. Set to `NULL` for purely covariate tables.
@@ -116,8 +117,8 @@ wide_to_long(
 - delimiter:
 
   \[`character(1)`\]  
-  Delimiter separating alternative identifiers from covariate names in
-  wide format.
+  Delimiter separating alternative identifiers from covariate names when
+  `format = "wide"`.
 
 - cross_section:
 
@@ -234,47 +235,51 @@ generate_choice_data(choice_effects = choice_effects)
 #> 10 10        1          A       1.30    0.172  -0.0903  1.92 
 #> # ℹ 90 more rows
 
-### transform between long/wide format
+### transform from long to wide format
+data("TravelMode", package = "AER")
+TravelMode$choice <- TravelMode$choice == "yes"
 long_to_wide(
-  data_frame = travel_mode_choice,
+  data_frame = TravelMode,
   column_alternative = "mode",
   column_decider = "individual"
 )
-#> # A tibble: 210 × 16
-#>    individual income  size wait_plane wait_train wait_bus wait_car cost_plane
-#>         <int>  <dbl> <int>      <int>      <int>    <int>    <int>      <dbl>
-#>  1          1  21.6      1         69         34       35        0       36.4
-#>  2          2  18.5      2         64         44       53        0       35.8
-#>  3          3  24.7      1         69         34       35        0       71.0
-#>  4          4  43.2      3         64         44       53        0       30.3
-#>  5          5  27.8      2         64         44       53        0       37.0
-#>  6          6  12.3      1         69         40       35        0       36.4
-#>  7          7  27.8      1         45         34       35        0       91.4
-#>  8          8   7.41     1         69         34       35        0       74.7
-#>  9          9  24.7      1         69         34       35        0       36.4
-#> 10         10  43.2      2         69         34       35        0       35.8
+#> # A tibble: 210 × 20
+#>    individual income  size wait_air wait_train wait_bus wait_car vcost_air
+#>    <fct>       <int> <int>    <int>      <int>    <int>    <int>     <int>
+#>  1 1              35     1       69         34       35        0        59
+#>  2 2              30     2       64         44       53        0        58
+#>  3 3              40     1       69         34       35        0       115
+#>  4 4              70     3       64         44       53        0        49
+#>  5 5              45     2       64         44       53        0        60
+#>  6 6              20     1       69         40       35        0        59
+#>  7 7              45     1       45         34       35        0       148
+#>  8 8              12     1       69         34       35        0       121
+#>  9 9              40     1       69         34       35        0        59
+#> 10 10             70     2       69         34       35        0        58
 #> # ℹ 200 more rows
-#> # ℹ 8 more variables: cost_train <dbl>, cost_bus <dbl>, cost_car <dbl>,
-#> #   travel_plane <int>, travel_train <int>, travel_bus <int>, travel_car <int>,
-#> #   choice <chr>
+#> # ℹ 12 more variables: vcost_train <int>, vcost_bus <int>, vcost_car <int>,
+#> #   travel_air <int>, travel_train <int>, travel_bus <int>, travel_car <int>,
+#> #   gcost_air <int>, gcost_train <int>, gcost_bus <int>, gcost_car <int>,
+#> #   choice <fct>
+### transform from wide to long format
+data("Train", package = "mlogit")
 wide_to_long(
-  data_frame = train_choice
+  data_frame = Train
 )
 #> # A tibble: 5,858 × 8
-#>    deciderID occasionID choice alternative price  time change comfort
-#>        <int>      <int>  <int> <chr>       <dbl> <dbl>  <int> <fct>  
-#>  1         1          1      1 A            10.9  2.5       0 1      
-#>  2         1          1      0 B            18.2  2.5       0 1      
-#>  3         1          2      1 A            10.9  2.5       0 1      
-#>  4         1          2      0 B            14.5  2.17      0 1      
-#>  5         1          3      1 A            10.9  1.92      0 1      
-#>  6         1          3      0 B            18.2  1.92      0 0      
-#>  7         1          4      0 A            18.2  2.17      0 1      
-#>  8         1          4      1 B            14.5  2.5       0 0      
-#>  9         1          5      0 A            10.9  2.5       0 1      
-#> 10         1          5      1 B            14.5  2.5       0 0      
+#>    choiceid    id choice alternative price  time change comfort
+#>       <int> <int>  <int> <chr>       <int> <int>  <int>   <int>
+#>  1        1     1      1 A            2400   150      0       1
+#>  2        1     1      0 B            4000   150      0       1
+#>  3        2     1      1 A            2400   150      0       1
+#>  4        2     1      0 B            3200   130      0       1
+#>  5        3     1      1 A            2400   115      0       1
+#>  6        3     1      0 B            4000   115      0       0
+#>  7        4     1      0 A            4000   130      0       1
+#>  8        4     1      1 B            3200   150      0       0
+#>  9        5     1      0 A            2400   150      0       1
+#> 10        5     1      1 B            3200   150      0       0
 #> # ℹ 5,848 more rows
-
 ### individual choice sets and a missing response
 partial_data <- data.frame(
   deciderID = c(1, 1, 2),

@@ -72,7 +72,8 @@ choice_effects <- choice_effects(
     random_effects = c(
       "price" = "cn",
       "income" = "cn"
-    )
+    ),
+    latent_class_effects = "price"
   ),
   choice_alternatives = choice_alternatives(J = 3)
 )
@@ -85,10 +86,10 @@ choice_parameters <- generate_choice_parameters(
   choice_identifiers = generate_choice_identifiers(N = 4)
 ))
 #> # A tibble: 4 × 9
-#>   deciderID ASC_B  ASC_C comfort_A comfort_B comfort_C price income_B income_C
-#> * <chr>     <dbl>  <dbl>     <dbl>     <dbl>     <dbl> <dbl>    <dbl>    <dbl>
-#> 1 1         -1.98  0.581     -2.64      5.04      1.04 -1.92     1.59    2.71 
-#> 2 2          1.82 -0.966      4.78      1.23     -1.96 -8.04     3.34   -1.35 
-#> 3 3         -1.98  0.581     -2.64      5.04      1.04 -2.78     2.23    3.10 
-#> 4 4          1.82 -0.966      4.78      1.23     -1.96 -9.44     3.21    0.438
+#>   deciderID ASC_B ASC_C comfort_A comfort_B comfort_C price income_B income_C
+#> * <chr>     <dbl> <dbl>     <dbl>     <dbl>     <dbl> <dbl>    <dbl>    <dbl>
+#> 1 1         -1.98 0.581     -2.64      5.04      1.04 -6.98     1.37     2.00
+#> 2 2         -1.98 0.581     -2.64      5.04      1.04 -7.22     1.08     2.46
+#> 3 3         -1.98 0.581     -2.64      5.04      1.04 -6.42     2.25     2.47
+#> 4 4         -1.98 0.581     -2.64      5.04      1.04 -6.37     1.34     3.07
 ```

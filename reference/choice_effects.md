@@ -93,7 +93,10 @@ model effect, and columns are
     6.  `"ln-"` (negatively signed uncorrelated log-normal
         distribution),
 
-    indicating the type of random effect.
+    indicating the type of random effect,
+
+8.  `"latent_class"`, indicator whether the effect differs between
+    latent classes.
 
 For identification, the choice effects are ordered according to the
 following rules:
@@ -131,13 +134,13 @@ choice_effects(
 #> 6           price       beta_6         price        <NA>         TRUE     FALSE
 #> 7        income_B       beta_7        income           B        FALSE      TRUE
 #> 8        income_C       beta_8        income           C        FALSE      TRUE
-#>   mixing
-#> 1   <NA>
-#> 2   <NA>
-#> 3   <NA>
-#> 4   <NA>
-#> 5   <NA>
-#> 6     cn
-#> 7     cn
-#> 8     cn
+#>   mixing latent_class
+#> 1   <NA>        FALSE
+#> 2   <NA>        FALSE
+#> 3   <NA>        FALSE
+#> 4   <NA>        FALSE
+#> 5   <NA>        FALSE
+#> 6     cn        FALSE
+#> 7     cn        FALSE
+#> 8     cn        FALSE
 ```
