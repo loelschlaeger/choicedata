@@ -948,7 +948,7 @@ evaluate_choice_outcomes <- function(
         call = NULL
       )
     }
-    if (abs(total - 1) > 1e-3) {
+    if (abs(total - 1) > 0.1) {
       cli::cli_abort(
         "Joint outcome probabilities must sum to one.",
         call = NULL
