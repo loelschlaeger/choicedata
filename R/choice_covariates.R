@@ -425,7 +425,11 @@ build_design_matrices <- function(prep, x, choice_effects) {
     if (ordered_type) {
       first_row <- row_index[1L]
       for (e in seq_len(P)) {
-        if (!is.na(col1[e])) X_nt[1L, e] <- mm1[first_row, col1[e]]
+        if (effect_is_ASC[e]) {
+          X_nt[1L, e] <- 1
+        } else if (!is.na(col1[e])) {
+          X_nt[1L, e] <- mm1[first_row, col1[e]]
+        }
       }
     } else {
       for (e in seq_len(P)) {

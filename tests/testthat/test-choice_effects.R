@@ -151,15 +151,34 @@ test_that("ordered alternatives restrict effect specification", {
     ),
     "Ordered choice models only support covariates in the first part"
   )
-  expect_s3_class(
+  expect_error(
     choice_effects(
       choice_formula = choice_formula(
-        formula = choice ~ A | 0
+        formula = choice ~ A | B
       ),
       choice_alternatives = choice_alternatives(J = 3, ordered = TRUE)
     ),
-    "choice_effects"
+    "Ordered choice models only support covariates in the first part"
   )
+  without_intercept <- choice_effects(
+    choice_formula = choice_formula(
+      formula = choice ~ A | 0
+    ),
+    choice_alternatives = choice_alternatives(J = 3, ordered = TRUE)
+  )
+  expect_s3_class(without_intercept, "choice_effects")
+  expect_identical(without_intercept$effect_name, "A")
+  with_intercept <- choice_effects(
+    choice_formula = choice_formula(
+      formula = choice ~ A, random_effects = c(ASC = "n")
+    ),
+    choice_alternatives = choice_alternatives(J = 3, ordered = TRUE)
+  )
+  expect_identical(with_intercept$effect_name, c("A", "ASC"))
+  expect_true(is.na(with_intercept$covariate[2]))
+  expect_true(is.na(with_intercept$alternative[2]))
+  expect_false(with_intercept$as_effect[2])
+  expect_identical(as.character(with_intercept$mixing[2]), "n")
 })
 
 test_that("printing effects works", {

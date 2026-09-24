@@ -34,20 +34,28 @@ export(wide_to_long)
 importFrom(Rcpp,evalCpp)
 importFrom(Rdpack,reprompt)
 importFrom(checkmate,test_formula)
-importFrom(cli,cat_line)
-importFrom(cli,cli_abort)
-importFrom(cli,cli_h3)
-importFrom(cli,style_italic)
-importFrom(dplyr,group_by)
-importFrom(dplyr,mutate)
-importFrom(dplyr,select)
+importFrom(cli,
+  cat_line,
+  cli_abort,
+  cli_h3,
+  style_italic
+)
+importFrom(dplyr,
+  group_by,
+  mutate,
+  select
+)
 importFrom(oeli,print_matrix)
 importFrom(optimizeR,ParameterSpaces)
-importFrom(rlang,":=")
-importFrom(rlang,.data)
-importFrom(rlang,sym)
+importFrom(rlang,
+  ":=",
+  .data,
+  sym
+)
 importFrom(tibble,as_tibble)
 importFrom(tidyr,pivot_wider)
-importFrom(utils,head)
-importFrom(utils,tail)
+importFrom(utils,
+  head,
+  tail
+)
 useDynLib(choicedata, .registration = TRUE)

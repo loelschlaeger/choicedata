@@ -103,13 +103,12 @@ choice_effects <- function(
   latent_class_effects <- choice_formula$latent_class_effects
 
   if (isTRUE(ordered_alternatives)) {
-    if (choice_formula$ASC || length(covariate_types[[2]]) > 0 ||
-        length(covariate_types[[3]]) > 0) {
+    if (length(covariate_types[[2]]) > 0 || length(covariate_types[[3]]) > 0) {
       cli::cli_abort(
         c(
           "Ordered choice models only support covariates in the first part of
-          {.var formula} without alternative-specific constants.",
-          "i" = "Use, e.g., {.code choice ~ age + income | 0}."
+          {.var formula}.",
+          "i" = "Use, e.g., {.code choice ~ age + income}."
         ),
         call = NULL
       )
@@ -128,6 +127,19 @@ choice_effects <- function(
     latent_class = logical(),
     stringsAsFactors = FALSE
   )
+  if (isTRUE(ordered_alternatives) && choice_formula$ASC) {
+    overview <- append_effects(
+      overview = overview,
+      covariate = "ASC",
+      alternatives = NA_character_,
+      as_covariate = FALSE,
+      as_effect = FALSE,
+      mixing = random_effects["ASC"],
+      latent_class = "ASC" %in% latent_class_effects,
+      delimiter = delimiter,
+      covariate_label = NA_character_
+    )
+  }
   for (var in covariate_types[[1]]) {
     overview <- append_effects(
       overview = overview,
@@ -142,7 +154,7 @@ choice_effects <- function(
   }
   alternative_specific_covariates <- c(
     covariate_types[[2]],
-    if (choice_formula$ASC) "ASC"
+    if (choice_formula$ASC && !isTRUE(ordered_alternatives)) "ASC"
   )
   non_base_alternatives <- if (is.null(base) || isTRUE(is.na(base))) {
     alt

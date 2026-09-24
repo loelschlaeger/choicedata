@@ -1,7 +1,7 @@
 Package: choicedata
 Type: Package
 Title: Working with Choice Data
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: 
     person("Lennart", "Oelschl\u00e4ger", 
            email = "oelschlaeger.lennart@gmail.com", 
@@ -44,4 +44,4 @@ LazyDataCompression: xz
 Depends: 
     R (>= 4.1.0)
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0
+Config/roxygen2/version: 8.1.0

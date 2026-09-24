@@ -1,3 +1,7 @@
+# choicedata 0.2.1
+
+* Ordered choice models now include an intercept by default.
+
 # choicedata 0.2.0
 
 * Added support for uncorrelated normal and log-normal random effects.
