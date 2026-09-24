@@ -200,7 +200,7 @@ is.choice_parameters <- function(
 #' Missing components are generated as follows:
 #' \describe{
 #'   \item{`beta`}{Drawn from a multivariate normal distribution with zero
-#'   mean and covariance matrix `10 * diag(P)`, independently for each class
+#'   mean and identity covariance matrix, independently for each class
 #'   for the effects with latent classes and once for the others. A named
 #'   `beta` with fewer than `P` entries fixes the named effects and draws the
 #'   others.}
@@ -277,7 +277,7 @@ generate_choice_parameters <- function(
   latent_class <- as.logical(choice_effects$latent_class)
   common <- NULL
   draw_beta <- function() {
-    beta <- oeli::rmvnorm(mean = numeric(P), Sigma = 10 * diag(P))
+    beta <- oeli::rmvnorm(mean = numeric(P), Sigma = diag(P))
     if (is.null(common)) common <<- beta
     beta[!latent_class] <- common[!latent_class]
     beta

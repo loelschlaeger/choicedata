@@ -128,7 +128,7 @@ from \code{fixed_parameters}.
 Missing components are generated as follows:
 \describe{
 \item{\code{beta}}{Drawn from a multivariate normal distribution with zero
-mean and covariance matrix \code{10 * diag(P)}, independently for each class
+mean and identity covariance matrix, independently for each class
 for the effects with latent classes and once for the others. A named
 \code{beta} with fewer than \code{P} entries fixes the named effects and draws the
 others.}
