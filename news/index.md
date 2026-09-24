@@ -1,6 +1,16 @@
 # Changelog
 
+## choicedata 0.2.1
+
+- Ordered choice models now include an intercept by default.
+
+- [`generate_choice_parameters()`](https://loelschlaeger.de/choicedata/reference/choice_parameters.md)
+  now draws missing coefficients from a standard normal distribution
+  instead of a normal distribution with variance 10.
+
 ## choicedata 0.2.0
+
+CRAN release: 2026-09-15
 
 - Added support for uncorrelated normal and log-normal random effects.
 

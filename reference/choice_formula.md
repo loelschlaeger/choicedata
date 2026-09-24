@@ -135,8 +135,9 @@ The following rules apply:
     `random_effects = c("I(A1^2 + A2 * 2)" = "cn")`.
 
 6.  Ordered choice models have a single utility per choice occasion.
-    Their covariates must be placed in the first part and ASCs must be
-    removed, e.g., `choice ~ age + income | 0`.
+    Their covariates must be placed in the first part, e.g.,
+    `choice ~ age + income`. The intercept (named `"ASC"`) is included
+    by default and removed by `0` in the second part.
 
 ## Specifying random effects
 

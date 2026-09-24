@@ -86,10 +86,10 @@ choice_parameters <- generate_choice_parameters(
   choice_identifiers = generate_choice_identifiers(N = 4)
 ))
 #> # A tibble: 4 × 9
-#>   deciderID ASC_B ASC_C comfort_A comfort_B comfort_C price income_B income_C
-#> * <chr>     <dbl> <dbl>     <dbl>     <dbl>     <dbl> <dbl>    <dbl>    <dbl>
-#> 1 1         -1.98 0.581     -2.64      5.04      1.04 -6.98     1.37     2.00
-#> 2 2         -1.98 0.581     -2.64      5.04      1.04 -7.22     1.08     2.46
-#> 3 3         -1.98 0.581     -2.64      5.04      1.04 -6.42     2.25     2.47
-#> 4 4         -1.98 0.581     -2.64      5.04      1.04 -6.37     1.34     3.07
+#>   deciderID  ASC_B ASC_C comfort_A comfort_B comfort_C price income_B income_C
+#> * <chr>      <dbl> <dbl>     <dbl>     <dbl>     <dbl> <dbl>    <dbl>    <dbl>
+#> 1 1         -0.626 0.184    -0.836      1.60     0.330 -2.19   0.319     0.402
+#> 2 2         -0.626 0.184    -0.836      1.60     0.330 -2.43   0.0226    0.861
+#> 3 3         -0.626 0.184    -0.836      1.60     0.330 -1.63   1.20      0.872
+#> 4 4         -0.626 0.184    -0.836      1.60     0.330 -1.59   0.288     1.47 
 ```

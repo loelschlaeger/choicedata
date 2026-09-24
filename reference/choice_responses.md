@@ -122,15 +122,15 @@ choice_effects <- choice_effects(
 #> # A tibble: 100 × 8
 #>    deciderID occasionID choice choice_A choice_B choice_C choice_D choice_E
 #>  * <chr>     <chr>      <chr>     <int>    <int>    <int>    <int>    <int>
-#>  1 1         1          D             4        5        3        1        2
+#>  1 1         1          E             5        4        3        2        1
 #>  2 2         1          E             3        5        4        2        1
 #>  3 3         1          C             2        5        1        4        3
 #>  4 4         1          C             2        4        1        5        3
 #>  5 5         1          C             2        3        1        5        4
-#>  6 6         1          C             2        4        1        5        3
+#>  6 6         1          C             2        3        1        5        4
 #>  7 7         1          C             2        3        1        4        5
-#>  8 8         1          E             2        5        4        3        1
-#>  9 9         1          D             3        4        5        1        2
-#> 10 10        1          C             2        4        1        5        3
+#>  8 8         1          E             2        4        5        3        1
+#>  9 9         1          D             3        5        4        1        2
+#> 10 10        1          A             1        5        2        4        3
 #> # ℹ 90 more rows
 ```

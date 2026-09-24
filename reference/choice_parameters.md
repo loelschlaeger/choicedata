@@ -164,7 +164,7 @@ Missing components are generated as follows:
 - `beta`:
 
   Drawn from a multivariate normal distribution with zero mean and
-  covariance matrix `10 * diag(P)`, independently for each class for the
+  identity covariance matrix, independently for each class for the
   effects with latent classes and once for the others. A named `beta`
   with fewer than `P` entries fixes the named effects and draws the
   others.
@@ -249,7 +249,7 @@ choice_effects <- choice_effects(
 ))
 #> $beta
 #>        y_B        y_C      ASC_B      ASC_C          x 
-#>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793 
+#>  0.1286881 -1.5330655  0.2023607 -0.7175387  0.3616948 
 #> 
 #> $Omega
 #>           x
@@ -270,7 +270,7 @@ choice_effects <- choice_effects(
   choice_effects = choice_effects
 ))
 #>     beta_1     beta_2     beta_3     beta_4     beta_5        o_1        l_2 
-#>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793  0.4160670  0.0000000 
+#>  0.1286881 -1.5330655  0.2023607 -0.7175387  0.3616948  0.4160670  0.0000000 
 #>        l_3 
 #>  1.0000000 
 switch_parameter_space(
@@ -279,7 +279,7 @@ switch_parameter_space(
 )
 #> $beta
 #>        y_B        y_C      ASC_B      ASC_C          x 
-#>  0.4069475 -4.8479786  0.6399206 -2.2690565  1.1437793 
+#>  0.1286881 -1.5330655  0.2023607 -0.7175387  0.3616948 
 #> 
 #> $Omega
 #>           x

@@ -177,5 +177,5 @@ compute_choice_likelihood(
   choice_likelihood = likelihood,
   logarithm = TRUE
 )
-#> [1] -6130004649
+#> [1] -613012078
 ```
