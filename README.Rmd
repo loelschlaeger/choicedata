@@ -188,7 +188,7 @@ data.frame(dgp = true_vector, estimated = fit$par) |> round(2)
 `{Rprobit}` [@Bauer2023] provides maximum approximated composite marginal
 likelihood estimation for efficient probit choice modeling.
 
-`{RprobitB}` [@Oelschlaeger2025] provides Bayesian tools for estimating probit
+`{RprobitB}` [@Oelschlaeger2026] provides Bayesian tools for estimating probit
 models.
 
 ## Contact

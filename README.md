@@ -251,7 +251,7 @@ data.frame(dgp = true_vector, estimated = fit$par) |> round(2)
 approximated composite marginal likelihood estimation for efficient
 probit choice modeling.
 
-`{RprobitB}` ([Oelschläger and Bauer 2025](#ref-Oelschlaeger2025))
+`{RprobitB}` ([Oelschläger and Bauer 2026](#ref-Oelschlaeger2026))
 provides Bayesian tools for estimating probit models.
 
 ## Contact
@@ -278,9 +278,9 @@ R*. Springer. <https://doi.org/10.1007/978-0-387-77318-6>.
 
 </div>
 
-<div id="ref-Oelschlaeger2025" class="csl-entry">
+<div id="ref-Oelschlaeger2026" class="csl-entry">
 
-Oelschläger, Lennart, and Dietmar Bauer. 2025. *RprobitB: Bayesian
+Oelschläger, Lennart, and Dietmar Bauer. 2026. *RprobitB: Bayesian
 Probit Choice Modeling*. <https://CRAN.R-project.org/package=RprobitB>.
 
 </div>
