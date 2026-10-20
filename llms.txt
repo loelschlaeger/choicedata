@@ -245,7 +245,7 @@ approximated composite marginal likelihood estimation for efficient
 probit choice modeling.
 
 [RprobitB](https://loelschlaeger.de/RprobitB/) ([Oelschläger and Bauer
-2025](#ref-Oelschlaeger2025)) provides Bayesian tools for estimating
+2026](#ref-Oelschlaeger2026)) provides Bayesian tools for estimating
 probit models.
 
 ## Contact
@@ -262,7 +262,7 @@ Oelschläger. 2023. *Rprobit: Estimation of Multinomial Probit Models*.
 Kleiber, Christian, and Achim Zeileis. 2008. *Applied Econometrics with
 R*. Springer. <https://doi.org/10.1007/978-0-387-77318-6>.
 
-Oelschläger, Lennart, and Dietmar Bauer. 2025. *RprobitB: Bayesian
+Oelschläger, Lennart, and Dietmar Bauer. 2026. *RprobitB: Bayesian
 Probit Choice Modeling*. <https://CRAN.R-project.org/package=RprobitB>.
 
 # Package index
