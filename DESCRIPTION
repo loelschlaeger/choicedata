@@ -27,7 +27,7 @@ Imports:
     dplyr,
     Formula,
     optimizeR (>= 1.2.1),
-    oeli (>= 0.7.8),
+    oeli (>= 0.7.9),
     Rdpack,
     Rcpp,
     rlang,
