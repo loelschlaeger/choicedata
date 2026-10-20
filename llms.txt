@@ -196,7 +196,7 @@ sim_parameters <- generate_choice_parameters(sim_effects)
 #>  6 6         1          A       0.769  -0.253  0.697   0.557  -0.689  -0.707
 #>  7 7         1          B       1.43   -0.112  0.881   0.398  -0.612   0.341
 #>  8 8         1          B      -0.0392  1.98  -0.367  -1.04    0.570  -0.135
-#>  9 9         1          A       0.153   0.690  0.0280 -0.743   0.189  -1.80 
+#>  9 9         1          B       0.153   0.690  0.0280 -0.743   0.189  -1.80 
 #> 10 10        1          C       0.291   2.17   0.476  -0.710   0.611  -0.934
 #> # ℹ 190 more rows
 #> # ℹ 4 more variables: z_C <dbl>, choice_A <int>, choice_B <int>, choice_C <int>
@@ -230,12 +230,12 @@ estimated_parameters <- switch_parameter_space(
 
 data.frame(dgp = true_vector, estimated = fit$par) |> round(2)
 #>          dgp estimated
-#> beta_1 -1.98     -2.36
-#> beta_2  0.58      0.53
-#> beta_3 -2.64     -2.83
-#> beta_4  5.04      5.64
-#> beta_5  1.04      1.18
-#> beta_6 -2.59     -3.03
+#> beta_1 -0.63     -0.57
+#> beta_2  0.18      0.09
+#> beta_3 -0.84     -0.72
+#> beta_4  1.60      1.25
+#> beta_5  0.33      0.27
+#> beta_6 -0.82     -0.77
 ```
 
 ## Related work
@@ -256,15 +256,14 @@ GitHub](https://github.com/loelschlaeger/choicedata/issues/new/choose).
 
 ## References
 
-Bauer, D., M. Batram, S. Büscher, and L. Oelschläger. 2023. *Rprobit:
-Estimation of Multinomial Probit Models*.
-<https://github.com/dbauer72/Rprobit>.
+Bauer, Dietmar, Manuel Batram, Sebastian Büscher, and Lennart
+Oelschläger. 2023. *Rprobit: Estimation of Multinomial Probit Models*.
 
 Kleiber, Christian, and Achim Zeileis. 2008. *Applied Econometrics with
 R*. Springer. <https://doi.org/10.1007/978-0-387-77318-6>.
 
-Oelschläger, L., and D. Bauer. 2025. *RprobitB: Bayesian Probit Choice
-Modeling*. <https://CRAN.R-project.org/package=RprobitB>.
+Oelschläger, Lennart, and Dietmar Bauer. 2025. *RprobitB: Bayesian
+Probit Choice Modeling*. <https://CRAN.R-project.org/package=RprobitB>.
 
 # Package index
 

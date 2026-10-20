@@ -72,13 +72,13 @@ source data are licensed under [CC BY
 ## References
 
 Dugstad A, Grimsrud K, Kipperberg G, Lindhjem H, Navrud S (2023). “Place
-attachment and preferences for wind energy – A value-based approach.”
+Attachment and Preferences for Wind Energy – A Value-Based Approach.”
 *Energy Research & Social Science*, **100**, 103094.
 [doi:10.1016/j.erss.2023.103094](https://doi.org/10.1016/j.erss.2023.103094)
 .
 
 Dugstad A, Brouwer R, Grimsrud K, Kipperberg G, Lindhjem H, Navrud S
-(2024). “Nature is ours! – Psychological ownership and preferences for
-wind energy.” *Energy Economics*, **129**, 107239.
+(2024). “Nature Is Ours! – Psychological Ownership and Preferences for
+Wind Energy.” *Energy Economics*, **129**, 107239.
 [doi:10.1016/j.eneco.2023.107239](https://doi.org/10.1016/j.eneco.2023.107239)
 .

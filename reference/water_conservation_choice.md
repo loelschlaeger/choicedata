@@ -77,9 +77,9 @@ source data are licensed under [CC BY
 
 ## References
 
-Ortiz CA, Avila-Santamaría JJ, Martinez-Cruz AL (2023). “Dairy farmers'
-willingness to adopt cleaner production practices for water
-conservation: A discrete choice experiment in Mejia, Ecuador.”
+Ortiz CA, Avila-Santamaría JJ, Martinez-Cruz AL (2023). “Dairy Farmers'
+Willingness to Adopt Cleaner Production Practices for Water
+Conservation: A Discrete Choice Experiment in Mejia, Ecuador.”
 *Agricultural Water Management*, **278**, 108168.
 [doi:10.1016/j.agwat.2023.108168](https://doi.org/10.1016/j.agwat.2023.108168)
 .
